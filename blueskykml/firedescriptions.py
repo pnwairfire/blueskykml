@@ -135,11 +135,9 @@ def _format_value(value):
     """Adds commas as thousands separator. So a value of 12345.789 would become '12,345.789'."""
     return "{:,}".format(value)
 
-
 def _daterange(start_date, end_date):
-    for n in reversed(range(int((end_date - start_date).days)+1)):
+    for n in range(int((end_date - start_date).days)+1):
         yield start_date + timedelta(n)
-
 
 def _convert_single_line(description):
     """Reduce description text to single line to help reduce kml file size."""
