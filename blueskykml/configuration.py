@@ -135,7 +135,7 @@ class ConfigBuilder(object):
 
     EXTRA_FILES = [
         {
-            "dir": os.path.normpath(os.path.join(os.path.dirname(__file__), "../assets")),
+            "dir": os.path.normpath(os.path.join(os.path.dirname(__file__), "./assets")),
             "option_set": [
                 ("SmokeDispersionKMLInput", "DISCLAIMER_IMAGE", "disclaimer.png"),
                 ("SmokeDispersionKMLInput", "FIRE_EVENT_ICON", "fire_event.png"),
