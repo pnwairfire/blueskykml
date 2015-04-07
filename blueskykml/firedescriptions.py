@@ -106,13 +106,13 @@ def _build_description(body):
                     font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
                     font-size: 12px;
                     width: 350px;
-                    padding-bottom: 15px
+                    padding-bottom: 15px;
                 }}
                 .summary .fire_title {{
-                    margin-bottom: 15px;
+                    margin-bottom: 5px;
                 }}
                 .summary .section {{
-                    margin: 10px 0 0 10px;
+                    margin: 0 0 10px 10px;
                 }}
                 .summary .section .header {{
                     font-weight: bold;
