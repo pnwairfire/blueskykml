@@ -165,9 +165,10 @@ class ConfigBuilder(object):
                     self.config.get('PolygonsKML', 'MAKEPOLYGONS_BINARY'))
 
         # Fire locations csv
-        if not self.config.get('SmokeDispersionKMLInput', "FIRE_LOCATION_CSV"):
+        fire_locations_csv = self.config.get('SmokeDispersionKMLInput', "FIRE_LOCATION_CSV")
+        if not fire_locations_csv:
             raise ConfigurationError("Fire locations csv not specified.")
-        if not os.path.isfile(self.config.get('SmokeDispersionKMLInput', "FIRE_LOCATION_CSV")):
+        if not os.path.isfile(fire_locations_csv):
             raise ConfigurationError("Fire locations csv '%s' does not exist." %
                 self.config.get('SmokeDispersionKMLInput', 'FIRE_LOCATION_CSV'))
 

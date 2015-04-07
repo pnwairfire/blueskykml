@@ -1,8 +1,9 @@
 
 import csv
 import datetime
-import re
+import json
 import os
+import re
 import subprocess
 
 from constants import *
@@ -296,11 +297,26 @@ class KmzCreator(object):
     # Data Gathering Methods
 
     def _build_fire_locations(self, fire_locations_csv):
+        fire_location_dicts = []
         fire_locations = list()
         for row in csv.DictReader(open(fire_locations_csv, 'rb')):
+            fire_location_dicts.append(row)
             fire_location = FireLocationInfo()
             fire_location.build_from_raw_data(row)
             fire_locations.append(fire_location)
+
+        # Dump fire locations to file in json format.
+        # If fire_locations_csv is of the form '/path/to/<filename>.csv', then
+        # dump json to '/path/to/<filename>.json'.  Otherwise, dump to
+        # '/path/to/fire_locations.json' (i.e. 'fire_locations.json' in the
+        # same dir as fire_locations_csv)
+        fire_locations_json = re.sub('\.csv$', '.json', fire_locations_csv)
+        if fire_locations_json == fire_locations_csv:
+            fire_locations_json = os.path.join(os.path.dirname(
+                fire_locations_csv), 'fire_locations.json')
+        with open(fire_locations_json, 'w') as f:
+            f.write(json.dumps(fire_location_dicts))
+
         return fire_locations
 
     def _build_fire_events(self, fire_locations, fire_events_csv):
