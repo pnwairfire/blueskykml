@@ -49,7 +49,7 @@ def build_fire_event_description(fire_event):
         date_str = date.strftime(OUTPUT_DATE_FORMAT).replace(' 0', ' ')
         growth.append("""
             <div class="item">
-                {date}: {day_area} (in {day_num_locations} location{plural_s})
+                {date}: {day_area} acres (over {day_num_locations} location{plural_s})
             </div>
         """.format(
             date=date_str, day_area=_format_value(fire_event.daily_area[date]),
