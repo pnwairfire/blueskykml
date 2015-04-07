@@ -7,11 +7,9 @@ with open('requirements.txt') as f:
 
 from blueskykml import __version__
 
-VERSION = open('VERSION').read()
-
 setup(
     name='blueskykml',
-    version=VERSION,
+    version=__version__,
     author='Anthony Cavallaro, Ken Craig, John Stilley, Joel Dubowy',
     author_email='jdubowy@gmail.com', # STI's email addresses
     packages=find_packages(),
