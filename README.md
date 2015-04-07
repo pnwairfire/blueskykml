@@ -1,17 +1,18 @@
 # blueskykml
 
+This package is based on code extracted from the kml3 module in BlueSky
+Framework.
+
 ## Installing
 
 First, you need to install dependencies. Beginning with non-python
 dependencies, use the following on linux:
 
     sudo apt-get install gdal
-    ...others...
 
 Alternatively, on OSX, use the following:
 
     brew install gdal
-    ...others...
 
 Python package dependencies are listed in requirements.txt. Instell them
 with the following:
