@@ -1,30 +1,35 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
-from pip.req import parse_requirements
+from setuptools import setup, find_packages
 
 with open('requirements.txt') as f:
     REQUIREMENTS = f.read().splitlines()
 
-# Note: the version is stored in a separate file so that it can be read by the Makefile
+from blueskykml import __version__
+
 VERSION = open('VERSION').read()
 
 setup(
     name='blueskykml',
     version=VERSION,
-    author='Anthony Cavallaro, Ken Craig, John Stilley, Joel Dubowy', # TODO: anyone else?
+    author='Anthony Cavallaro, Ken Craig, John Stilley, Joel Dubowy',
     author_email='jdubowy@gmail.com', # STI's email addresses
-    packages=[
-        'blueskykml',
-        'blueskykml.pykml'
-    ],
+    packages=find_packages(),
+    package_data={
+        'blueskykml': ['assets/*.png']
+    },
     scripts=[
         'bin/makedispersionkml'
     ],
-    data_files=[
-        ('assets', ['assets/disclaimer.png', 'assets/fire_event.png', 'assets/fire_location.png'])
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 2",
+        "Operating System :: POSIX",
+        "Operating System :: MacOS"
     ],
-    # TODO: add git repo url if this gets moved into it's own repo
+    url='https://github.com/pnwairfire/blueskykml/',
     description='Package for creating kmls from BlueSky smoke dispersion output.',
     install_requires=REQUIREMENTS,
 )
