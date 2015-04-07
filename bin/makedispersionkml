@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+import argparse
+import re
+import traceback
+from collections import defaultdict
+
+try:
+    from blueskykml import makedispersionkml, makeaquiptdispersionkml, configuration
+except:
+    import os
+    import sys
+    root_dir = os.path.abspath(os.path.join(sys.path[0], '../'))
+    sys.path.insert(0, root_dir)
+    from blueskykml import makedispersionkml, makeaquiptdispersionkml, configuration
+
+def errout(parser, msg):
+    print msg
+    print
+    parser.print_help()
+
+class ConfigOptionAction(argparse.Action):
+
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        super(self.__class__, self).__init__(option_strings, dest, **kwargs)
+
+    EXTRACTOR = re.compile('(\w+)\.(\w+)=(.+)')
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        m = self.EXTRACTOR.match(values)
+        if not m:
+            errout(parser, "*** Invalid argument '%s' for option '%s'", values, option_stringr)
+
+        section, option, val = m.groups()
+
+        #setattr(namespace, self.dest, values)
+        namespace.config_options = namespace.config_options or defaultdict(lambda: defaultdict(dict))
+        namespace.config_options[section][option] = val
+
+if __name__ == '__main__':
+    # TODO: fix this so that parse.usage is the actual help string/documentation
+    parser = argparse.ArgumentParser()
+
+    # Required:
+    parser.add_argument("-c", "--configfile", default=None, help="Configuration file")
+    parser.add_argument("-o", "--output-directory", default=None, help="Output directory.")
+
+    # Optional
+    parser.add_argument("-p", "--prettykml", default=False, action="store_true", help="Outputs kml in a human readable format")
+    parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Increases volume of output.")
+    parser.add_argument("-a", "--aquipt", default=False, action="store_true", help="Run AQUIPT version.")
+
+    # Optional config overrides
+    parser.add_argument("-O", "--config-option", dest='config_options', action=ConfigOptionAction,
+        help="Config option override, formatted like 'Section.Option=value'")
+    # Note: the following must be added to configuration.ConfigBuilder.OVERRIDES
+    # in order to be recognized as aliases for the specified config option.
+    parser.add_argument("-i", "--inputfile", default=None,
+        help="Input smoke dispersion NetCDF file. Alias for -O DispersionGridInput.FILENAME=<filename>")
+    parser.add_argument("-l", "--fire-locations-csv", default=None,
+        help="Input fire locations csv file. Alias for -O DispersionGridInput.FIRE_LOCATION_CSV=<filename>")
+    parser.add_argument("-e", "--fire-events-csv", default=None,
+        help="Input fire events csv file. Alias for -O DispersionGridInput.FIRE_EVENT_CSV=<filename>")
+    parser.add_argument("-k", "--smoke-dispersion-kmz-file",
+        help="Smoke dispersion KMZ file pathname. Alias for -O SmokeDispersionKMLOutput.KMZ_FILE=<filename>")
+    parser.add_argument("-f", "--fire-kmz-file",
+        help="Fire KMZ file pathnam. Alias for -O SmokeDispersionKMLOutput.KMZ_FIRE_FILE=<filename>")
+    parser.add_argument("--layer", default=0, type=int, action="store",
+        help="Fire KMZ file pathnam. Alias for -O DispersionGridInput.LAYER=<layer>")
+    args = parser.parse_args()
+
+    try:
+        # TODO: clean up any outputs created?  Should this be toggleable via command line option?
+        if args.aquipt:
+            makeaquiptdispersionkml.main(args)
+        else:
+            makedispersionkml.main(args)
+    except configuration.ConfigurationError, e:
+        errout(parser, "*** Configuration error: %s" % (e.message))
+    except Exception, e:
+        print traceback.format_exc()
+        errout(parser, "*** Error: %s" % (e.message))
