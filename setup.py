@@ -3,7 +3,9 @@
 from distutils.core import setup
 from pip.req import parse_requirements
 
-REQUIREMENTS = [str(ir.req) for ir in parse_requirements('requirements.txt')]
+with open('requirements.txt') as f:
+    REQUIREMENTS = f.read().splitlines()
+
 # Note: the version is stored in a separate file so that it can be read by the Makefile
 VERSION = open('VERSION').read()
 
