@@ -49,10 +49,10 @@ def build_fire_event_description(fire_event):
         date_str = date.strftime(OUTPUT_DATE_FORMAT).replace(' 0', ' ')
         growth.append("""
             <div class="item">
-                {date}: {day_area} acres (over {day_num_locations} location{plural_s})
+                {date}: {day_area:,} acres ({day_num_locations} location{plural_s})
             </div>
         """.format(
-            date=date_str, day_area=_format_value(fire_event.daily_area[date]),
+            date=date_str, day_area=int(fire_event.daily_area[date]),
             day_num_locations=fire_event.daily_num_locations[date],
             plural_s='s' if fire_event.daily_num_locations[date] > 1 else ''))
     if growth:
@@ -72,10 +72,10 @@ def build_fire_event_description(fire_event):
             fuelbeds.append(
                 '<div class="item">'
                 '<span class="fccs-num">#{fccs_num}</span> - '
-                '<span class="fccs-area">{area} acres</span> - '
+                '<span class="fccs-area">{area:,} acres</span> - '
                 '<span class="fccs-desc">{desc}</span>'
                 '</div>'.format(
-                area=fccs_dict['total_area'], fccs_num=fccs_num,
+                area=int(fccs_dict['total_area']), fccs_num=fccs_num,
                 desc=fccs_dict['description']))
         body += """
             <div class="section">
@@ -130,10 +130,6 @@ def _build_description(body):
     </html>
     """.format(body=body)
     return _convert_single_line(description)
-
-def _format_value(value):
-    """Adds commas as thousands separator. So a value of 12345.789 would become '12,345.789'."""
-    return "{:,}".format(value)
 
 def _daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)+1):
