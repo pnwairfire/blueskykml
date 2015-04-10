@@ -24,7 +24,6 @@ def build_fire_location_description(fire_location):
 
     return _build_description(body)
 
-
 def build_fire_event_description(fire_event):
     start_str = fire_event.start_date_time.strftime(OUTPUT_DATE_FORMAT).replace(' 0', ' ')
     end_str = fire_event.end_date_time.strftime(OUTPUT_DATE_FORMAT).replace(' 0', ' ')
@@ -36,7 +35,11 @@ def build_fire_event_description(fire_event):
             <span class="header">Type</span>: {fire_type}
         </div>
     """.format(fire_name=fire_event.name, fire_type=fire_event.fire_type)
+    body += _build_projected_growth_section(fire_event)
+    body += _build_fuelbeds(fire_event)
+    return _build_description(body)
 
+def _build_projected_growth_section(fire_event):
     # create "daily" summary boxes
     growth = []
     for date in _daterange(fire_event.start_date_time, fire_event.end_date_time):
@@ -56,14 +59,19 @@ def build_fire_event_description(fire_event):
             day_num_locations=fire_event.daily_num_locations[date],
             plural_s='s' if fire_event.daily_num_locations[date] > 1 else ''))
     if growth:
-        body += """
+        return """
             <div class="section">
                 <div class="header">Projected Growth</div>
                 <div class="list">{growth}</div>
             </div>
         """.format(growth=_convert_single_line(''.join(growth)))
+    return ""
 
-    stats_by_fccs_num = fire_event.daily_stats_by_fccs_num[date]
+def _build_fuelbeds(fire_event):
+    # Use the final day's fuelbeds
+    # TODO: Is this ok to do?  Will the fuelbeds be the same acrossa all days
+    stats_by_fccs_num = sorted(
+        fire_event.daily_stats_by_fccs_num.items(), key=lambda e: e[0])[-1][1]
     if len(stats_by_fccs_num) > 0:
         fuelbeds = []
         sorted_stats = sorted(stats_by_fccs_num.items(),
@@ -77,14 +85,13 @@ def build_fire_event_description(fire_event):
                 '</div>'.format(
                 area=int(fccs_dict['total_area']), fccs_num=fccs_num,
                 desc=fccs_dict['description']))
-        body += """
+        return """
             <div class="section">
                 <div class="header">FCCS Fuelbeds</div>
                 <div class="list">{fuelbeds}</div>
             </div>
         """.format(fuelbeds=_convert_single_line(''.join(fuelbeds)))
-
-    return _build_description(body)
+    return ""
 
 
 def _build_description(body):
