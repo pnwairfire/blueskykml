@@ -60,12 +60,12 @@ def _build_projected_growth_section(fire_event):
             day_num_locations=fire_event.daily_num_locations[date],
             plural_s='s' if fire_event.daily_num_locations[date] > 1 else ''))
     if growth:
-        return """
+        return _convert_single_line("""
             <div class="section">
                 <div class="header">Projected Growth</div>
                 <div class="list">{growth}</div>
             </div>
-        """.format(growth=_convert_single_line(''.join(growth)))
+        """.format(growth=''.join(growth)))
     return ""
 
 def _build_fuelbeds(fire_event):
