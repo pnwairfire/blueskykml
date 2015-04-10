@@ -102,23 +102,29 @@ EMISSIONS_SPECIES = {
 are the keys in the emissions dict; the values are the 'pretty' names."""
 
 def _build_emissions(fire_event):
-    species = []
+    species = {}
     for key, name in EMISSIONS_SPECIES.items():
-        value = fire_event.emissions.get(key)
-        if value:
-            species.append("""
-                <div class="item">
-                    {name}: {value}
-                </div>
-            """.format(name=name, value=value))
+        for day in fire_event.daily_emissions:
+            value = fire_event.daily_emissions[day].get(key)
+            if value:
+                species[name] = species.get(name, 0.0) + value
 
     if species:
+        days = len(fire_event.daily_emissions)
+        template = """
+            <div class="item">
+                {name}: {value}
+            </div>
+        """
+        species_divs = [
+            template.format(name=n, value=v / days) for n,v in species.items()
+        ]
         return _convert_single_line("""
             <div class="section">
-                <div class="header">Emissions</div>
+                <div class="header">Daily Emissions</div>
                 <div class="list">{species}</div>
             </div>
-        """.format(species=''.join(species)))
+        """.format(species=''.join(species_divs)))
     return ""
 
 def _build_description(body):
