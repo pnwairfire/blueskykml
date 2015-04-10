@@ -220,6 +220,33 @@ class TestBuildFuelbeds(object):
         expected = ""
         assert expected == firedescriptions._build_emissions(self.fire_event)
 
+    def test_build_emissions_1_day_no_pm25_or_pm10(self):
+        self.fire_event.daily_emissions = {
+            datetime.datetime(2014, 5, 31, 0, 0): {
+                'co2': 295.05, 'co': 14.9, 'voc': 3.58, 'so2': 0.18,
+                'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77,
+            }
+        }
+        expected = ""
+        assert expected == firedescriptions._build_emissions(self.fire_event)
+
+    def test_build_emissions_1_day_no_pm25(self):
+        self.fire_event.daily_emissions = {
+            datetime.datetime(2014, 5, 31, 0, 0): {
+                'co2': 295.05, 'co': 14.9, 'voc': 3.58, 'so2': 0.18,
+                'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm25': 1.45
+            }
+        }
+        expected = (
+            '<div class="section">'
+                ' <div class="header">Daily Emissions</div>'
+                ' <div class="list">'
+                    ' <div class="item"> PM2.5: 1.45 </div>'
+                ' </div>'
+            ' </div>'
+        )
+        assert expected == firedescriptions._build_emissions(self.fire_event)
+
     def test_build_fuelbeds_1_day(self):
         self.fire_event.daily_emissions = {
             datetime.datetime(2014, 5, 31, 0, 0): {
