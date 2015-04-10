@@ -5,9 +5,6 @@ import mock
 
 from blueskykml import firedescriptions
 
-##
-## Tests for Fire
-##
 
 class TestBuildFuelbeds(object):
 
@@ -211,3 +208,54 @@ class TestBuildFuelbeds(object):
             ' </div>'
         )
         assert expected == firedescriptions._build_fuelbeds(self.fire_event)
+
+
+class TestBuildFuelbeds(object):
+
+    def setup(self):
+        self.fire_event = mock.Mock()
+
+    def test_build_emissions_empty(self):
+        self.fire_event.daily_emissions = {}
+        expected = ""
+        assert expected == firedescriptions._build_emissions(self.fire_event)
+
+    def test_build_fuelbeds_1_day(self):
+        self.fire_event.daily_emissions = {
+            datetime.datetime(2014, 5, 31, 0, 0): {
+                'co2': 295.05, 'co': 14.9, 'pm10': 1.71, 'voc': 3.58,
+                'so2': 0.18, 'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm25': 1.45
+            }
+        }
+        expected = (
+            '<div class="section">'
+                ' <div class="header">Daily Emissions</div>'
+                ' <div class="list">'
+                    ' <div class="item"> PM2.5: 1.45 </div>'
+                    ' <div class="item"> PM10: 1.71 </div>'
+                ' </div>'
+            ' </div>'
+        )
+        assert expected == firedescriptions._build_emissions(self.fire_event)
+
+    def test_build_fuelbeds_2_day(self):
+        self.fire_event.daily_emissions = {
+            datetime.datetime(2014, 5, 31, 0, 0): {
+                'co2': 295.05, 'co': 14.9, 'pm10': 1.71, 'voc': 3.58,
+                'so2': 0.18, 'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm25': 1.50
+            },
+            datetime.datetime(2014, 6, 2, 0, 0): {
+                'co2': 295.05, 'co': 14.9, 'pm10': 1.71, 'voc': 3.58,
+                'so2': 0.18, 'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm25': 1.70
+            }
+        }
+        expected = (
+            '<div class="section">'
+                ' <div class="header">Daily Emissions</div>'
+                ' <div class="list">'
+                    ' <div class="item"> PM2.5: 1.6 </div>'
+                    ' <div class="item"> PM10: 1.71 </div>'
+                ' </div>'
+            ' </div>'
+        )
+        assert expected == firedescriptions._build_emissions(self.fire_event)
