@@ -69,14 +69,18 @@ def _build_projected_growth_section(fire_event):
     return ""
 
 def _build_fuelbeds(fire_event):
-    # Use the final day's fuelbeds
-    # TODO: Is this ok to do?  Will the fuelbeds be the same acrossa all days
-    stats_by_fccs_num = sorted(
-        fire_event.daily_stats_by_fccs_num.items(), key=lambda e: e[0])[-1][1]
-    if len(stats_by_fccs_num) > 0:
+    fccs_stats = {}
+    for day, daily_stats in fire_event.daily_stats_by_fccs_num.items():
+        for fccs_num, fccs_dict in daily_stats.items():
+            fccs_stats[fccs_num] = fccs_stats.get(fccs_num,
+                {'total_area': 0.0, 'description': fccs_dict['description']})
+            fccs_stats[fccs_num]['total_area'] += fccs_dict['total_area']
+
+    if len(fccs_stats) > 0:
         fuelbeds = []
-        sorted_stats = sorted(stats_by_fccs_num.items(),
-            key=lambda e: -e[1]['total_area'])[:MAX_FCCS_ROWS]
+        sorted_stats = sorted(fccs_stats.items(), key=lambda e: -e[1]['total_area'])
+        sorted_stats = sorted_stats[:MAX_FCCS_ROWS]
+        days = len(fire_event.daily_stats_by_fccs_num)
         for fccs_num, fccs_dict in sorted_stats:
             fuelbeds.append(
                 '<div class="item">'
@@ -84,7 +88,7 @@ def _build_fuelbeds(fire_event):
                 '<span class="fccs-area">{area:,} acres</span> - '
                 '<span class="fccs-desc">{desc}</span>'
                 '</div>'.format(
-                area=int(fccs_dict['total_area']), fccs_num=fccs_num,
+                area=int(fccs_dict['total_area'] / days), fccs_num=fccs_num,
                 desc=fccs_dict['description']))
         return """
             <div class="section">
