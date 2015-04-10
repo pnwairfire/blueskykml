@@ -37,6 +37,7 @@ def build_fire_event_description(fire_event):
     """.format(fire_name=fire_event.name, fire_type=fire_event.fire_type)
     body += _build_projected_growth_section(fire_event)
     body += _build_fuelbeds(fire_event)
+    body += _build_emissions(fire_event)
     return _build_description(body)
 
 def _build_projected_growth_section(fire_event):
@@ -93,6 +94,32 @@ def _build_fuelbeds(fire_event):
         """.format(fuelbeds=_convert_single_line(''.join(fuelbeds)))
     return ""
 
+EMISSIONS_SPECIES = {
+    'pm25': 'PM2.5',
+    'pm10': 'PM10'
+}
+"""Emissions species to include in fire popups. The keys in EMISSIONS_SPECIES
+are the keys in the emissions dict; the values are the 'pretty' names."""
+
+def _build_emissions(fire_event):
+    species = []
+    for key, name in EMISSIONS_SPECIES.items():
+        value = fire_event.emissions.get(key)
+        if value:
+            species.append("""
+                <div class="item">
+                    {name}: {value}
+                </div>
+            """.format(name=name, value=value))
+
+    if species:
+        return _convert_single_line("""
+            <div class="section">
+                <div class="header">Emissions</div>
+                <div class="list">{species}</div>
+            </div>
+        """.format(species=''.join(species)))
+    return ""
 
 def _build_description(body):
     description = """<html lang="en">
