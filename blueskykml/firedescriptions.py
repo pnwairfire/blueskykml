@@ -90,12 +90,12 @@ def _build_fuelbeds(fire_event):
                 '</div>'.format(
                 area=int(fccs_dict['total_area'] / days), fccs_num=fccs_num,
                 desc=fccs_dict['description']))
-        return """
+        return _convert_single_line("""
             <div class="section">
                 <div class="header">FCCS Fuelbeds</div>
                 <div class="list">{fuelbeds}</div>
             </div>
-        """.format(fuelbeds=_convert_single_line(''.join(fuelbeds)))
+        """.format(fuelbeds=''.join(fuelbeds)))
     return ""
 
 EMISSIONS_SPECIES = {
@@ -183,4 +183,4 @@ def _convert_single_line(description):
     """Reduce description text to single line to help reduce kml file size."""
     description = description.replace('\n', '')  # Remove new line characters
     description = re.sub(' +', ' ', description)  # Reduce multiple spaces into a single space
-    return description
+    return description.strip()
