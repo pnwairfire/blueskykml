@@ -115,9 +115,11 @@ def _build_emissions(fire_event):
 
     if species:
         days = len(fire_event.daily_emissions)
+        # Note: for now, we're hardcoding 'tons', since that's the unit
+        # for all emissions listed in the popup.  This could change.
         template = """
             <div class="item">
-                {name}: {value}
+                {name}: {value} tons
             </div>
         """
         species_divs = [
