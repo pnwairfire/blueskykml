@@ -2,6 +2,7 @@
 
 import argparse
 import re
+import sys
 import traceback
 from collections import defaultdict
 
@@ -18,6 +19,7 @@ def errout(parser, msg):
     print msg
     print
     parser.print_help()
+    sys.exit(1)
 
 class ConfigOptionAction(argparse.Action):
 
@@ -29,7 +31,7 @@ class ConfigOptionAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         m = self.EXTRACTOR.match(values)
         if not m:
-            errout(parser, "*** Invalid argument '%s' for option '%s'", values, option_string)
+            errout(parser, "*** Invalid argument '{}' for option '{}'".format(values, option_string))
 
         section, option, val = m.groups()
 
