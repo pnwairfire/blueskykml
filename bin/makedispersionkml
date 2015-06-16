@@ -29,7 +29,7 @@ class ConfigOptionAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         m = self.EXTRACTOR.match(values)
         if not m:
-            errout(parser, "*** Invalid argument '%s' for option '%s'", values, option_stringr)
+            errout(parser, "*** Invalid argument '%s' for option '%s'", values, option_string)
 
         section, option, val = m.groups()
 
