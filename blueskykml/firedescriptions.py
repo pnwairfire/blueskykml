@@ -127,7 +127,7 @@ def _build_emissions(fire_event):
         ]
         return _convert_single_line("""
             <div class="section">
-                <div class="header">Daily Emissions</div>
+                <div class="header">Daily Emissions Modeled</div>
                 <div class="list">{species}</div>
             </div>
         """.format(species=''.join(species_divs)))
