@@ -2,10 +2,11 @@
 
 from setuptools import setup, find_packages
 
-with open('requirements.txt') as f:
-    REQUIREMENTS = f.read().splitlines()
-
 from blueskykml import __version__
+
+test_requirements = []
+with open('requirements-test.txt') as f:
+    test_requirements = [r for r in f.read().splitlines()]
 
 setup(
     name='blueskykml',
@@ -32,5 +33,11 @@ setup(
     ],
     url='https://github.com/pnwairfire/blueskykml/',
     description='Package for creating kmls from BlueSky smoke dispersion output.',
-    install_requires=REQUIREMENTS,
+    install_requires=[
+        "GDAL==1.11.2",
+        "numpy==1.9.2",
+        "Pillow==2.8.1",
+        "matplotlib==1.4.3"
+    ],
+    tests_require=test_requirements
 )

@@ -1,4 +1,1 @@
-gdal
-numpy
-pillow
-matplotlib
+-e .
