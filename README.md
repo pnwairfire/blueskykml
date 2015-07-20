@@ -58,7 +58,7 @@ Install pip, if it isn't yet installed:
 
 Then, to install, for example, v0.1.6, use the following:
 
-    sudo pip install git+https://github.com/pnwairfire/blueskykml@v0.1.6
+    sudo pip install --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple blueskykml==0.1.6
 
 If you get an error like    ```AttributeError: 'NoneType' object has no attribute 'skip_requirements_regex```, it means you need in upgrade pip.  One way to do so is with the following:
 
