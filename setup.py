@@ -14,7 +14,10 @@ setup(
     author_email='jdubowy@gmail.com', # STI's email addresses
     packages=find_packages(),
     package_data={
-        'blueskykml': ['assets/*.png']
+        'blueskykml': [
+            'assets/*.png',
+            'config/*.ini'
+        ]
     },
     scripts=[
         'bin/makedispersionkml'

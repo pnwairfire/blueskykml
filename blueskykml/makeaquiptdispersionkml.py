@@ -7,7 +7,7 @@ import smokedispersionkml
 def main(options):
     print "Starting Make AQUIPT Dispersion KML."
 
-    config = configuration.ConfigBuilder(options).config
+    config = configuration.ConfigBuilder(options, is_aquipt=True).config
 
     # Determine which mode to run OutputKML in
     if 'dispersion' in config.get('DEFAULT', 'MODES').split():

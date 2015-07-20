@@ -44,10 +44,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # Required:
-    parser.add_argument("-c", "--configfile", default=None, help="Configuration file")
-    parser.add_argument("-o", "--output-directory", default=None, help="Output directory.")
+    parser.add_argument("-o", "--output-directory", default=None, help="Output directory.", required=True)
 
     # Optional
+    parser.add_argument("-c", "--configfile", default=None, help="Configuration file")
     parser.add_argument("-p", "--prettykml", default=False, action="store_true", help="Outputs kml in a human readable format")
     parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Increases volume of output.")
     parser.add_argument("-a", "--aquipt", default=False, action="store_true", help="Run AQUIPT version.")

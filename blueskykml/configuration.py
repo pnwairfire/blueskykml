@@ -18,8 +18,9 @@ class ConfigBuilder(object):
                 overlaid with what was specified on the command line
     """
 
-    def __init__(self, options):
+    def __init__(self, options, is_aquipt=False):
         self._options = options
+        self._is_aquipt = is_aquipt
         self._build_config()
 
     def _log(self, msg):
@@ -48,10 +49,16 @@ class ConfigBuilder(object):
                     if not default_section.has_key(option) or default_section[option] != val:
                         self._log(" *   [%s] %s = %s" % (section, option.upper(), val))
 
+    DEFAULT_CONFIG = os.path.join(
+        os.path.dirname(__file__), 'config/default.ini')
+    DEFAULT_AQUIPT_CONFIG = os.path.join(
+        os.path.dirname(__file__), 'config/default-aquipt.ini')
+
     def _check_config_file(self):
         if not self._options.configfile:
-            raise ConfigurationError("Configuration file must be specified")
-        if not os.path.isfile(self._options.configfile):
+            self._options.configfile = (self.DEFAULT_AQUIPT_CONFIG
+                if self._is_aquipt else self.DEFAULT_CONFIG)
+        elif not os.path.isfile(self._options.configfile):
             raise ConfigurationError(
                 "Configuration file '%s' does not exist." % self._options.configfile)
 
