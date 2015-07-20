@@ -28,8 +28,8 @@ class ConfigBuilder(object):
             print msg
 
     def _build_config(self):
-        self._check_config_file()
-        self._read_configfile()
+        self._load_default_config_file()
+        self._load_custom_config_file()
         self._check_output_directory()
         self._set_defaults()
         self._apply_overrides()
@@ -54,13 +54,23 @@ class ConfigBuilder(object):
     DEFAULT_AQUIPT_CONFIG = os.path.join(
         os.path.dirname(__file__), 'config/default-aquipt.ini')
 
-    def _check_config_file(self):
-        if not self._options.configfile:
-            self._options.configfile = (self.DEFAULT_AQUIPT_CONFIG
-                if self._is_aquipt else self.DEFAULT_CONFIG)
-        elif not os.path.isfile(self._options.configfile):
-            raise ConfigurationError(
-                "Configuration file '%s' does not exist." % self._options.configfile)
+    def _load_default_config_file(self):
+        default_config_file = (self.DEFAULT_AQUIPT_CONFIG
+            if self._is_aquipt else self.DEFAULT_CONFIG)
+        self._log(" * Loading default config file %s" % (default_config_file))
+        self.config = ConfigParser.ConfigParser()
+        self.config.read(default_config_file)
+
+    def _load_custom_config_file(self):
+        if self._options.configfile:
+            if not os.path.isfile(self._options.configfile):
+                raise ConfigurationError(
+                    "Configuration file '%s' does not exist." % (
+                    self._options.configfile))
+
+            self._log(" * Loading custom config file %s" % (
+                self._options.configfile))
+            self.config.read(self._options.configfile)
 
     def _check_output_directory(self):
         output_dir = self._options.output_directory #.rstrip('/')
@@ -75,11 +85,6 @@ class ConfigBuilder(object):
         self._log(" * Using output directory %s" % (output_dir))
         self._add_config_option("DEFAULT", "MAIN_OUTPUT_DIR", output_dir, "output_directory")
         self._add_config_option("DEFAULT", "BSF_OUTPUT_DIR", output_dir, "output_directory") # For backwards compatibility
-
-    def _read_configfile(self):
-        self._log(" * Using config file %s" % (self._options.configfile))
-        self.config = ConfigParser.ConfigParser()
-        self.config.read(self._options.configfile)
 
     OVERRIDES = [
         {
