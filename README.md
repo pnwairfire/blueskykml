@@ -58,7 +58,7 @@ Install pip, if it isn't yet installed:
 
 Then, to install, for example, v0.2.1, use the following:
 
-    sudo pip install --no-binary :all: --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple blueskykml==0.2.1
+    sudo pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple blueskykml==0.2.1
 
 If you get an error like    ```AttributeError: 'NoneType' object has no
 attribute 'skip_requirements_regex```, it means you need in upgrade
