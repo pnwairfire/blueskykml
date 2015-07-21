@@ -69,9 +69,20 @@ If, when you run makedispersionkml, you get the following error:
     *** Error: No module named _gdal_array
 
 it's because your osgeo package (/path/to/site-packages/osgeo/) is
-missing _gdal_array.so.  You may need to install gdal manually, i.e. not
-using pip.  (If you happen to have it elsewhere, like on another
-machine, you might get things working simply by copying it over.)
+missing _gdal_array.so.  This happens when gdal is built on a
+machine that lacks numpy.  To fix this, uninstall the gdal package
+just installed, and then re-install with the --no-binary option to pip:
+
+    pip uninstall -y GDAL
+    pip install --no-binary :all: gdal==1.11.2
+
+If this doesn't work, uninstall gdal, and then install it manually:
+
+    pip uninstall -y GDAL
+    wget https://pypi.python.org/packages/source/G/GDAL/GDAL-1.11.2.tar.gz
+    tar xzf GDAL-1.11.2.tar.gz
+    cd GDAL-1.11.2
+    python setup.py install
 
 ### Installing With setup.py
 
