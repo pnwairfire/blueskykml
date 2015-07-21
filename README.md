@@ -39,7 +39,7 @@ or http:
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
-    pip install -r requirements.txt
+    pip install --no-binary gdal -r requirements.txt
 
 ### Setup Environment
 
