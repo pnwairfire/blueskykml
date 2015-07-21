@@ -34,8 +34,8 @@ setup(
     url='https://github.com/pnwairfire/blueskykml/',
     description='Package for creating kmls from BlueSky smoke dispersion output.',
     install_requires=[
-        "GDAL==1.11.2",
         "numpy==1.9.2",
+        "GDAL==1.11.2",
         "Pillow==2.8.1",
         "matplotlib==1.4.3"
     ],
