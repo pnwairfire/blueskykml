@@ -90,9 +90,9 @@ Install pip, if it isn't yet installed:
 
     sudo apt-get install python-pip
 
-Then, to install, for example, v0.2.1, use the following:
+Then, to install, for example, v0.2.2, use the following:
 
-    sudo pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple blueskykml==0.2.1
+    sudo pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple blueskykml==0.2.2
 
 See the Development > Install Dependencies > Notes section, above, for
 notes on resolving pip and gdal issues.
