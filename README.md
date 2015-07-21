@@ -34,37 +34,24 @@ or http:
 
     git clone https://github.com/pnwairfire/blueskykml.git
 
-### Install Dependencies@
+### Install Dependencies
 
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
     pip install --no-binary gdal -r requirements.txt
 
-### Setup Environment
+#### Notes
 
-To import blueskykml in development, you'll have to add the repo root
-directory to the search path.
-
-## Installing
-
-First install the non-python dependencies (mentioned above).
-
-### Installing With pip
-
-Install pip, if it isn't yet installed:
-
-    sudo apt-get install python-pip
-
-Then, to install, for example, v0.2.1, use the following:
-
-    sudo pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple blueskykml==0.2.1
+##### pip issues
 
 If you get an error like    ```AttributeError: 'NoneType' object has no
 attribute 'skip_requirements_regex```, it means you need in upgrade
 pip. One way to do so is with the following:
 
     pip install --upgrade pip
+
+##### gdal issues
 
 If, when you run makedispersionkml, you get the following error:
 
@@ -87,6 +74,28 @@ If this doesn't work, uninstall gdal, and then install it manually:
     tar xzf GDAL-1.11.2.tar.gz
     cd GDAL-1.11.2
     python setup.py install
+
+### Setup Environment
+
+To import blueskykml in development, you'll have to add the repo root
+directory to the search path.
+
+## Installing
+
+First install the non-python dependencies (mentioned above).
+
+### Installing With pip
+
+Install pip, if it isn't yet installed:
+
+    sudo apt-get install python-pip
+
+Then, to install, for example, v0.2.1, use the following:
+
+    sudo pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple blueskykml==0.2.1
+
+See the Development > Install Dependencies > Notes section, above, for
+notes on resolving pip and gdal issues.
 
 ### Installing With setup.py
 
