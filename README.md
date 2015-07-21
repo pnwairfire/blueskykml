@@ -58,9 +58,11 @@ Install pip, if it isn't yet installed:
 
 Then, to install, for example, v0.2.1, use the following:
 
-    sudo pip install --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple blueskykml==0.2.1
+    sudo pip install --no-binary :all: --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple blueskykml==0.2.1
 
-If you get an error like    ```AttributeError: 'NoneType' object has no attribute 'skip_requirements_regex```, it means you need in upgrade pip.  One way to do so is with the following:
+If you get an error like    ```AttributeError: 'NoneType' object has no
+attribute 'skip_requirements_regex```, it means you need in upgrade
+pip. One way to do so is with the following:
 
     pip install --upgrade pip
 
@@ -70,8 +72,10 @@ If, when you run makedispersionkml, you get the following error:
 
 it's because your osgeo package (/path/to/site-packages/osgeo/) is
 missing _gdal_array.so.  This happens when gdal is built on a
-machine that lacks numpy.  To fix this, uninstall the gdal package
-just installed, and then re-install with the --no-binary option to pip:
+machine that lacks numpy.  The ```--no-binary :all:``` in the pip
+install command, above, is meant to fix this issue.  If it doesn't work,
+try uninstalling the gdal package and then re-installing it individually
+with the ```--no-binary``` option to pip:
 
     pip uninstall -y GDAL
     pip install --no-binary :all: gdal==1.11.2
