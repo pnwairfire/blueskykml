@@ -7,18 +7,21 @@ import traceback
 from collections import defaultdict
 
 try:
-    from blueskykml import makedispersionkml, makeaquiptdispersionkml, configuration
+    from blueskykml import (
+        makedispersionkml, makeaquiptdispersionkml, configuration, __version__
+    )
 except:
     import os
     import sys
     root_dir = os.path.abspath(os.path.join(sys.path[0], '../'))
     sys.path.insert(0, root_dir)
-    from blueskykml import makedispersionkml, makeaquiptdispersionkml, configuration
+    from blueskykml import (
+        makedispersionkml, makeaquiptdispersionkml, configuration, __version__
+    )
 
-def errout(parser, msg):
+def errout(msg):
     print msg
-    print
-    parser.print_help()
+    print "*** Use the '-h' option to see information about usage and options."
     sys.exit(1)
 
 class ConfigOptionAction(argparse.Action):
@@ -31,7 +34,7 @@ class ConfigOptionAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         m = self.EXTRACTOR.match(values)
         if not m:
-            errout(parser, "*** Invalid argument '{}' for option '{}'".format(values, option_string))
+            errout("*** ERROR: Invalid argument '{}' for option '{}'".format(values, option_string))
 
         section, option, val = m.groups()
 
@@ -44,13 +47,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # Required:
-    parser.add_argument("-o", "--output-directory", default=None, help="Output directory.", required=True)
+    # Note: not setting required=True because then you have to
+    # specify -o even if you're just specifing --version
+    parser.add_argument("-o", "--output-directory", default=None, help="Output directory.")
 
     # Optional
     parser.add_argument("-c", "--configfile", default=None, help="Configuration file")
     parser.add_argument("-p", "--prettykml", default=False, action="store_true", help="Outputs kml in a human readable format")
     parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Increases volume of output.")
     parser.add_argument("-a", "--aquipt", default=False, action="store_true", help="Run AQUIPT version.")
+    parser.add_argument("--version", default=False, action="store_true", help="Output blueskykml version and exit.")
 
     # Optional config overrides
     parser.add_argument("-O", "--config-option", dest='config_options', action=ConfigOptionAction,
@@ -75,6 +81,13 @@ if __name__ == '__main__':
         help="Fire KMZ file pathnam. Alias for -O DispersionGridInput.LAYER=<layer>")
     args = parser.parse_args()
 
+    if args.version:
+        sys.stdout.write("makedispersionkml (blueskykml) version {}\n".format(__version__))
+        sys.exit(0)
+
+    if not args.output_directory:
+        errout("*** ERROR: missing required arg '-o'/'--output-directory'")
+
     try:
         # TODO: clean up any outputs created?  Should this be toggleable via command line option?
         if args.aquipt:
@@ -82,7 +95,7 @@ if __name__ == '__main__':
         else:
             makedispersionkml.main(args)
     except configuration.ConfigurationError, e:
-        errout(parser, "*** Configuration error: %s" % (e.message))
+        errout("*** CONFIGURATION ERROR: %s" % (e.message))
     except Exception, e:
         print traceback.format_exc()
-        errout(parser, "*** Error: %s" % (e.message))
+        errout("*** ERROR: %s" % (e.message))
