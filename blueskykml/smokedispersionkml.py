@@ -282,7 +282,7 @@ class KmzCreator(object):
 
         if self._do_create_polygons:
             self.create(self._config.get('PolygonsKML', "KMZ_FILE"), 'doc_polygons.kml',
-                'BSF_Polygons', False, False, False, True)
+                'BSF_Polygons', True, False, False, True)
 
 
     ##
