@@ -101,7 +101,17 @@ notes on resolving pip and gdal issues.
 
 To install blueskykml from the source repo, you can use the following:
 
+    git clone https://github.com/pnwairfire/blueskykml.git
+    cd blueskykml
+    rm .python-version
     python ./setup.py install
+
+If blueskykml's python dependencies conflict with versions already
+installed on your machine, then remove the 'install_requires'
+kwarg from the setup call in setup.py, and then rerun ```python ./setup.py
+install```.  Of course, there's no guarantee that blueskykml will work
+with the older versions, but it very well might.  Also, you need to
+make sure that each dependency, whatever the version, is installed.
 
 ## Using
 
