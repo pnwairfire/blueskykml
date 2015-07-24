@@ -5,10 +5,14 @@ Framework.
 
 ## Non-python Dependencies
 
-Whether cloning the repo or installing with pip, you'll first need to
-manually install netcdf and gdal libraries, which blueskykml depends on.
+Whether cloning the repo or installing with pip, you'll first need to manually
+install netcdf and gdal libraries, which blueskykml depends on. These
+instructions assume you already have python and pip installed, as well as
+C and C++ compilers, etc.
 
-On a mac, you can do so with [Homebrew](http://brew.sh/):
+### Mac
+
+On a mac, using [Homebrew](http://brew.sh/):
 
     brew install homebrew/science/netcdf
     brew install gdal --with-netcdf --enable-unsupported
@@ -16,11 +20,35 @@ On a mac, you can do so with [Homebrew](http://brew.sh/):
 Note that the '--with-netcdf' option is required to build gdal with the
 netCDF driver. See http://trac.osgeo.org/gdal/wiki/NetCDF for more information.
 
-On ubuntu, the following should be sufficient:
+### Ubuntu
 
-    sudo apt-get install libnetcdf-dev
-    sudo apt-get install python-gdal
-    sudo apt-get install libgdal1-1.7.0
+First update
+
+    sudo apt-get update
+    sudo apt-get upgrade
+
+If you don't have python and pip installed:
+
+    sudo apt-get install -y python
+    sudo apt-get install -y python-dev
+    sudo apt-get install -y python-pip
+    sudo pip install --upgrade pip
+
+Install libnetcdf
+
+    sudo apt-get install -y libnetcdf-dev
+
+On ubuntu, you need to install numpy and gdal manually.
+
+    sudo pip install numpy==1.8.0
+    wget http://download.osgeo.org/gdal/1.11.2/gdal-1.11.2.tar.gz
+    tar xvfz gdal-1.11.2.tar.gz
+    cd gdal-1.11.2
+    ./configure --with-python --prefix=/usr
+    make
+    sudo make install
+    sudo ldconfig
+    sudo apt-get install -y python-gdal
 
 ## Development
 
@@ -36,10 +64,18 @@ or http:
 
 ### Install Dependencies
 
+#### Main dependencies
+
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
     pip install --no-binary gdal -r requirements.txt
+
+#### Dev and test dependencies
+
+Run the following to install packages required for testing:
+
+    pip install -r requirements-test.txt
 
 #### Notes
 
@@ -79,6 +115,19 @@ If this doesn't work, uninstall gdal, and then install it manually:
 
 To import blueskykml in development, you'll have to add the repo root
 directory to the search path.
+
+## Running tests
+
+Use pytest:
+
+    py.test
+    py.test test/fccsmap/
+
+You can also use the ```--collect-only``` option to see a list of all tests.
+
+    py.test --collect-only
+
+See [pytest](http://pytest.org/latest/getting-started.html#getstarted) for more information about
 
 ## Installing
 
