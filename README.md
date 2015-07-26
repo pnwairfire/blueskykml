@@ -164,7 +164,7 @@ install```.  Of course, there's no guarantee that blueskykml will work
 with the older versions, but it very well might.  Also, you need to
 make sure that each dependency, whatever the version, is installed.
 
-#### Installing specify version
+#### Installing specific version
 
 To install a specific version, git checkout the appropriate tag after
 cloning the repo.  e.g. To install v0.2.4, use ```git checkout v0.2.4```.
