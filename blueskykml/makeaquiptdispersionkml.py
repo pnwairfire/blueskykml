@@ -1,3 +1,5 @@
+import logging
+
 import configuration
 import dispersiongrid
 import dispersion_file_utils as dfu
@@ -5,7 +7,12 @@ import dispersionimages
 import smokedispersionkml
 
 def main(options):
-    print "Starting Make AQUIPT Dispersion KML."
+    if options.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    # Note:  The log messages in this module are intended to be info level. The
+    # verbose setting affects log messages in other modules in this package.
+
+    logging.info("Starting Make AQUIPT Dispersion KML.")
 
     config = configuration.ConfigBuilder(options, is_aquipt=True).config
 
@@ -15,12 +22,11 @@ def main(options):
         dfu.create_dispersion_images_dir(config)
 
         # Generate smoke dispersion images
-        print "Processing smoke dispersion NetCDF data into plot images..."
-        grid_bbox = dispersiongrid.create_aquiptpost_images(config,
-            verbose=options.verbose)
+        logging.info("Processing smoke dispersion NetCDF data into plot images...")
+        grid_bbox = dispersiongrid.create_aquiptpost_images(config)
 
         # Post process smoke dispersion images
-        print "Formatting dispersion plot images..."
+        logging.info("Formatting dispersion plot images...")
         dispersionimages.format_dispersion_images(config, verbose=options.verbose)
     else:
         grid_bbox = None
@@ -29,4 +35,4 @@ def main(options):
     smokedispersionkml.AquiptKmzCreator(config, grid_bbox,
         pretty_kml=options.prettykml, verbose=options.verbose).create_all()
 
-    print "Make AQUIPT Dispersion KML finished."
+    logging.info("Make AQUIPT Dispersion KML finished.")

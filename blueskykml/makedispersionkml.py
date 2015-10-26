@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import logging
 
 import configuration
 import dispersiongrid
@@ -9,7 +10,12 @@ import smokedispersionkml
 
 
 def main(options):
-    print "Starting Make Dispersion KML."
+    if options.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    # Note:  The log messages in this module are intended to be info level. The
+    # verbose setting affects log messages in other modules in this package.
+
+    logging.info("Starting Make Dispersion KML.")
 
     config = configuration.ConfigBuilder(options).config
 
@@ -19,16 +25,16 @@ def main(options):
         dfu.create_dispersion_images_dir(config)
 
         # Generate smoke dispersion images
-        print "Processing smoke dispersion NetCDF data into plot images..."
+        logging.info("Processing smoke dispersion NetCDF data into plot images...")
         start_datetime, grid_bbox = dispersiongrid.create_dispersion_images(
-            config, verbose=options.verbose)
+            config)
 
         # Output dispersion grid bounds
         _output_grid_bbox(grid_bbox, config)
 
         # Post process smoke dispersion images
-        print "Formatting dispersion plot images..."
-        dispersionimages.format_dispersion_images(config, verbose=options.verbose)
+        logging.info("Formatting dispersion plot images...")
+        dispersionimages.format_dispersion_images(config)
     else:
         start_datetime = config.get("DEFAULT", "DATE") if config.has_option("DEFAULT", "DATE") else datetime.now()
         grid_bbox = None
@@ -40,12 +46,12 @@ def main(options):
     if config.getboolean('DispersionImages', 'REPROJECT_IMAGES'):
         dispersionimages.reproject_images(config, grid_bbox)
 
-    print "Make Dispersion finished."
+    logging.info("Make Dispersion finished.")
 
 def _output_grid_bbox(grid_bbox, config):
     grid_info_file = config.get('DispersionGridOutput', "GRID_INFO_JSON")
     if grid_info_file is not None:
-        print "Outputting grid bounds to %s." % grid_info_file
+        logging.info("Outputting grid bounds to %s." % grid_info_file)
         grid_info_dict = {'bbox': grid_bbox}
         grid_info_json = json.dumps(grid_info_dict)
         with open(grid_info_file, 'w') as fout:

@@ -1,4 +1,4 @@
-
+import logging
 from PIL import Image
 # from PIL import ImageColor # TODO: Can this replace SimpleColor?
 from copy import deepcopy
@@ -48,10 +48,7 @@ class SimpleColor(object):
         return self.r, self.g, self.b, self.a
 
 
-def format_dispersion_images(config, legend_name="colorbar", verbose=False):
-    global _verbose
-    _verbose = verbose
-
+def format_dispersion_images(config, legend_name="colorbar"):
     # [DispersionImages] configurations
     section = 'DispersionImages'
     image_opacity_factor = config.getfloat(section, "IMAGE_OPACITY_FACTOR")
@@ -79,9 +76,8 @@ def format_dispersion_images(config, legend_name="colorbar", verbose=False):
             i = 0
             for image_name in color_set_dict['smoke_images']:
                 i += 1
-                if _verbose:
-                    print "Applying transparency %s to plot %i of %s %s" % (
-                        iof, i, TIME_SERIES_PRETTY_NAMES[time_series_type], color_map_section)
+                logging.debug("Applying transparency %s to plot %i of %s %s" % (
+                    iof, i, TIME_SERIES_PRETTY_NAMES[time_series_type], color_map_section))
                 image_path = os.path.join(color_set_dict['root_dir'], image_name)
                 image = Image.open(image_path)
                 image = _apply_transparency(image, deepcopy(background_color), iof)
@@ -156,15 +152,15 @@ def reproject_images(config, grid_bbox):
                 gdal_translate_cmd2 = 'gdal_translate -of PNG %s %s' % (tiff_path2, image_path)
 
                 # Gdal translate PNG image to TIF
-                print "Executing: %s" % gdal_translate_cmd1
+                logging.info("Executing: %s" % gdal_translate_cmd1)
                 os.system(gdal_translate_cmd1)
 
                 # Gdal warp TIF to new projection
-                print "Executing: %s" % gdal_warp_cmd
+                logging.info("Executing: %s" % gdal_warp_cmd)
                 os.system(gdal_warp_cmd)
 
                 # Gdal translate new TIF back to PNG
-                print "Executing: %s" % gdal_translate_cmd2
+                logging.info("Executing: %s" % gdal_translate_cmd2)
                 os.system(gdal_translate_cmd2)
 
                 # Clean up intermediate files

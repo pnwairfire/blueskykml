@@ -170,12 +170,8 @@ class FireEventInfo(FireData):
 class KmzCreator(object):
 
     def __init__(self, config, grid_bbox, start_datetime=None,
-            legend_name="colorbar.png", pretty_kml=False, verbose=False):
+            legend_name="colorbar.png", pretty_kml=False):
         self._config = config
-
-        # Is this necessary?
-        global _verbose
-        _verbose = verbose
 
         self._start_datetime = start_datetime
         self._pretty_kml = pretty_kml

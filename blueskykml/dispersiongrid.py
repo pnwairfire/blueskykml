@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 import os
 import gdal
+import logging
 import numpy as np
 
 import matplotlib as mpl
@@ -270,10 +271,7 @@ class BSDispersionPlot:
         cb.set_label(cb_label, size=12)
         plt.savefig(fileroot+'.'+self.export_format, dpi=self.dpi/3)
 
-def create_dispersion_images(config, verbose=False):
-    global _verbose
-    _verbose = verbose
-
+def create_dispersion_images(config):
     # [DispersionGridInput] configurations
     section = 'DispersionGridInput'
     infile = config.get(section, "FILENAME")
@@ -346,7 +344,7 @@ def create_hourly_dispersion_images(config, grid, section, layer):
         # Shift filename date stamps
         fileroot = dfu.image_pathname(config, dfu.TimeSeriesTypes.HOURLY, section, grid.datetimes[i]-timedelta(hours=1))
 
-        if _verbose: print "Creating hourly (%s) concentration plot %d of %d " % (section, i+1, grid.num_times)
+        logging.debug("Creating hourly (%s) concentration plot %d of %d " % (section, i+1, grid.num_times))
 
         # Create a filled contour plot
         plot.make_contour_plot(grid.data[i,layer,:,:], fileroot)
@@ -374,7 +372,7 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
         # hour of three hour series and we want timestamp to reflect middle hour
         fileroot = dfu.image_pathname(config, dfu.TimeSeriesTypes.THREE_HOUR, section, grid.datetimes[i]-timedelta(hours=1))
 
-        if _verbose: print "Creating three hour (%s) concentration plot %d of %d " % (section, i+1, grid.num_times)
+        logging.debug("Creating three hour (%s) concentration plot %d of %d " % (section, i+1, grid.num_times))
 
         # Create a filled contour plot
         plot.make_contour_plot(np.average(grid.data[i-1:i+2,layer,:,:], 0), fileroot)
@@ -394,7 +392,7 @@ def create_daily_maximum_dispersion_images(config, grid, section, layer):
     hours_offset = 0
     grid.calc_aggregate_data(offset=hours_offset)
     for i in xrange(grid.num_days):
-        if _verbose: print "Creating daily maximum concentration plot %d of %d " % (i + 1, grid.num_days)
+        logging.debug("Creating daily maximum concentration plot %d of %d " % (i + 1, grid.num_days))
         fileroot = dfu.image_pathname(config, dfu.TimeSeriesTypes.DAILY_MAXIMUM, section, grid.datetimes[i*24])
         plot.make_contour_plot(grid.max_data[i,layer,:,:], fileroot)
 
@@ -408,7 +406,7 @@ def create_daily_average_dispersion_images(config, grid, section, layer):
     hours_offset = 0
     grid.calc_aggregate_data(offset=hours_offset)
     for i in xrange(grid.num_days):
-        if _verbose: print "Creating daily average concentration plot %d of %d " % (i + 1, grid.num_days)
+        logging.debug("Creating daily average concentration plot %d of %d " % (i + 1, grid.num_days))
         fileroot = dfu.image_pathname(config, dfu.TimeSeriesTypes.DAILY_AVERAGE, section, grid.datetimes[i*24])
         plot.make_contour_plot(grid.avg_data[i,layer,:,:], fileroot)
 
@@ -418,10 +416,7 @@ def create_daily_average_dispersion_images(config, grid, section, layer):
     # plot will be used for its already computed min/max lat/lon
     return plot
 
-def create_aquiptpost_images(config, verbose=False):
-    global _verbose
-    _verbose = verbose
-
+def create_aquiptpost_images(config):
     # [DispersionGridInput] configurations
     section = 'DispersionGridInput'
     infile = config.get(section, "FILENAME")
@@ -437,7 +432,7 @@ def create_aquiptpost_images(config, verbose=False):
             grid = BSDispersionGrid(infile, param=parameter)  # dispersion grid instance
             plot = create_color_plot(config, grid, section, parameter=parameter)
 
-            if _verbose: print "Creating aggregate plot for %s " % (parameter)
+            logging.debug("Creating aggregate plot for %s " % (parameter))
             for i in xrange(grid.num_times):
                 fileroot = os.path.join(outdir, parameter)
                 plot.make_contour_plot(grid.data[i,layer,:,:], fileroot)

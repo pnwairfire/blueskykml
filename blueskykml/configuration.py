@@ -1,4 +1,5 @@
 import ConfigParser
+import logging
 import os
 
 __all__ = [
@@ -24,8 +25,7 @@ class ConfigBuilder(object):
         self._build_config()
 
     def _log(self, msg):
-        if self._options.verbose:
-            print msg
+        logging.debug(msg)
 
     def _build_config(self):
         self._load_default_config_file()
@@ -37,17 +37,16 @@ class ConfigBuilder(object):
         self._final_check()
 
     def _dump_configuration(self):
-        if self._options.verbose:
-            self._log(" * Final Config Settings:")
-            default_section = self.config.defaults()
-            for option, val in default_section.items():
-                self._log(" *   [DEFAULT] %s = %s" % (option.upper(), val))
+        self._log(" * Final Config Settings:")
+        default_section = self.config.defaults()
+        for option, val in default_section.items():
+            self._log(" *   [DEFAULT] %s = %s" % (option.upper(), val))
 
-            for section in self.config.sections():
-                for option in self.config.options(section):
-                    val = self.config.get(section, option)
-                    if not default_section.has_key(option) or default_section[option] != val:
-                        self._log(" *   [%s] %s = %s" % (section, option.upper(), val))
+        for section in self.config.sections():
+            for option in self.config.options(section):
+                val = self.config.get(section, option)
+                if not default_section.has_key(option) or default_section[option] != val:
+                    self._log(" *   [%s] %s = %s" % (section, option.upper(), val))
 
     DEFAULT_CONFIG = os.path.join(
         os.path.dirname(__file__), 'config/default.ini')
