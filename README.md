@@ -188,16 +188,18 @@ This will create a tarball in ```REPO_ROOT/dist/```
 
 ## Docker
 
-### Installing Docker
+Two Dockerfiles are included in this repo - one for running blueskykml
+out of the box, and the other for use as a base environment for
+development.
+
+### Install Docker
 
 See https://docs.docker.com/engine/installation/ for platform specific
 installation instructions.
 
-### Building Docker Image
+### Start Docker
 
 #### Mac OSX
-
-##### Starting Docker deamon
 
 On a Mac, the docker daemon runs inside a Linux VM. The first time
 you use docker, you'll need to create a vm:
@@ -217,20 +219,50 @@ Set env vars so that your docker knows how to find the docker host:
 ...TODO: fill in insructions...
 
 
-### Build Bluesky Docker Image from Docfile
+### Build Bluesky Docker Image from Dockerfile
 
-Cd into the blueskykml repo's docker/ subdirectory and build the image:
+    cd /path/to/blueskykml/repo/
+    docker build -t blueskykml-base docker/base/
+    docker build -t blueskykml docker/complete/
 
-    cd /path/to/blueskykml/repo/docker/
-    docker build -t blueskykml .
-
-### Run in Docker
+### Run Complete Container
 
 If you run the image without a command, i.e.:
 
     docker run blueskykml
 
-it will output the blueskykml help image.  To blueskykml with input, use
-something like the following:
+it will output the makedispersionkml help image.  To run makedispersionkml
+with input, you'll need to use the '-v' option to mount host machine
+directories in your container.  For example, suppose you've got bluesky
+output data in /bluesky-output/20151212f/data/ and you want to create
+the dispersion kml in /docker-output/, you could run something like the
+following:
 
-    docker run blueskykml ...TODO: FILL IN COMMAND...
+    docker run \
+        -v /bluesky-output/20151212f/data/:/input/ \
+        -v /docker-output/:/output/ blueskykml \
+        makedispersionkml \
+        -i /input/smoke_dispersion.nc \
+        -l /input/fire_locations.csv \
+        -e /input/fire_events.csv \
+        -o /output/
+
+### Using base image for development
+
+The blueskykml-base image has everything except the blueskykml
+package and it's python dependencies.  You can use it to run blueskykml
+from your local repo. First install the python dependencies for your
+current version of the repo
+
+    docker run --name blueskykml-base \
+        -v /path/to/blueskykml/repo/:/blueskykml/ -w /blueskykml/ \
+        blueskykml-base pip install --no-binary gdal \
+        --trusted-host pypi.smoke.airfire.org -r requirements.txt
+
+then commit container changes back to image
+
+    docker commit blueskykml-base blueskykml-base
+
+Then run makedispersionkml:
+
+    docker run -v /path/to/blueskykml/repo:/blueskykml/ -w /blueskykml/ blueskykml-base ./bin/makedispersionkml -h
