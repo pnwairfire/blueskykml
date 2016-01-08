@@ -185,3 +185,52 @@ To build a distribution tarball, use the following.
     python ./setup.py sdist
 
 This will create a tarball in ```REPO_ROOT/dist/```
+
+## Docker
+
+### Installing Docker
+
+See https://docs.docker.com/engine/installation/ for platform specific
+installation instructions.
+
+### Building Docker Image
+
+#### Mac OSX
+
+##### Starting Docker deamon
+
+On a Mac, the docker daemon runs inside a Linux VM. The first time
+you use docker, you'll need to create a vm:
+
+    docker-machine create --driver virtualbox default
+
+Check that it was created:
+
+    docker-machine ls
+
+Set env vars so that your docker knows how to find the docker host:
+
+    eval "$(docker-machine env default)"
+
+#### Ubuntu
+
+...TODO: fill in insructions...
+
+
+### Build Bluesky Docker Image from Docfile
+
+Cd into the blueskykml repo's docker/ subdirectory and build the image:
+
+    cd /path/to/blueskykml/repo/docker/
+    docker build -t blueskykml .
+
+### Run in Docker
+
+If you run the image without a command, i.e.:
+
+    docker run blueskykml
+
+it will output the blueskykml help image.  To blueskykml with input, use
+something like the following:
+
+    docker run blueskykml ...TODO: FILL IN COMMAND...
