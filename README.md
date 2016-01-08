@@ -3,7 +3,7 @@
 This package was build using code extracted from the kml3 module in BlueSky
 Framework.
 
-## Non-python Dependencies
+## Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to manually
 install netcdf and gdal libraries, which blueskykml depends on. These
@@ -20,35 +20,37 @@ On a mac, using [Homebrew](http://brew.sh/):
 Note that the '--with-netcdf' option is required to build gdal with the
 netCDF driver. See http://trac.osgeo.org/gdal/wiki/NetCDF for more information.
 
-### Ubuntu
+Additionally, you'll need the gdal python bindings.  These used to be
+baked into setup.py, but the version available for install depends
+on your platform.
+
+    gdal-config --version
+    pip install gdal==`gdal-config --version`
+
+### Ubuntu, 12.04 LTS (precise)
 
 First update
 
     sudo apt-get update
-    sudo apt-get upgrade
 
 If you don't have python and pip installed:
 
-    sudo apt-get install -y python
-    sudo apt-get install -y python-dev
-    sudo apt-get install -y python-pip
+    sudo apt-get install -y python python-dev python-pip
     sudo pip install --upgrade pip
 
 Install libnetcdf
 
     sudo apt-get install -y libnetcdf-dev
 
-On ubuntu, you need to install numpy and gdal manually.
+Install numpy and gdal.
 
     sudo pip install numpy==1.8.0
-    wget http://download.osgeo.org/gdal/1.11.2/gdal-1.11.2.tar.gz
-    tar xvfz gdal-1.11.2.tar.gz
-    cd gdal-1.11.2
-    ./configure --with-python --prefix=/usr
-    make
-    sudo make install
-    sudo ldconfig
-    sudo apt-get install -y python-gdal
+    sudo apt-get install -y libgdal1-1.7.0
+    sudo pip install gdal==1.7.0
+
+Install xml libs:
+
+    sudo apt-get install -y libxml2-dev libxslt1-dev
 
 ## Development
 
@@ -62,7 +64,7 @@ or http:
 
     git clone https://github.com/pnwairfire/blueskykml.git
 
-### Install Dependencies
+### Install Python Dependencies
 
 #### Main dependencies
 
@@ -101,14 +103,14 @@ try uninstalling the gdal package and then re-installing it individually
 with the ```--no-binary``` option to pip:
 
     pip uninstall -y GDAL
-    pip install --no-binary :all: gdal==1.11.2
+    pip install --no-binary :all: gdal==<VERSION>
 
 If this doesn't work, uninstall gdal, and then install it manually:
 
     pip uninstall -y GDAL
-    wget https://pypi.python.org/packages/source/G/GDAL/GDAL-1.11.2.tar.gz
-    tar xzf GDAL-1.11.2.tar.gz
-    cd GDAL-1.11.2
+    wget https://pypi.python.org/packages/source/G/GDAL/GDAL-<VERSION>.tar.gz
+    tar xzf GDAL-<VERSION>.tar.gz
+    cd GDAL-<VERSION>
     python setup.py install
 
 ### Setup Environment
@@ -121,7 +123,7 @@ directory to the search path.
 Use pytest:
 
     py.test
-    py.test test/fccsmap/
+    py.test test/blueskykml/
 
 You can also use the ```--collect-only``` option to see a list of all tests.
 

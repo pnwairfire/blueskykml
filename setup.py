@@ -35,7 +35,8 @@ setup(
     description='Package for creating kmls from BlueSky smoke dispersion output.',
     install_requires=[
         "numpy==1.8.0",
-        "GDAL==1.11.2",
+        # Note: gdal must now be installed manually beforehand
+        #"GDAL==1.11.2",
         "Pillow==2.8.1",
         "matplotlib==1.4.3"
     ],
