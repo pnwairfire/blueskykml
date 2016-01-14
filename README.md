@@ -239,8 +239,8 @@ the dispersion kml in /docker-output/, you could run something like the
 following:
 
     docker run \
-        -v /bluesky-output/20151212f/data/:/input/ \
-        -v /docker-output/:/output/ blueskykml \
+        -v /home/foo/bluesky-output/2015121200/data/:/input/ \
+        -v /home/foo/docker-output/:/output/ blueskykml \
         makedispersionkml \
         -i /input/smoke_dispersion.nc \
         -l /input/fire_locations.csv \
@@ -255,7 +255,7 @@ from your local repo. First install the python dependencies for your
 current version of the repo
 
     docker run --name blueskykml-base \
-        -v /path/to/blueskykml/repo/:/blueskykml/ -w /blueskykml/ \
+        -v /home/foo/path/to/blueskykml/repo/:/blueskykml/ -w /blueskykml/ \
         blueskykml-base pip install --no-binary gdal \
         --trusted-host pypi.smoke.airfire.org -r requirements.txt
 
@@ -265,4 +265,13 @@ then commit container changes back to image
 
 Then run makedispersionkml:
 
-    docker run -v /path/to/blueskykml/repo:/blueskykml/ -w /blueskykml/ blueskykml-base ./bin/makedispersionkml -h
+    docker run -v /home/foo/path/to/blueskykml/repo:/blueskykml/ -w /blueskykml/ blueskykml-base ./bin/makedispersionkml -h
+
+### Notes about using Docker
+
+ - *Mounted volumes*: mounting directories outside of your home
+directory seems to result in the directories appearing empty in the
+docker container. Whether this is by design or not, you apparently need to
+mount directories under your home directory.  Sym links don't mount either, so
+you have to cp or mv directories under your home dir in order to mount them.
+ -
