@@ -44,7 +44,14 @@ class ConfigBuilder(object):
 
         for section in self.config.sections():
             for option in self.config.options(section):
-                val = self.config.get(section, option)
+                val = None
+                for m in ('get', 'getboolean', 'getfloat', 'getint'):
+                    try:
+                        val = getattr(self.config, m)(section, option)
+                        break
+                    except:
+                        pass
+
                 if not default_section.has_key(option) or default_section[option] != val:
                     self._log(" *   [%s] %s = %s" % (section, option.upper(), val))
 
