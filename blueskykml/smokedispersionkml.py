@@ -459,16 +459,21 @@ class KmzCreator(object):
         for time_series_type in TimeSeriesTypes.ALL:
             images_dict = self._dispersion_images[time_series_type]
             if images_dict:
+                visible = TimeSeriesTypes.DAILY_MAXIMUM == time_series_type
                 pretty_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
 
                 if images_dict['legend']:
                     # TODO:  put legends in concentration folders?
-                    overlay = self._create_screen_overlay('%s Key' % (pretty_name), images_dict['legend'])
+                    overlay = self._create_screen_overlay(
+                        '%s Key' % (pretty_name), images_dict['legend'],
+                        visible=visible)
                     kml_root = kml_root.with_feature(overlay)
 
                 if images_dict['smoke_images']:
                     name = '%s %s' % (pretty_name, self._concentration_param.upper())
-                    data = self._create_concentration_folder(name, images_dict['smoke_images'], grid_bbox)
+                    data = self._create_concentration_folder(name,
+                        images_dict['smoke_images'], grid_bbox,
+                        visible=visible)
                     kml_root = kml_root.with_feature(data)
 
         return kml_root
