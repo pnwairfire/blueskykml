@@ -4,6 +4,8 @@ import os
 import gdal
 import logging
 import numpy as np
+import re
+import subprocess
 
 import matplotlib as mpl
 mpl.use('Agg')
@@ -14,6 +16,33 @@ import dispersion_file_utils as dfu
 from constants import TimeSeriesTypes, CONFIG_COLOR_LABELS
 
 class BSDispersionGrid:
+
+    GDAL_VERSION_MATCHER = re.compile('GDAL (\d+)\.(\d+)\.\d+, released \d+/\d+/\d+')
+    def get_geotransform(self):
+        flip_images = False
+
+        try:
+            gdal_info = subprocess.check_output(["gdalinfo","--version"])
+            matches = self.GDAL_VERSION_MATCHER.match(gdal_info)
+            major = int(matches.group(1))
+            minor = int(matches.group(2))
+            if (major > 1) or (major == 1 and minor >= 9):
+                flip_images = True
+        except OSError:
+            # TODO: rather than just default to flip_images = False, read value from config
+            pass
+
+        x0 = float(self.metadata["NC_GLOBAL#XORIG"])
+        y0 = float(self.metadata["NC_GLOBAL#YORIG"])
+        dx = float(self.metadata["NC_GLOBAL#XCELL"])
+        dy = float(self.metadata["NC_GLOBAL#YCELL"])
+        #nx = int(self.metadata["NC_GLOBAL#NCOLS"])
+        ny = int(self.metadata["NC_GLOBAL#NROWS"])
+
+        if flip_images:
+            return (x0, dx, 0.0, y0+float(ny)*dy, 0.0, -dy)
+        else:
+            return (x0, dx, 0.0, y0, 0.0, dy)
 
     def __init__(self, filename, param=None, time=None):
         if param:
@@ -27,13 +56,8 @@ class BSDispersionGrid:
             raise Exception("[ERROR] Not dealing with a BlueSky Models3-style netCDF dispersion file.")
 
         # Get georeference info
-        self.geotransform = (
-                float(self.metadata["NC_GLOBAL#XORIG"]),
-                float(self.metadata["NC_GLOBAL#XCELL"]),
-                0.0,
-                float(self.metadata["NC_GLOBAL#YORIG"]),
-                0.0,
-                float(self.metadata["NC_GLOBAL#YCELL"]))
+        self.geotransform = self.get_geotransform()
+        logging.debug("Using geo transform: %s", self.geotransform)
 
         if not self.metadata["NC_GLOBAL#GDTYP"] == '1':  # lat/lon grid
             raise ValueError("Unrecognized grid type for BlueSky Dispersion netCDF data")
