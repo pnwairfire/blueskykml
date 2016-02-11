@@ -248,6 +248,11 @@ class KmzCreator(object):
 
         kml.add_element(root_doc)
 
+        # TODO: move bluesky.osutils to pyairfire (or just copy
+        #   bluesky.osutils.create_working_dir to this package/module) and use
+        #   create_working_dir here (or maybe only use it if configured to
+        #   throw away intermediate files, other than the kml, which is
+        #   already removed once used)
         self._create_kml_file(kml, kml_name)
 
         kmz_assets = [kml_name]
