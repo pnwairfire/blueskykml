@@ -246,6 +246,8 @@ class BSDispersionPlot:
                        cmap=self.colormap,
                        norm=self.norm)
         plt.savefig(fileroot+'.'+self.export_format, bbox_inches='tight', pad_inches=0., dpi=self.dpi, transparent=True)
+        # explicitly close plot - o/w pyplot keeps it open until end of program
+        plt.close()
 
     def make_contour_plot(self, raster_data, fileroot, filled=True, lines=False):
         """Create a contour plot."""
@@ -277,6 +279,8 @@ class BSDispersionPlot:
                              norm=self.norm)
 
         plt.savefig(fileroot+'.'+self.export_format, dpi=self.dpi, transparent=True)
+        # explicitly close plot - o/w pyplot keeps it open until end of program
+        plt.close()
 
     def make_colorbar(self, fileroot, label='PM25'):
         if label == 'PM25':
@@ -294,6 +298,8 @@ class BSDispersionPlot:
                                            orientation='horizontal')
         cb.set_label(cb_label, size=12)
         plt.savefig(fileroot+'.'+self.export_format, dpi=self.dpi/3)
+        # explicitly close plot - o/w pyplot keeps it open until end of program
+        plt.close()
 
 def create_dispersion_images(config):
     # [DispersionGridInput] configurations
