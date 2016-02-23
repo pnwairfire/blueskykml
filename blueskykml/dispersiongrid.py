@@ -40,7 +40,7 @@ class BSDispersionGrid:
         ny = int(self.metadata["NC_GLOBAL#NROWS"])
 
         if flip_images:
-            return (x0, dx, 0.0, y0+float(ny)*dy, 0.0, -dy)
+            return (x0, dx, 0.0, y0+float(ny-1)*dy, 0.0, -dy)
         else:
             return (x0, dx, 0.0, y0, 0.0, dy)
 
@@ -214,10 +214,13 @@ class BSDispersionPlot:
         self.yvals = np.linspace(grid.minY, grid.minY + ((grid.sizeY-1) * grid.cellSizeY), num=grid.sizeY)
 
         # Set the plot extents for the KML
-        self.lonmin = self.xvals[0]
-        self.lonmax = self.xvals[-1]
-        self.latmin = self.yvals[0]
-        self.latmax = self.yvals[-1]
+        # NOTE: original code just referenced the first and last elements
+        #       of the arrays, but this doesn't work when using the new
+        #       geotransform for gdal >= 1.9
+        self.lonmin = min(self.xvals)
+        self.lonmax = max(self.xvals)
+        self.latmin = min(self.yvals)
+        self.latmax = max(self.yvals)
 
     def generate_colormap_index(self, levels):
         """Generate a colormap index based on discrete intervals"""
