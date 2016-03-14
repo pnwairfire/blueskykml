@@ -216,7 +216,7 @@ class KmzCreator(object):
                 # TODO: set color on _polygon_screen_overlay?
                 self._polygon_screen_overlay = self._create_screen_overlay('Legend', pgGen.legend_filename)
 
-    def create(self, kmz_name, kml_name, prefix, include_fire_inforamation,
+    def create(self, kmz_name, kml_name, prefix, include_fire_information,
             include_disclaimer, include_concentration_images, include_polygons):
         kml = pykml.KML()
 
@@ -231,7 +231,7 @@ class KmzCreator(object):
             root_doc.with_time(self._screen_lookat)
 
         # Create and add style KML to root Document
-        if include_fire_inforamation:
+        if include_fire_information:
             for style in self._combined_style_group:
                 root_doc.with_style(style)
             root_doc.with_feature(self._fire_information)
@@ -258,7 +258,7 @@ class KmzCreator(object):
         kmz_assets = [kml_name]
         if include_disclaimer:
             kmz_assets.append(self._disclaimer_image)
-        if include_fire_inforamation:
+        if include_fire_information:
             kmz_assets.extend([self._fire_event_icon, self._fire_location_icon])
         if 'dispersion' in self._modes:
             if include_concentration_images:
