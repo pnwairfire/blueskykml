@@ -178,6 +178,62 @@ Example uses:
     $ ./bin/makedispersionkml -c ./sample-config/makedispersionkml.ini \
         -o /path/to/bluesky/output/ -v -k ./smoke-dispersion.kmz -f fires.kmz
 
+### Config Options
+
+#### Section 'DEFAULT'
+ - MODES -- e.g. 'fires dispersion'
+
+#### Section 'PolygonsKML'
+ - MAKE_POLYGONS_KMZ --
+ - POLYGONS_OUTPUT_DIR --
+ - MAKEPOLYGONS_BINARY --
+ - KMZ_FILE --
+ - OVERLAY_TITLE --
+ - POLYGON_COLORS --
+
+#### Section 'DispersionGridInput'
+ - FILENAME --
+ - PARAMETER --
+ - LAYER --
+
+#### DispersionGridOutput
+ - OUTPUT_DIR --
+ - GRID_INFO_JSON --
+ - HOURLY_COLORS --
+ - THREE_HOUR_COLORS --
+ - DAILY_COLORS --
+
+#### RedColorBar
+ - DEFINE_RGB --
+ - DATA_LEVELS --
+ - GREEN --
+ - BLUE --
+ - RED --
+ - IMAGE_OPACITY_FACTOR --
+ - DEFINE_HEX --
+ - HEX_COLORS --
+
+#### DispersionImages
+ - DEFINE_RGB --
+ - BACKGROUND_COLOR_RED --
+ - BACKGROUND_COLOR_GREEN --
+ - BACKGROUND_COLOR_BLUE --
+ - DEFINE_HEX --
+ - BACKGROUND_COLOR_HEX --
+ - IMAGE_OPACITY_FACTOR --
+ - REPROJECT_IMAGES --
+
+#### SmokeDispersionKMLInput
+ - MET_TYPE --
+ - FIRE_LOCATION_CSV --
+ - FIRE_EVENT_CSV --
+ - DISCLAIMER_IMAGE --
+ - FIRE_EVENT_ICON --
+ - FIRE_LOCATION_ICON --
+
+#### SmokeDispersionKMLOutput
+ - KMZ_FILE --
+
 ## Distributing
 
 To build a distribution tarball, use the following.
