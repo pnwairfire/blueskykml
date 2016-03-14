@@ -169,6 +169,8 @@ class FireEventInfo(FireData):
 
 class KmzCreator(object):
 
+    URL_MATCHER = re.compile('^https?://')
+
     def __init__(self, config, grid_bbox, start_datetime=None,
             legend_name="colorbar.png", pretty_kml=False):
         self._config = config
@@ -183,8 +185,13 @@ class KmzCreator(object):
         section = 'SmokeDispersionKMLInput'
         self._met_type = config.get(section, "MET_TYPE")
         self._disclaimer_image = config.get(section, "DISCLAIMER_IMAGE")
-        self._fire_event_icon = config.get(section, "FIRE_EVENT_ICON")
+
         self._fire_location_icon = config.get(section, "FIRE_LOCATION_ICON")
+        self._fire_location_icon_is_url = not not self.URL_MATCHER.match(
+            self._fire_location_icon)
+        self._fire_event_icon = config.get(section, "FIRE_EVENT_ICON")
+        self._fire_event_icon_is_url = not not self.URL_MATCHER.match(
+            self._fire_event_icon)
 
         self._do_create_polygons = (self._config.has_section('PolygonsKML') and
             self._config.getboolean('PolygonsKML', 'MAKE_POLYGONS_KMZ') and
@@ -198,8 +205,12 @@ class KmzCreator(object):
         self._screen_lookat = None
         if start_datetime:
             self._screen_lookat = self._create_screen_lookat(start=start_datetime, end=start_datetime)
-        location_style_group = self._create_style_group('location', os.path.basename(self._fire_location_icon))
-        event_style_group = self._create_style_group('event', os.path.basename(self._fire_event_icon))
+        location_style_group = self._create_style_group('location',
+            os.path.basename(self._fire_location_icon) if not
+            self._fire_location_icon_is_url else self._fire_location_icon)
+        event_style_group = self._create_style_group('event',
+            os.path.basename(self._fire_event_icon) if not
+            self._fire_event_icon_is_url else self._fire_event_icon)
         self._combined_style_group = location_style_group + event_style_group
         self._disclaimer = self._create_screen_overlay('Disclaimer', os.path.basename(self._disclaimer_image),
                                             overlay_x=1.0, overlay_y=1.0, screen_x=1.0, screen_y=1.0)
@@ -259,7 +270,10 @@ class KmzCreator(object):
         if include_disclaimer:
             kmz_assets.append(self._disclaimer_image)
         if include_fire_information:
-            kmz_assets.extend([self._fire_event_icon, self._fire_location_icon])
+            if not self._fire_location_icon_is_url:
+                kmz_assets.append(self._fire_location_icon)
+            if not self._fire_event_icon_is_url:
+                kmz_assets.append(self._fire_event_icon)
         if 'dispersion' in self._modes:
             if include_concentration_images:
                 kmz_assets.extend(self._image_assets)
