@@ -11,6 +11,7 @@ with open('requirements-test.txt') as f:
 setup(
     name='blueskykml',
     version=__version__,
+    license='GPLv3+',
     author='Anthony Cavallaro, Ken Craig, John Stilley, Joel Dubowy',
     author_email='jdubowy@gmail.com', # STI's email addresses
     packages=find_packages(),
@@ -26,7 +27,7 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Programming Language :: Python :: 2",
         "Operating System :: POSIX",
         "Operating System :: MacOS"
