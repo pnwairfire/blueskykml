@@ -3,6 +3,10 @@
 This package was build using code extracted from the kml3 module in BlueSky
 Framework.
 
+***This software is provided for research purposes only. It's output may
+not accurately reflect observed data due to numerous reasons. Data are
+provisional; use at own risk.***
+
 ## Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to manually
