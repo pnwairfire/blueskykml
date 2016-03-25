@@ -290,16 +290,6 @@ the docker host:
     docker build -t blueskykml-base docker/base/
     docker build -t blueskykml docker/complete/
 
-### Obtain pre-built docker images
-
-As an alternative to building the image yourself, you can use the pre-built
-complete image.
-
-    docker pull pnwairfire/blueskykml
-
-See the [blueskykml docker hub page](https://hub.docker.com/r/pnwairfire/blueskykml/)
-for more information.
-
 ### Run Complete Container
 
 If you run the image without a command, i.e.:
