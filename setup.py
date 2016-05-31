@@ -13,7 +13,7 @@ setup(
     version=__version__,
     license='GPLv3+',
     author='Anthony Cavallaro, Ken Craig, John Stilley, Joel Dubowy',
-    author_email='jdubowy@gmail.com', # STI's email addresses
+    author_email='jdubowy@gmail.com',
     packages=find_packages(),
     package_data={
         'blueskykml': [

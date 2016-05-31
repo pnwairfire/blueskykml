@@ -14,7 +14,6 @@ See https://developers.google.com/kml/documentation/kmlreference for more detail
            class structure, utilizing __getattr__ and __call__ class methods, and/or use of decorators)
 """
 __author__ = "Anthony Cavallaro"
-__copyright__ = "Copyright 2013, Sonoma Technology"
 __credits__ = ["Anthony Cavallaro", "Ken Craig", "John Stilley"]
 __license__ = "GPLv3"
 __maintainer__ = "Anthony Cavallaro"
