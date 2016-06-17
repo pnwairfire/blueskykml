@@ -1,6 +1,6 @@
-
-from datetime import timedelta
+import collections
 import re
+from datetime import timedelta
 
 # Constants
 OUTPUT_DATE_FORMAT = '%A, %B %d, %Y'
@@ -98,15 +98,15 @@ def _build_fuelbeds(fire_event):
         """.format(fuelbeds=''.join(fuelbeds)))
     return ""
 
-EMISSIONS_SPECIES = {
-    'pm25': 'PM2.5',
-    'pm10': 'PM10'
-}
+EMISSIONS_SPECIES = collections.OrderedDict([
+    ('pm25', 'PM2.5'),
+    ('pm10', 'PM10')
+])
 """Emissions species to include in fire popups. The keys in EMISSIONS_SPECIES
 are the keys in the emissions dict; the values are the 'pretty' names."""
 
 def _build_emissions(fire_event):
-    species = {}
+    species = collections.OrderedDict()
     for key, name in EMISSIONS_SPECIES.items():
         for day in fire_event.daily_emissions:
             value = fire_event.daily_emissions[day].get(key)
@@ -123,7 +123,7 @@ def _build_emissions(fire_event):
             </div>
         """
         species_divs = [
-            template.format(name=n, value=v / days) for n,v in species.items()
+            template.format(name=n, value=species[n] / days) for n in species
         ]
         return _convert_single_line("""
             <div class="section">
