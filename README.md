@@ -81,12 +81,13 @@ or http:
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
-    pip install --no-binary gdal -r requirements.txt
+    pip install -r requirements.txt
 
 #### Dev and test dependencies
 
 Run the following to install packages required for testing:
 
+    pip install -r requirements-dev.txt
     pip install -r requirements-test.txt
 
 #### Notes
