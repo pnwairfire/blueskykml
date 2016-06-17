@@ -4,8 +4,8 @@ from PIL import Image
 from copy import deepcopy
 import os
 
-import dispersion_file_utils as dfu
-from constants import TIME_SERIES_PRETTY_NAMES
+from . import dispersion_file_utils as dfu
+from .constants import TIME_SERIES_PRETTY_NAMES
 
 class SimpleColor(object):
     """Represents a pixel color in the form of RGBA."""
@@ -98,8 +98,8 @@ def _apply_transparency(image, background_color, opacity_factor):
     transparent_color_tuple = background_color.set_color(a=0).get_color_tuple() # Get transparent color tuple
     pixdata = image.load()
 
-    for y in xrange(image.size[1]):
-        for x in xrange(image.size[0]):
+    for y in range(image.size[1]):
+        for x in range(image.size[0]):
             if pixdata[x, y] == background_color_tuple:
                 pixdata[x, y] = transparent_color_tuple
             else:

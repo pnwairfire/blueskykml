@@ -9,7 +9,7 @@ class TimeSeriesTypes:
     """Effectively an enum of image time series types"""
     # Enum to represent different time series
     NUM_TYPES = 4
-    HOURLY, THREE_HOUR, DAILY_MAXIMUM, DAILY_AVERAGE = range(NUM_TYPES)
+    HOURLY, THREE_HOUR, DAILY_MAXIMUM, DAILY_AVERAGE = list(range(NUM_TYPES))
     AQUIPT = NUM_TYPES
     ALL = list(range(NUM_TYPES))  # Note that 'ALL' excludes AQUIPT
     ALL_PLUS_AQUIPT = list(range(NUM_TYPES + 1))
@@ -52,7 +52,7 @@ FILE_NAME_TIME_STAMP_PATTERNS = {
 # AQUIPT Constants
 class AquiptImageTypes:
     """Effectively an enum of AQUIPT image types"""
-    _RANGE = range(5)
+    _RANGE = list(range(5))
     MAXIMPACT,AVGIMPACT,PCNTSIMS,PERCENT,TIMPACT = _RANGE
     ALL = list(_RANGE)
 

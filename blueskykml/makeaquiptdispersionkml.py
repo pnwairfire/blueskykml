@@ -1,10 +1,10 @@
 import logging
 
-import configuration
-import dispersiongrid
-import dispersion_file_utils as dfu
-import dispersionimages
-import smokedispersionkml
+from . import configuration
+from . import dispersiongrid
+from . import dispersion_file_utils as dfu
+from . import dispersionimages
+from . import smokedispersionkml
 
 def main(options):
     if options.verbose:

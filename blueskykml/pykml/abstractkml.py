@@ -3,8 +3,8 @@ The authoritative KML Reference:
 See https://developers.google.com/kml/documentation/kmlreference for more details.
 """
 
-from primitivekml import *
-from kml_utilities import deepCopy
+from .primitivekml import *
+from .kml_utilities import deepCopy
 
 
 class Object(Element):

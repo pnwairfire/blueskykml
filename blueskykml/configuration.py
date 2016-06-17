@@ -1,4 +1,4 @@
-import ConfigParser
+import configparser
 import logging
 import os
 
@@ -7,7 +7,7 @@ __all__ = [
     'ConfigBuilder'
 ]
 
-class ConfigurationError(StandardError):
+class ConfigurationError(Exception):
     pass
 
 class ConfigBuilder(object):
@@ -52,7 +52,7 @@ class ConfigBuilder(object):
                     except:
                         pass
 
-                if not default_section.has_key(option) or default_section[option] != val:
+                if option not in default_section or default_section[option] != val:
                     self._log(" *   [%s] %s = %s" % (section, option.upper(), val))
 
     DEFAULT_CONFIG = os.path.join(
@@ -64,7 +64,7 @@ class ConfigBuilder(object):
         default_config_file = (self.DEFAULT_AQUIPT_CONFIG
             if self._is_aquipt else self.DEFAULT_CONFIG)
         self._log(" * Loading default config file %s" % (default_config_file))
-        self.config = ConfigParser.ConfigParser()
+        self.config = configparser.ConfigParser()
         self.config.read(default_config_file)
 
     def _load_custom_config_file(self):

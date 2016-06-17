@@ -47,7 +47,7 @@ def _build_projected_growth_section(fire_event):
         # This assumes that fire_event.[daily_area|daily_num_locations|
         # daily_emissions|daily_stats_by_fccs_num] have the same set of keys
         # (i.e. that each is defined for the same set of dates)
-        if (not fire_event.daily_area.has_key(date)):
+        if (date not in fire_event.daily_area):
             continue
 
         date_str = date.strftime(OUTPUT_DATE_FORMAT).replace(' 0', ' ')
@@ -70,15 +70,15 @@ def _build_projected_growth_section(fire_event):
 
 def _build_fuelbeds(fire_event):
     fccs_stats = {}
-    for day, daily_stats in fire_event.daily_stats_by_fccs_num.items():
-        for fccs_num, fccs_dict in daily_stats.items():
+    for day, daily_stats in list(fire_event.daily_stats_by_fccs_num.items()):
+        for fccs_num, fccs_dict in list(daily_stats.items()):
             fccs_stats[fccs_num] = fccs_stats.get(fccs_num,
                 {'total_area': 0.0, 'description': fccs_dict['description']})
             fccs_stats[fccs_num]['total_area'] += fccs_dict['total_area']
 
     if len(fccs_stats) > 0:
         fuelbeds = []
-        sorted_stats = sorted(fccs_stats.items(), key=lambda e: -e[1]['total_area'])
+        sorted_stats = sorted(list(fccs_stats.items()), key=lambda e: -e[1]['total_area'])
         sorted_stats = sorted_stats[:MAX_FCCS_ROWS]
         days = len(fire_event.daily_stats_by_fccs_num)
         for fccs_num, fccs_dict in sorted_stats:

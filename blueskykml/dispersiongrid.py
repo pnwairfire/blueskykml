@@ -10,10 +10,10 @@ import subprocess
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-from memoize import memoizeme
+from .memoize import memoizeme
 
-import dispersion_file_utils as dfu
-from constants import TimeSeriesTypes, CONFIG_COLOR_LABELS
+from . import dispersion_file_utils as dfu
+from .constants import TimeSeriesTypes, CONFIG_COLOR_LABELS
 
 class BSDispersionGrid:
 
@@ -80,7 +80,7 @@ class BSDispersionGrid:
         timeid = 0
         layerid = 0
         self.data = np.zeros((self.num_times, self.sizeZ, self.sizeY, self.sizeX), dtype=np.float)
-        for i in xrange(self.ds.RasterCount):
+        for i in range(self.ds.RasterCount):
             rb = self.ds.GetRasterBand(i+1)
             data = rb.ReadAsArray(0, 0, self.sizeX, self.sizeY)
             self.data[timeid,layerid,:,:] = rb.ReadAsArray(0, 0, self.sizeX, self.sizeY)
@@ -109,7 +109,7 @@ class BSDispersionGrid:
         start_datetime = datetime.strptime("%s%s" % (sdate, stime), "%Y%j%H")
         tstep_hrs = float(tstep) / 10000
 
-        return [start_datetime + timedelta(hours = i*tstep_hrs) for i in xrange(self.num_times)]
+        return [start_datetime + timedelta(hours = i*tstep_hrs) for i in range(self.num_times)]
 
     def ioapi_datetime_to_object(self, yyyyddd, hhmmss):
         """Convert a Models3 IO/API convention datetime to a python datetime object."""
@@ -145,8 +145,8 @@ class BSDispersionGrid:
         shour = 0 + offset
         ehour = shour + 24  # Python slice indices point *between* elements.
 
-        for day in xrange(self.num_days):
-            for layer in xrange(self.sizeZ):
+        for day in range(self.num_days):
+            for layer in range(self.sizeZ):
                 self.max_data[day,layer,:,:] = np.max(self.data[shour:ehour,layer,:,:], axis=0)
                 self.avg_data[day,layer,:,:] = np.average(self.data[shour:ehour,layer,:,:], axis=0)
             shour += 24
@@ -176,14 +176,14 @@ class BSDispersionPlot:
         b = np.array(b)/255.
 
         # Create colormap
-        self.colormap = mpl.colors.ListedColormap(zip(r, g, b))
+        self.colormap = mpl.colors.ListedColormap(list(zip(r, g, b)))
 
         # Set out-of-range values get the lowest and highest colors in the colortable
         self.colormap.set_under( color=(r[0],g[0],b[0]) )
         self.colormap.set_over( color=(r[-1],g[-1],b[-1]) )
 
         # Create special colormap without the first color for colorbars
-        self.cb_colormap = mpl.colors.ListedColormap(zip(r[1:],g[1:],b[1:]))
+        self.cb_colormap = mpl.colors.ListedColormap(list(zip(r[1:],g[1:],b[1:])))
 
     def colormap_from_hex(self, hex_colors):
         """Create colormap from list of hex colors."""
@@ -373,7 +373,7 @@ def create_hourly_dispersion_images(config, grid, section, layer):
 
     outdir = dfu.create_image_set_dir(config, dfu.TimeSeriesTypes.HOURLY, section)
 
-    for i in xrange(grid.num_times):
+    for i in range(grid.num_times):
         # Shift filename date stamps
         fileroot = dfu.image_pathname(config, dfu.TimeSeriesTypes.HOURLY, section, grid.datetimes[i]-timedelta(hours=1))
 
@@ -400,7 +400,7 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
 
     outdir = dfu.create_image_set_dir(config, dfu.TimeSeriesTypes.THREE_HOUR, section)
 
-    for i in xrange(1, grid.num_times - 1):
+    for i in range(1, grid.num_times - 1):
         # Shift filename date stamps; shift an extra hour because we are on third
         # hour of three hour series and we want timestamp to reflect middle hour
         fileroot = dfu.image_pathname(config, dfu.TimeSeriesTypes.THREE_HOUR, section, grid.datetimes[i]-timedelta(hours=1))
@@ -424,7 +424,7 @@ def create_daily_maximum_dispersion_images(config, grid, section, layer):
 
     hours_offset = 0
     grid.calc_aggregate_data(offset=hours_offset)
-    for i in xrange(grid.num_days):
+    for i in range(grid.num_days):
         logging.debug("Creating daily maximum concentration plot %d of %d " % (i + 1, grid.num_days))
         fileroot = dfu.image_pathname(config, dfu.TimeSeriesTypes.DAILY_MAXIMUM, section, grid.datetimes[i*24])
         plot.make_contour_plot(grid.max_data[i,layer,:,:], fileroot)
@@ -438,7 +438,7 @@ def create_daily_average_dispersion_images(config, grid, section, layer):
 
     hours_offset = 0
     grid.calc_aggregate_data(offset=hours_offset)
-    for i in xrange(grid.num_days):
+    for i in range(grid.num_days):
         logging.debug("Creating daily average concentration plot %d of %d " % (i + 1, grid.num_days))
         fileroot = dfu.image_pathname(config, dfu.TimeSeriesTypes.DAILY_AVERAGE, section, grid.datetimes[i*24])
         plot.make_contour_plot(grid.avg_data[i,layer,:,:], fileroot)
@@ -466,7 +466,7 @@ def create_aquiptpost_images(config):
             plot = create_color_plot(config, grid, section, parameter=parameter)
 
             logging.debug("Creating aggregate plot for %s " % (parameter))
-            for i in xrange(grid.num_times):
+            for i in range(grid.num_times):
                 fileroot = os.path.join(outdir, parameter)
                 plot.make_contour_plot(grid.data[i,layer,:,:], fileroot)
 

@@ -6,16 +6,16 @@ import os
 import re
 import subprocess
 
-from constants import *
-from dispersiongrid import BSDispersionGrid
-from polygon_generator import PolygonGenerator
-import dispersion_file_utils as dfu
-import firedescriptions
+from .constants import *
+from .dispersiongrid import BSDispersionGrid
+from .polygon_generator import PolygonGenerator
+from . import dispersion_file_utils as dfu
+from . import firedescriptions
 try:
-    from pykml import pykml
-    from pykml.kml_utilities import zip_files
+    from .pykml import pykml
+    from .pykml.kml_utilities import zip_files
 except ImportError:
-    import pykml
+    from . import pykml
     from kml_utilities import zip_files
 
 # Constants
@@ -362,10 +362,10 @@ class KmzCreator(object):
                 # if the event name is defined in the events csv, assume it's
                 # correct and thus don't worry about overriding the possibly
                 # correct name pulled from the locations csv
-                if fire_events_dict.has_key(row['id']) and row.get('event_name'):
+                if row['id'] in fire_events_dict and row.get('event_name'):
                     fire_events_dict[row['id']].name = row['event_name']
 
-        fire_events = fire_events_dict.values()
+        fire_events = list(fire_events_dict.values())
         return fire_events
 
 
@@ -548,7 +548,7 @@ class KmzCreator(object):
         return kml_root
 
     def _sort_images_legends(self, images, legends):
-        combined = zip(images, legends)
+        combined = list(zip(images, legends))
         combined_natural = self._natural_sort_tuple_list(combined)
         return tuple(list(item) for item in zip(*combined_natural)) # "unzip" the zipped images/legends back into different lists
 

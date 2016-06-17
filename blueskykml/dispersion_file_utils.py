@@ -2,8 +2,8 @@
 
 import os
 
-from constants import *
-from memoize import memoizeme
+from .constants import *
+from .memoize import memoizeme
 
 __all__ = [
     'create_dispersion_images_dir', 'image_dir', 'create_image_set_dir',

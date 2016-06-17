@@ -19,9 +19,9 @@ __license__ = "GPLv3"
 __maintainer__ = "Anthony Cavallaro"
 __version__ = "1.0"
 
-from abstractkml import *
-from primitivekml import *
-from kml_utilities import pretty_xml
+from .abstractkml import *
+from .primitivekml import *
+from .kml_utilities import pretty_xml
 
 
 class KML(Object):

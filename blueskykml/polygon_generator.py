@@ -2,8 +2,8 @@ import os
 import subprocess
 from datetime import timedelta
 
-import dispersion_file_utils as dfu
-from dispersiongrid import BSDispersionGrid, BSDispersionPlot, create_color_plot
+from . import dispersion_file_utils as dfu
+from .dispersiongrid import BSDispersionGrid, BSDispersionPlot, create_color_plot
 
 class PolygonGenerator(object):
     """Generates polygon kmls from a NETCDF file representing smoke dispersion
@@ -107,7 +107,7 @@ class PolygonGenerator(object):
         newfile.write("Name,Threshold\n")
 
         levels =  [s for s in self._config.get(self._color_bar_section, "DATA_LEVELS").split()]
-        for i in xrange(len(levels)):
+        for i in range(len(levels)):
             newfile.write("Cat%d,%s\n" % (i, levels[i]))
         newfile.close()
 
@@ -117,7 +117,7 @@ class PolygonGenerator(object):
         newfile.write(self.XSL_FIRST_PART)
 
         hex_colors = self._parse_colors()
-        for i in xrange(len(hex_colors)):
+        for i in range(len(hex_colors)):
             if hex_colors[i] == '000000':
                 color_str = '00000000'
                 fill_str = '0'
@@ -137,7 +137,7 @@ class PolygonGenerator(object):
             if not len(r) == len(g) == len(b):
                 raise Exception("Configuration ERROR... RED, GREEN, BLUE must specify same number of values.")
             # kml colors are specified as 'aabbggrr' (where 'aa' is the alpha value)
-            return ['%02x%02x%02x' % (b[i], g[i], r[i]) for i in xrange(len(r))]
+            return ['%02x%02x%02x' % (b[i], g[i], r[i]) for i in range(len(r))]
         elif self._config.getboolean(self._color_bar_section, "DEFINE_HEX"):
             return [s.strip('#') for s in self._config.get(self._color_bar_section, "HEX_COLORS").split()]
         else:
@@ -152,7 +152,7 @@ class PolygonGenerator(object):
         # def my_output_handler(logger, output, is_stderr):
         #     logger.log(OUTPUT, output)
 
-        for i in xrange(self._grid.num_times):
+        for i in range(self._grid.num_times):
             try:
                 self._generate_kml(i)
             except:

@@ -10,7 +10,7 @@ class Element(object):
     def __str__(self):
         attributes_str = ""
         if self.attributes:
-            attributes_str = "".join([" %s=\"%s\"" % (key, str(value)) for key, value in self.attributes.iteritems()])
+            attributes_str = "".join([" %s=\"%s\"" % (key, str(value)) for key, value in self.attributes.items()])
         if self.content:
             return "<%s%s>%s</%s>" % (self.name, attributes_str, self.content, self.name)
         return "<%s%s/>" % (self.name, attributes_str)
