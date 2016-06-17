@@ -1,5 +1,5 @@
 import datetime
-import mock
+from unittest import mock
 
 #from py.test import raises
 
