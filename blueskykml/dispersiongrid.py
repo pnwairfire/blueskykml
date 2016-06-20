@@ -23,7 +23,7 @@ class BSDispersionGrid:
 
         try:
             gdal_info = subprocess.check_output(["gdalinfo","--version"])
-            matches = self.GDAL_VERSION_MATCHER.match(gdal_info)
+            matches = self.GDAL_VERSION_MATCHER.match(gdal_info.decode('ascii'))
             major = int(matches.group(1))
             minor = int(matches.group(2))
             if (major > 1) or (major == 1 and minor >= 9):
