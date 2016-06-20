@@ -312,7 +312,7 @@ class KmzCreator(object):
     # Data Gathering Methods
 
     def _build_fire_locations(self, fire_locations_csv):
-        fire_location_dicts = list(csv.DictReader(open(fire_locations_csv, 'rb')))
+        fire_location_dicts = list(csv.DictReader(open(fire_locations_csv, 'r')))
 
         fire_locations = list()
         for fire_dict in fire_location_dicts:
@@ -358,7 +358,7 @@ class KmzCreator(object):
 
         # fill in fire even names if events csv file was specified
         if fire_events_csv:
-            for row in csv.DictReader(open(fire_events_csv, 'rb')):
+            for row in csv.DictReader(open(fire_events_csv, 'r')):
                 # if the event name is defined in the events csv, assume it's
                 # correct and thus don't worry about overriding the possibly
                 # correct name pulled from the locations csv
