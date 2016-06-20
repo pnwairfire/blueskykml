@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import os
 import gdal
 import logging
+import math
 import numpy as np
 import re
 import subprocess
@@ -129,7 +130,7 @@ class BSDispersionGrid:
         """Calculate the number of full and partial days spanned by DispersionGrid dataset"""
 
         ntimes = self.num_times - hours_offset
-        return ntimes / 24 + ((ntimes % 24) != 0)
+        return math.ceil(ntimes / 24)
 
     def calc_aggregate_data(self, offset=0):
         """Calculate various daily aggregates"""
