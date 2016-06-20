@@ -252,3 +252,11 @@ To build a distribution tarball, use the following.
     python ./setup.py sdist
 
 This will create a tarball in ```REPO_ROOT/dist/```
+
+## Docker
+
+There is no longer a Dockerfile maintained for this project. If you'd
+like to run ```makedispersionkml``` in docker, you can use the
+[bluesky docker image](https://hub.docker.com/r/pnwairfire/bluesky/),
+which contains all of blueskykml's dependencies (as well as blueskykml
+itself).
