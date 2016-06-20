@@ -130,7 +130,8 @@ class BSDispersionGrid:
         """Calculate the number of full and partial days spanned by DispersionGrid dataset"""
 
         ntimes = self.num_times - hours_offset
-        return math.ceil(ntimes / 24)
+        # note: casting ntimes to float support python 2
+        return math.ceil(float(ntimes) / 24)
 
     def calc_aggregate_data(self, offset=0):
         """Calculate various daily aggregates"""
