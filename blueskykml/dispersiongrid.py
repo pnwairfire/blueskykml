@@ -71,7 +71,7 @@ class BSDispersionGrid:
 
         # BlueSky dispersion outputs are dimensioned by [TSTEP, LAY, ROW, COL].
         # The number of GDAL raster bands (ds.RasterCount) will be TSTEP*LAY.
-        self.num_times = self.ds.RasterCount / self.sizeZ
+        self.num_times = self.ds.RasterCount // self.sizeZ
 
         # Extract date-time information
         self.datetimes = self.get_datetimes()
@@ -103,7 +103,7 @@ class BSDispersionGrid:
         sdate = str(self.metadata['NC_GLOBAL#SDATE'])
         # Note: stime should be multiple of 10000 (i.e. multiple of hours), so that
         # casting to int and dividing by 10000 shouldn't lose any information
-        stime = int(self.metadata['NC_GLOBAL#STIME']) / 10000
+        stime = int(self.metadata['NC_GLOBAL#STIME']) // 10000
         tstep = str(self.metadata['NC_GLOBAL#TSTEP'])
 
         start_datetime = datetime.strptime("%s%s" % (sdate, stime), "%Y%j%H")
