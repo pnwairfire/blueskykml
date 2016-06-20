@@ -4,3 +4,4 @@ build/
 MANIFEST
 blueskykml.egg-info/
 .cache/
+tmp/
