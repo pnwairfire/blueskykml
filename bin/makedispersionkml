@@ -95,7 +95,7 @@ if __name__ == '__main__':
         else:
             makedispersionkml.main(args)
     except configuration.ConfigurationError as e:
-        errout("*** CONFIGURATION ERROR: %s" % (e.message))
+        errout("*** CONFIGURATION ERROR: %s" % (str(e)))
     except Exception as e:
         print(traceback.format_exc())
-        errout("*** ERROR: %s" % (e.message))
+        errout("*** ERROR: %s" % (str(e)))
