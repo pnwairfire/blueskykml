@@ -13,10 +13,10 @@ This package was originally developed to support python 2.7, but has since
 been refactored to support 3.5. Attempts to support both 2.7 and 3.5 have
 been made but are not guaranteed.
 
-## Dependencies
+## External Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to manually
-install netcdf and gdal libraries, which blueskykml depends on. These
+install numpy, netcdf, and gdal, which blueskykml depends on. These
 instructions assume you already have python and pip installed, as well as
 C and C++ compilers, etc.
 
@@ -34,33 +34,20 @@ Additionally, you'll need the gdal python bindings.  These used to be
 baked into setup.py, but the version available for install depends
 on your platform.
 
+    pip install numpy
     gdal-config --version
     pip install gdal==`gdal-config --version`
 
-### Ubuntu, 12.04 LTS (precise)
-
-First update
+### Ubuntu 12.04, 14.04, 16.04
 
     sudo apt-get update
-
-If you don't have python and pip installed:
-
-    sudo apt-get install -y python python-dev python-pip
-    sudo pip install --upgrade pip
-
-Install libnetcdf
-
+    sudo apt-get install -y python3 python3-dev python3-pip
+    sudo pip3 install distribute
     sudo apt-get install -y libnetcdf-dev
-
-Install numpy and gdal.
-
-    sudo pip install numpy==1.8.0
-    sudo apt-get install -y libgdal1-1.7.0
-    sudo pip install gdal==1.7.0
-
-Install xml libs:
-
+    sudo apt-get install -y libgdal-dev
+    sudo apt-get install -y python3-numpy python3-gdal
     sudo apt-get install -y libxml2-dev libxslt1-dev
+    sudo apt-get install -y mapserver-bin python3-mapscript
 
 ## Development
 
