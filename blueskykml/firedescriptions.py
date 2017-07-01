@@ -14,7 +14,7 @@ def build_fire_location_description(fire_location):
             {date}
         </h2>
         <div class="section">
-            Type: {fire_type}
+            Anticipated Type: {fire_type}
         </div>
     """.format(date=date_str, fire_type=fire_location.fire_type)
 
@@ -24,20 +24,24 @@ def build_fire_location_description(fire_location):
 
     return _build_description(body)
 
+UNNAMED_MATCHER = re.compile('^Unnamed fire')
+
 def build_fire_event_description(fire_event):
     start_str = fire_event.start_date_time.strftime(OUTPUT_DATE_FORMAT).replace(' 0', ' ')
     end_str = fire_event.end_date_time.strftime(OUTPUT_DATE_FORMAT).replace(' 0', ' ')
+    name = UNNAMED_MATCHER.sub('Satellite Hotspot Detection(s)*', fire_event.name)
     body = """
         <h2 class="fire_title">
             {fire_name}
         </h2>
         <div class="section">
-            <span class="header">Type</span>: {fire_type}
+            <span class="header">Anticipated Type</span>: {fire_type}
         </div>
-    """.format(fire_name=fire_event.name, fire_type=fire_event.fire_type)
+    """.format(fire_name=name, fire_type=fire_event.fire_type)
     body += _build_projected_growth_section(fire_event)
     body += _build_fuelbeds(fire_event)
     body += _build_emissions(fire_event)
+    body += _build_disclaimer()
     return _build_description(body)
 
 def _build_projected_growth_section(fire_event):
@@ -62,7 +66,7 @@ def _build_projected_growth_section(fire_event):
     if growth:
         return _convert_single_line("""
             <div class="section">
-                <div class="header">Projected Growth</div>
+                <div class="header">Modeled Growth (based on persistence)</div>
                 <div class="list">{growth}</div>
             </div>
         """.format(growth=''.join(growth)))
@@ -127,11 +131,23 @@ def _build_emissions(fire_event):
         ]
         return _convert_single_line("""
             <div class="section">
-                <div class="header">Daily Emissions Modeled</div>
+                <div class="header">Modeled Daily Emissions</div>
                 <div class="list">{species}</div>
             </div>
         """.format(species=''.join(species_divs)))
     return ""
+
+def _build_disclaimer():
+    return _convert_single_line("""
+        <div class="disclaimer">
+            *Modeled fire information is derived in part from satellite
+            hotspot detections and other sources that can contain false
+            detections and other errors.  Modeled fire information is
+            provided here only to show what information was used within
+            the smoke model run.
+        </div>
+    """)
+
 
 def _build_description(body):
     description = """<html lang="en">
@@ -165,6 +181,9 @@ def _build_description(body):
                 }}
                 .summary .section .list {{
                     margin-left: 5px;
+                }}
+                .summary .disclaimer {{
+                    font-style: italic;
                 }}
             </style>
         </head>
