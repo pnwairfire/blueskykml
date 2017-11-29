@@ -67,21 +67,22 @@ def format_dispersion_images(config, legend_name="colorbar"):
     # [DispersionGridOutput] configurations
     images = dfu.collect_all_dispersion_images(config)
 
-    for (time_series_type, time_series_dict) in images.items():
-        for (color_map_section, color_set_dict) in time_series_dict.items():
-            # iof is the color map section's custom image opacity factor, if specified
-            iof = (config.getfloat(color_map_section, "IMAGE_OPACITY_FACTOR") if
-                config.has_option(color_map_section, "IMAGE_OPACITY_FACTOR") else
-                image_opacity_factor)
-            i = 0
-            for image_name in color_set_dict['smoke_images']:
-                i += 1
-                logging.debug("Applying transparency %s to plot %i of %s %s" % (
-                    iof, i, TIME_SERIES_PRETTY_NAMES[time_series_type], color_map_section))
-                image_path = os.path.join(color_set_dict['root_dir'], image_name)
-                image = Image.open(image_path)
-                image = _apply_transparency(image, deepcopy(background_color), iof)
-                image.save(image_path, "PNG")
+    for layer, layer_dict in images.items():
+        for (time_series_type, time_series_dict) in layer_dict.items():
+            for (color_map_section, color_set_dict) in time_series_dict.items():
+                # iof is the color map section's custom image opacity factor, if specified
+                iof = (config.getfloat(color_map_section, "IMAGE_OPACITY_FACTOR") if
+                    config.has_option(color_map_section, "IMAGE_OPACITY_FACTOR") else
+                    image_opacity_factor)
+                i = 0
+                for image_name in color_set_dict['smoke_images']:
+                    i += 1
+                    logging.debug("Applying transparency %s to plot %i of layer %s %s %s" % (
+                        iof, i, layer, TIME_SERIES_PRETTY_NAMES[time_series_type], color_map_section))
+                    image_path = os.path.join(color_set_dict['root_dir'], image_name)
+                    image = Image.open(image_path)
+                    image = _apply_transparency(image, deepcopy(background_color), iof)
+                    image.save(image_path, "PNG")
 
 def _apply_transparency(image, background_color, opacity_factor):
     """Sets the background color of the image to be fully transparent, and modifies the overall image opacity based on a

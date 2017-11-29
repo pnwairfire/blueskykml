@@ -192,7 +192,7 @@ Example uses:
 #### Section 'DispersionGridInput'
  - FILENAME --
  - PARAMETER --
- - LAYER --
+ - LAYERS --
 
 #### DispersionGridOutput
  - OUTPUT_DIR --

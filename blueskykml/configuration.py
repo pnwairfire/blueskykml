@@ -189,9 +189,9 @@ class ConfigBuilder(object):
             "option": "FILENAME"
         },
         {
-            "command_line_option": "layer",
+            "command_line_option": "layers",
             "section": "DispersionGridInput",
-            "option": "LAYER"
+            "option": "LAYERS"
         },
         {
             "command_line_option": "fire_locations_csv",

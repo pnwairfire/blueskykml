@@ -73,12 +73,9 @@ if __name__ == '__main__':
         help="Smoke dispersion KMZ file pathname. Alias for -O SmokeDispersionKMLOutput.KMZ_FILE=<filename>")
     parser.add_argument("-f", "--fire-kmz-file",
         help="Fire KMZ file pathnam. Alias for -O SmokeDispersionKMLOutput.KMZ_FIRE_FILE=<filename>")
-    # even though 'layer' is an integer index, the option must be of type
-    # string or else config.get(section, "LAYER") will fail with error:
-    #  > TypeError: argument of type 'int' is not iterable
-    # it will be cast to int if specified
-    parser.add_argument("--layer", default=None, action="store",
-        help="Fire KMZ file pathnam. Alias for -O DispersionGridInput.LAYER=<layer>")
+    parser.add_argument("--layers", default=None, action="store",
+        help="Comma-separate list of layer indices"
+        "Alias for -O DispersionGridInput.LAYERS=<layer>[,...,<layer>]")
     args = parser.parse_args()
 
     if args.version:
