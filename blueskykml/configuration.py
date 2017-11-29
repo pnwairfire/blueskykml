@@ -10,13 +10,36 @@ __all__ = [
 class ConfigurationError(Exception):
     pass
 
+class BlueSkyKMLConfigParser(configparser.ConfigParser):
+    """Custom config parser class whose sole contribution is to
+    transform values to and from their ultimate data type.
+    (configparser.ConfigParser only supports storing config
+    values as strings)
+    """
+
+    def get(self, *args, **params):
+        val = super(BlueSkyKMLConfigParser, self).get(*args, **params)
+        if args[0] is 'DispersionGridInput' and args[1] is 'LAYERS':
+            logging.debug('Converting layers from string to list of ints')
+            val = [int(l) for l in val.split(',')]
+        return val
+
+    def set(self, *args, **params):
+        if args[0] is 'DispersionGridInput' and args[1] is 'LAYERS':
+            # use duck typing to see if it's a list or compatible type
+            if hasattr(args[2], 'append'):
+                args = list(args) # since args is an immutable tuple
+                logging.debug(' * Converting layers from list to string')
+                args[2] = ','.join([str(l) for l in args[2]])
+        return super(BlueSkyKMLConfigParser, self).set(*args, **params)
+
 class ConfigBuilder(object):
     """Class to build configuration object from config file and command line
     options.
 
     Public attributes:
-      config -- ConfigParser object representing what's in the config file
-                overlaid with what was specified on the command line
+      config -- BlueSkyKMLConfigParser object representing what's in the
+            config file overlaid with what was specified on the command line
     """
 
     def __init__(self, options, is_aquipt=False):
@@ -64,7 +87,7 @@ class ConfigBuilder(object):
         default_config_file = (self.DEFAULT_AQUIPT_CONFIG
             if self._is_aquipt else self.DEFAULT_CONFIG)
         self._log(" * Loading default config file %s" % (default_config_file))
-        self.config = configparser.ConfigParser()
+        self.config = BlueSkyKMLConfigParser()
         self.config.read(default_config_file)
 
     def _load_custom_config_file(self):
