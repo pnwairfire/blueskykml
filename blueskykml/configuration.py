@@ -1,6 +1,7 @@
 import configparser
 import logging
 import os
+from collections import defaultdict
 
 __all__ = [
     'ConfigurationError',
@@ -17,21 +18,66 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
     values as strings)
     """
 
-    def get(self, *args, **params):
-        val = super(BlueSkyKMLConfigParser, self).get(*args, **params)
-        if args[0] is 'DispersionGridInput' and args[1] is 'LAYERS':
-            logging.debug('Converting layers from string to list of ints')
-            val = [int(l) for l in val.split(',')]
-        return val
+    def __init__(self, *args, **params):
+        super(BlueSkyKMLConfigParser, self).__init__(*args, **params)
+        self._converted = defaultdict(lambda: {})
 
     def set(self, *args, **params):
-        if args[0] is 'DispersionGridInput' and args[1] is 'LAYERS':
-            # use duck typing to see if it's a list or compatible type
-            if hasattr(args[2], 'append'):
-                args = list(args) # since args is an immutable tuple
-                logging.debug(' * Converting layers from list to string')
-                args[2] = ','.join([str(l) for l in args[2]])
+        # use duck typing to see if it's a list or compatible type
+        if hasattr(args[2], 'append'):
+            args = list(args) # since args is an immutable tuple
+            nested_type = type(args[2][0])
+            logging.debug(' * Converting %s.%s from list of %s to string',
+                args[0], args[1], nested_type)
+            self._converted[args[0]][args[1]] = {
+                "type": list, "nested_type": nested_type
+            }
+            args[2] = ','.join([str(l) for l in args[2]])
+
+        elif hasattr(args[2], 'real'):
+            args = list(args) # since args is an immutable tuple
+            _type = type(args[2])
+            logging.debug(' * Converting %s.%s from %s to string',
+                args[0], args[1], _type)
+            self._converted[args[0]][args[1]] = {
+                "type": _type
+            }
+            args[2] = str(args[2])
+
         return super(BlueSkyKMLConfigParser, self).set(*args, **params)
+
+    def get(self, *args, **params):
+        section = args[0]
+        param = args[1]
+        val = super(BlueSkyKMLConfigParser, self).get(*args, **params)
+        info = self._converted[section].get(param)
+
+        # Config settings that were converted on input
+        if info:
+            if info['type'] == list:
+                val = self.convert_to_list(val, section, param,
+                    info['nested_type'])
+            else:
+                val = self.convert_to_scalar(val, section, param, info['type'])
+
+        # config settings that weren't converted on input but are
+        # nevertheless expected to be of a certain type
+        elif args[0] is 'DispersionGridInput' and args[1] is 'LAYERS':
+            val = self.convert_to_list(val, section, param, int)
+
+        return val
+
+    def convert_to_list(self, val, section, param, nested_type):
+        logging.debug('Converting %s.%s from string to list of %s',
+            section, param, nested_type)
+        return [nested_type(l) for l in val.split(',')]
+
+    def convert_to_scalar(self, val, section, param, _type):
+        logging.debug('Converting %s.%s from string to %s',
+            section, param, _type)
+        return _type(val)
+
+
 
 class ConfigBuilder(object):
     """Class to build configuration object from config file and command line
