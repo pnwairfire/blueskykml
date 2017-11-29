@@ -475,25 +475,26 @@ class KmzCreator(object):
     def _create_concentration_information(self, grid_bbox):
         kml_root = pykml.Folder().set_name('%s from Wildland Fire' % self._concentration_param.upper()).set_open(True)
 
-        for time_series_type in TimeSeriesTypes.ALL:
-            images_dict = self._dispersion_images[time_series_type]
-            if images_dict:
-                visible = TimeSeriesTypes.DAILY_MAXIMUM == time_series_type
-                pretty_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
+        for layer in self._dispersion_images:
+            for time_series_type in TimeSeriesTypes.ALL:
+                images_dict = self._dispersion_images[layer][time_series_type]
+                if images_dict:
+                    visible = TimeSeriesTypes.DAILY_MAXIMUM == time_series_type
+                    pretty_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
 
-                if images_dict['legend']:
-                    # TODO:  put legends in concentration folders?
-                    overlay = self._create_screen_overlay(
-                        '%s Key' % (pretty_name), images_dict['legend'],
-                        visible=visible)
-                    kml_root = kml_root.with_feature(overlay)
+                    if images_dict['legend']:
+                        # TODO:  put legends in concentration folders?
+                        overlay = self._create_screen_overlay(
+                            'Layer %s %s Key' % (layer, pretty_name), images_dict['legend'],
+                            visible=visible)
+                        kml_root = kml_root.with_feature(overlay)
 
-                if images_dict['smoke_images']:
-                    name = '%s %s' % (pretty_name, self._concentration_param.upper())
-                    data = self._create_concentration_folder(name,
-                        images_dict['smoke_images'], grid_bbox,
-                        visible=visible)
-                    kml_root = kml_root.with_feature(data)
+                    if images_dict['smoke_images']:
+                        name = 'Layer %s %s %s' % (layer, pretty_name, self._concentration_param.upper())
+                        data = self._create_concentration_folder(name,
+                            images_dict['smoke_images'], grid_bbox,
+                            visible=visible)
+                        kml_root = kml_root.with_feature(data)
 
         return kml_root
 
@@ -521,11 +522,12 @@ class KmzCreator(object):
 
     def _collect_image_assets(self):
         images = []
-        for t_dict in self._dispersion_images.values():
-            if t_dict['legend']:
-                images.append(os.path.join(t_dict['root_dir'], t_dict['legend']))
-            if t_dict['smoke_images']:
-                images.extend([os.path.join(t_dict['root_dir'], i) for i in t_dict['smoke_images']])
+        for layer in self._dispersion_images:
+            for t_dict in self._dispersion_images[layer].values():
+                if t_dict['legend']:
+                    images.append(os.path.join(t_dict['root_dir'], t_dict['legend']))
+                if t_dict['smoke_images']:
+                    images.extend([os.path.join(t_dict['root_dir'], i) for i in t_dict['smoke_images']])
         return images
 
 
@@ -612,13 +614,14 @@ class AquiptKmzCreator(KmzCreator):
 
     def _create_concentration_information(self, grid_bbox):
         kml_root = pykml.Folder().set_name('AQUIPT Aggregate Statistics').set_open(True)
-        for t in AquiptImageTypes.ALL:
-            name = AQUIPT_IMAGE_TYPE_PRETTY_NAMES[t]
-            images = self._dispersion_images[t]['images']
-            legends = self._dispersion_images[t]['legends']
-            images, legends = self._sort_images_legends(images, legends)
-            data = self._create_concentration_folder(name, images, legends, grid_bbox, visible=True, is_open=True)
-            kml_root = kml_root.with_feature(data)
+        for layer in self._dispersion_images:
+            for t in AquiptImageTypes.ALL:
+                name = AQUIPT_IMAGE_TYPE_PRETTY_NAMES[t]
+                images = self._dispersion_images[layer][t]['images']
+                legends = self._dispersion_images[layer][t]['legends']
+                images, legends = self._sort_images_legends(images, legends)
+                data = self._create_concentration_folder(name, images, legends, grid_bbox, visible=True, is_open=True)
+                kml_root = kml_root.with_feature(data)
 
 
     def _create_concentration_folder(self, name, images, legends, grid_bbox, visible=False, is_open=False):
@@ -638,7 +641,8 @@ class AquiptKmzCreator(KmzCreator):
 
     def _collect_image_assets(self):
         images = []
-        for t_dict in self._dispersion_images.values():
-            images.extend([os.path.join(t_dict['root_dir'], i) for i in t_dict['legends']])
-            images.extend([os.path.join(t_dict['root_dir'], i) for i in t_dict['smoke_images']])
+        for layer in self._dispersion_images:
+            for t_dict in self._dispersion_images[layer].values():
+                images.extend([os.path.join(t_dict['root_dir'], i) for i in t_dict['legends']])
+                images.extend([os.path.join(t_dict['root_dir'], i) for i in t_dict['smoke_images']])
         return images
