@@ -179,8 +179,10 @@ class KmzCreator(object):
         self._pretty_kml = pretty_kml
 
         self._modes = config.get('DEFAULT', 'MODES')
-        self._concentration_param = config.get('DispersionGridInput', "PARAMETER")
-        self._dispersion_image_dir = config.get('DispersionGridOutput', "OUTPUT_DIR")
+        self._concentration_param_label = config.get(
+            'SmokeDispersionKMLOutput', "PARAMETER_LABEL")
+        self._dispersion_image_dir = config.get(
+            'DispersionGridOutput', "OUTPUT_DIR")
 
         section = 'SmokeDispersionKMLInput'
         self._met_type = config.get(section, "MET_TYPE")
@@ -473,7 +475,7 @@ class KmzCreator(object):
 
 
     def _create_concentration_information(self, grid_bbox):
-        kml_root = pykml.Folder().set_name('%s from Wildland Fire' % self._concentration_param.upper()).set_open(True)
+        kml_root = pykml.Folder().set_name('%s from Wildland Fire' % self._concentration_param_label.upper()).set_open(True)
 
         for layer in self._dispersion_images:
             for time_series_type in TimeSeriesTypes.ALL:
@@ -490,7 +492,8 @@ class KmzCreator(object):
                         kml_root = kml_root.with_feature(overlay)
 
                     if images_dict['smoke_images']:
-                        name = 'Layer %s %s %s' % (layer, pretty_name, self._concentration_param.upper())
+                        name = 'Layer %s %s %s' % (layer, pretty_name,
+                            self._concentration_param_label.upper())
                         data = self._create_concentration_folder(name,
                             images_dict['smoke_images'], grid_bbox,
                             visible=visible)
@@ -532,7 +535,8 @@ class KmzCreator(object):
 
 
     def _create_polygon_information(self, polygon_kmls):
-        kml_root = pykml.Folder().set_name('%s from Wildland Fire' % self._concentration_param.upper()).set_open(True)
+        kml_root = pykml.Folder().set_name('%s from Wildland Fire' %
+            self._concentration_param_label.upper()).set_open(True)
         for (poly_kml, dt) in polygon_kmls:
             link = pykml.Link().set_href(os.path.basename(poly_kml))
             list_style = pykml.ListStyle().set_list_item_type('checkHideChildren')
