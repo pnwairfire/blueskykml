@@ -134,37 +134,38 @@ def reproject_images(config, grid_bbox, heights):
     # gdal_translate - http://www.gdal.org/gdal_translate.html
     # gdalwarp -      http://www.gdal.org/gdalwarp.html
 
-    images = dfu.collect_all_dispersion_images(config)
-    for (time_series_type, time_series_dict) in images.items():
-        for (color_map_section, color_set_dict) in time_series_dict.items():
-            for image in color_set_dict['smoke_images']:
-                image_path = os.path.join(color_set_dict['root_dir'], image)
-                tiff_path1 = os.path.join(color_set_dict['root_dir'], 'temp1.tif')
-                tiff_path2 = os.path.join(color_set_dict['root_dir'], 'temp2.tif')
+    images = dfu.collect_all_dispersion_images(config, heights)
+    for height, height_dict in images.items():
+        for (time_series_type, time_series_dict) in height_dict.items():
+            for (color_map_section, color_set_dict) in time_series_dict.items():
+                for image in color_set_dict['smoke_images']:
+                    image_path = os.path.join(color_set_dict['root_dir'], image)
+                    tiff_path1 = os.path.join(color_set_dict['root_dir'], 'temp1.tif')
+                    tiff_path2 = os.path.join(color_set_dict['root_dir'], 'temp2.tif')
 
-                # Collect inputs for gdal translate and warp commands
-                a_srs = 'WGS84'
-                a_ullr = '%s %s %s %s' % (str(grid_bbox[0]), str(grid_bbox[3]), str(grid_bbox[2]), str(grid_bbox[1]))
-                t_srs = '+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
+                    # Collect inputs for gdal translate and warp commands
+                    a_srs = 'WGS84'
+                    a_ullr = '%s %s %s %s' % (str(grid_bbox[0]), str(grid_bbox[3]), str(grid_bbox[2]), str(grid_bbox[1]))
+                    t_srs = '+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 
-                # Build gdal translate and warp command line strings
-                gdal_translate_cmd1 = 'gdal_translate -a_srs %s -a_ullr %s %s %s' % (a_srs, a_ullr, image_path, tiff_path1)
-                gdal_warp_cmd = 'gdalwarp -t_srs \'%s\' %s %s' % (t_srs, tiff_path1, tiff_path2)
-                gdal_translate_cmd2 = 'gdal_translate -of PNG %s %s' % (tiff_path2, image_path)
+                    # Build gdal translate and warp command line strings
+                    gdal_translate_cmd1 = 'gdal_translate -a_srs %s -a_ullr %s %s %s' % (a_srs, a_ullr, image_path, tiff_path1)
+                    gdal_warp_cmd = 'gdalwarp -t_srs \'%s\' %s %s' % (t_srs, tiff_path1, tiff_path2)
+                    gdal_translate_cmd2 = 'gdal_translate -of PNG %s %s' % (tiff_path2, image_path)
 
-                # Gdal translate PNG image to TIF
-                logging.info("Executing: %s" % gdal_translate_cmd1)
-                os.system(gdal_translate_cmd1)
+                    # Gdal translate PNG image to TIF
+                    logging.info("Executing: %s" % gdal_translate_cmd1)
+                    os.system(gdal_translate_cmd1)
 
-                # Gdal warp TIF to new projection
-                logging.info("Executing: %s" % gdal_warp_cmd)
-                os.system(gdal_warp_cmd)
+                    # Gdal warp TIF to new projection
+                    logging.info("Executing: %s" % gdal_warp_cmd)
+                    os.system(gdal_warp_cmd)
 
-                # Gdal translate new TIF back to PNG
-                logging.info("Executing: %s" % gdal_translate_cmd2)
-                os.system(gdal_translate_cmd2)
+                    # Gdal translate new TIF back to PNG
+                    logging.info("Executing: %s" % gdal_translate_cmd2)
+                    os.system(gdal_translate_cmd2)
 
-                # Clean up intermediate files
-                os.remove(tiff_path1)
-                os.remove(tiff_path2)
-                os.remove(image_path + '.aux.xml')
+                    # Clean up intermediate files
+                    os.remove(tiff_path1)
+                    os.remove(tiff_path2)
+                    os.remove(image_path + '.aux.xml')

@@ -171,9 +171,11 @@ class KmzCreator(object):
 
     URL_MATCHER = re.compile('^https?://')
 
-    def __init__(self, config, grid_bbox, start_datetime=None,
+    def __init__(self, config, grid_bbox, heights, start_datetime=None,
             legend_name="colorbar.png", pretty_kml=False):
         self._config = config
+        self._grid_bbox = grid_bbox
+        self._heights = heights
 
         self._start_datetime = start_datetime
         self._pretty_kml = pretty_kml
@@ -219,7 +221,7 @@ class KmzCreator(object):
         self._concentration_information = None
         if 'dispersion' in self._modes:
             self._dispersion_images = self._collect_images()
-            self._concentration_information = self._create_concentration_information(grid_bbox)
+            self._concentration_information = self._create_concentration_information()
             self._image_assets = self._collect_image_assets()
             if self._do_create_polygons:
                 pgGen = PolygonGenerator(self._config)
@@ -474,7 +476,7 @@ class KmzCreator(object):
 
 
 
-    def _create_concentration_information(self, grid_bbox):
+    def _create_concentration_information(self):
         kml_root = pykml.Folder().set_name('%s from Wildland Fire' % self._concentration_param_label.upper()).set_open(True)
 
         for layer in self._dispersion_images:
@@ -495,14 +497,13 @@ class KmzCreator(object):
                         name = 'Layer %s %s %s' % (layer, pretty_name,
                             self._concentration_param_label.upper())
                         data = self._create_concentration_folder(name,
-                            images_dict['smoke_images'], grid_bbox,
-                            visible=visible)
+                            images_dict['smoke_images'], visible=visible)
                         kml_root = kml_root.with_feature(data)
 
         return kml_root
 
 
-    def _create_concentration_folder(self, name, images, grid_bbox, visible=False):
+    def _create_concentration_folder(self, name, images, visible=False):
         concentration_folder = pykml.Folder().set_name(name)
         for image in images:
             overlay_datetime_str = image.replace('.', '_').split('_')[-2] # Ex: 'hourly_20130101.png' would yield '20130101'
@@ -517,8 +518,9 @@ class KmzCreator(object):
             overlay_start = datetime.datetime.strptime(overlay_datetime_str, image_datetime_format)
             overlay_end = overlay_start + datetime.timedelta(hours=end_offset, seconds=-1)
             overlay_name = "%s %s" % (name, overlay_start.strftime(overlay_datetime_format))
-            concentration_overlay = self._create_ground_overlay(overlay_name, image, grid_bbox, start_date_time=overlay_start,
-                                                           end_date_time=overlay_end, visible=visible)
+            concentration_overlay = self._create_ground_overlay(
+                overlay_name, image, start_date_time=overlay_start,
+                end_date_time=overlay_end, visible=visible)
             concentration_folder.with_feature(concentration_overlay)
         return concentration_folder
 
@@ -567,7 +569,7 @@ class KmzCreator(object):
         return sorted(tuple_list, key=alphanum_key)
 
 
-    def _create_ground_overlay(self, name, image_path, grid_bbox, start_date_time=None, end_date_time=None, visible=False):
+    def _create_ground_overlay(self, name, image_path, start_date_time=None, end_date_time=None, visible=False):
         if start_date_time:
             start_date_str = start_date_time.strftime(KML_TIMESPAN_DATETIME_FORMAT)
         else:
@@ -580,7 +582,7 @@ class KmzCreator(object):
                      .set_begin(start_date_str)
                      .set_end(end_date_str))
         icon = pykml.Icon().set_href(image_path)
-        west, south, east, north = (float(val) for val in grid_bbox)
+        west, south, east, north = (float(val) for val in self._grid_bbox)
         lat_lon_box = pykml.LatLonBox().set_west(west).set_south(south).set_east(east).set_north(north)
         return (pykml.GroundOverlay()
                 .set_name(name)

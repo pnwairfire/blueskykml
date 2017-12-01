@@ -3,7 +3,7 @@ import json
 import logging
 
 from . import configuration
-from . import dispersiongrid
+from . import dispersiongrid as dg
 from . import dispersion_file_utils as dfu
 from . import dispersionimages
 from . import smokedispersionkml
@@ -26,8 +26,7 @@ def main(options):
 
         # Generate smoke dispersion images
         logging.info("Processing smoke dispersion NetCDF data into plot images...")
-        start_datetime, grid_bbox = dispersiongrid.create_dispersion_images(
-            config)
+        start_datetime, grid_bbox, heights = dg.create_dispersion_images(config)
 
         # Output dispersion grid bounds
         _output_grid_bbox(grid_bbox, config)
@@ -37,10 +36,12 @@ def main(options):
         dispersionimages.format_dispersion_images(config)
     else:
         start_datetime = config.get("DEFAULT", "DATE") if config.has_option("DEFAULT", "DATE") else datetime.now()
+        heights = None
         grid_bbox = None
 
     # Generate KMZ
-    smokedispersionkml.KmzCreator(config, grid_bbox, start_datetime=start_datetime).create_all()
+    smokedispersionkml.KmzCreator(config, grid_bbox, heights,
+        start_datetime=start_datetime).create_all()
 
     # If enabled, reproject concentration images to display in a different projection
     if config.getboolean('DispersionImages', 'REPROJECT_IMAGES'):
