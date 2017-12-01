@@ -23,7 +23,7 @@ def main(options):
 
         # Generate smoke dispersion images
         logging.info("Processing smoke dispersion NetCDF data into plot images...")
-        grid_bbox = dispersiongrid.create_aquiptpost_images(config)
+        grid_bbox, heights = dispersiongrid.create_aquiptpost_images(config)
 
         # Post process smoke dispersion images
         logging.info("Formatting dispersion plot images...")

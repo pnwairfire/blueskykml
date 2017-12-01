@@ -114,7 +114,7 @@ def _apply_transparency(image, background_color, opacity_factor):
                 pixdata[x, y] = pixel_color.get_color_tuple()
     return image
 
-def reproject_images(config, grid_bbox):
+def reproject_images(config, grid_bbox, heights):
     """Reproject images for display on map software (i.e. OpenLayers).
     PNG images will first be translated to TIF files via the 'gdal_translate' command.  The new TIF file will then be
     reprojected using the 'gdalwarp' command.  Finally, the reprojected TIF file will be warped back into PNG image form.

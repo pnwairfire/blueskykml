@@ -11,6 +11,9 @@ __all__ = [
     'collect_dispersion_images', 'collect_aquipt_images'
     ]
 
+def height_label(height):
+    return height + 'm'
+
 def create_dir_if_does_not_exist(outdir):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -27,27 +30,27 @@ def create_polygon_kmls_dir(config):
 # Note: this will memoize for a single instance of the config parse
 # TODO: pass in images_output_dir instead of the config object ?
 @memoizeme
-def image_dir(config, layer, time_series_type, color_map_type):
+def image_dir(config, height_label, time_series_type, color_map_type):
     """Returns the directory containing the specified image set"""
     images_output_dir = config.get('DispersionGridOutput', "OUTPUT_DIR")
-    return os.path.join(images_output_dir, str(layer), #"layer-".format(layer),
+    return os.path.join(images_output_dir, height_label,
         TIME_SET_DIR_NAMES[time_series_type], color_map_type)
 
-def create_image_set_dir(config, layer, time_series_type, color_map_type):
+def create_image_set_dir(config, height_label, time_series_type, color_map_type):
     """Creates the directory to contain the specified image set, if necessary"""
-    outdir = image_dir(config, layer, time_series_type, color_map_type)
+    outdir = image_dir(config, height_label, time_series_type, color_map_type)
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     return outdir
 
-def image_pathname(config, layer, time_series_type, color_map_type, ts):
+def image_pathname(config, height_label, time_series_type, color_map_type, ts):
     filename = ts.strftime(IMAGE_PREFIXES[time_series_type] + FILE_NAME_TIME_STAMP_PATTERNS[time_series_type])
-    outdir = image_dir(config, layer, time_series_type, color_map_type)
+    outdir = image_dir(config, height_label, time_series_type, color_map_type)
     return os.path.join(outdir, filename)
 
-def legend_pathname(config, layer, time_series_type, color_map_type):
+def legend_pathname(config, height_label, time_series_type, color_map_type):
     filename = "colorbar_%s" % (TIME_SET_DIR_NAMES[time_series_type])
-    outdir = image_dir(config, layer, time_series_type, color_map_type)
+    outdir = image_dir(config, height_label, time_series_type, color_map_type)
     return os.path.join(outdir, filename)
 
 
@@ -74,11 +77,12 @@ def collect_all_dispersion_images(config):
     images = {}
 
     for layer in config.get('DispersionGridInput', "LAYERS"):
-        images[layer] = dict((v, {}) for v in TimeSeriesTypes.ALL_PLUS_AQUIPT)
+        height_label = grid.heights[layer]
+        images[height_label] = dict((v, {}) for v in TimeSeriesTypes.ALL_PLUS_AQUIPT)
         for time_series_type in TimeSeriesTypes.ALL_PLUS_AQUIPT:
             for color_map_section in parse_color_map_names(config, CONFIG_COLOR_LABELS[time_series_type]):
                 color_set = {
-                    'root_dir': create_image_set_dir(config, layer,
+                    'root_dir': create_image_set_dir(config, height_label,
                         time_series_type, color_map_section),
                     'smoke_images': [],
                     'legend': None
@@ -89,7 +93,7 @@ def collect_all_dispersion_images(config):
                     else:  #  There should only be smoke images and a legend
                         color_set['legend'] = image
 
-                images[layer][time_series_type][color_map_section] = color_set
+                images[height_label][time_series_type][color_map_section] = color_set
 
     return images
 

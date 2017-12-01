@@ -69,6 +69,7 @@ class BSDispersionGrid:
         self.sizeX = self.ds.RasterXSize
         self.sizeY = self.ds.RasterYSize
         self.sizeZ = int(self.metadata["NC_GLOBAL#NLAYS"])
+        self.heights = self.metadata['NC_GLOBAL#VGLVLS'].replace('{','').replace(',0}','').split(',')
 
         # BlueSky dispersion outputs are dimensioned by [TSTEP, LAY, ROW, COL].
         # The number of GDAL raster bands (ds.RasterCount) will be TSTEP*LAY.
@@ -322,23 +323,36 @@ def create_dispersion_images(config):
     plot = None
 
     for layer in layers:
-        for color_map_section in dfu.parse_color_map_names(config, CONFIG_COLOR_LABELS[TimeSeriesTypes.HOURLY]):
-            plot = create_hourly_dispersion_images(config, grid, color_map_section, layer)
+        height = grid.heights[layer]
+        for color_map_section in dfu.parse_color_map_names(
+                config, CONFIG_COLOR_LABELS[TimeSeriesTypes.HOURLY]):
+            plot = create_hourly_dispersion_images(
+                config, grid, color_map_section, layer)
 
-        for color_map_section in dfu.parse_color_map_names(config, CONFIG_COLOR_LABELS[TimeSeriesTypes.THREE_HOUR]):
-            plot = create_three_hour_dispersion_images(config, grid, color_map_section, layer)
+        for color_map_section in dfu.parse_color_map_names(
+                config, CONFIG_COLOR_LABELS[TimeSeriesTypes.THREE_HOUR]):
+            plot = create_three_hour_dispersion_images(
+                config, grid, color_map_section, layer)
 
-        for color_map_section in dfu.parse_color_map_names(config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MAXIMUM]):
-            plot = create_daily_maximum_dispersion_images(config, grid, color_map_section, layer)
+        for color_map_section in dfu.parse_color_map_names(
+                config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MAXIMUM]):
+            plot = create_daily_maximum_dispersion_images(
+                config, grid, color_map_section, layer)
 
-        for color_map_section in dfu.parse_color_map_names(config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_AVERAGE]):
-            plot = create_daily_average_dispersion_images(config, grid, color_map_section, layer)
+        for color_map_section in dfu.parse_color_map_names(
+                config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_AVERAGE]):
+            plot = create_daily_average_dispersion_images(
+                config, grid, color_map_section, layer)
 
     if not plot:
         raise Exception("Configuration ERROR... No color maps defined.")
 
     # Return the grid starting date, and a tuple lon/lat bounding box of the plot
-    return grid.datetimes[0], (plot.lonmin, plot.latmin, plot.lonmax, plot.latmax)
+    return (
+        grid.datetimes[0],
+        (plot.lonmin, plot.latmin, plot.lonmax, plot.latmax),
+        [grid.heights[l] for l in layers] # only the heights extracted
+    )
 
 @memoizeme
 def create_color_plot(config, grid, section, parameter=None):
@@ -378,12 +392,16 @@ def create_color_plot(config, grid, section, parameter=None):
 
 def create_hourly_dispersion_images(config, grid, section, layer):
     plot = create_color_plot(config, grid, section)
+    height_label = dfu.height_label(grid.heights[layer])
 
-    outdir = dfu.create_image_set_dir(config, layer, dfu.TimeSeriesTypes.HOURLY, section)
+    outdir = dfu.create_image_set_dir(config, height_label,
+        dfu.TimeSeriesTypes.HOURLY, section)
 
     for i in range(grid.num_times):
         # Shift filename date stamps
-        fileroot = dfu.image_pathname(config, layer, dfu.TimeSeriesTypes.HOURLY, section, grid.datetimes[i]-timedelta(hours=1))
+        fileroot = dfu.image_pathname(config, height_label,
+            dfu.TimeSeriesTypes.HOURLY, section,
+            grid.datetimes[i]-timedelta(hours=1))
 
         logging.debug("Creating hourly (%s) concentration plot %d of %d " % (section, i+1, grid.num_times))
 
@@ -391,7 +409,8 @@ def create_hourly_dispersion_images(config, grid, section, layer):
         plot.make_contour_plot(grid.data[i,layer,:,:], fileroot)
 
     # Create a color bar to use in overlays
-    fileroot = dfu.legend_pathname(config, layer, dfu.TimeSeriesTypes.HOURLY, section)
+    fileroot = dfu.legend_pathname(config, height_label,
+        dfu.TimeSeriesTypes.HOURLY, section)
     plot.make_colorbar(fileroot)
 
     # plot will be used for its already computed min/max lat/lon
@@ -405,13 +424,14 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
     # TODO: write tests for this function
 
     plot = create_color_plot(config, grid, section)
+    height_label = dfu.height_label(grid.heights[layer])
 
-    outdir = dfu.create_image_set_dir(config, layer, dfu.TimeSeriesTypes.THREE_HOUR, section)
+    outdir = dfu.create_image_set_dir(config, height_label, dfu.TimeSeriesTypes.THREE_HOUR, section)
 
     for i in range(1, grid.num_times - 1):
         # Shift filename date stamps; shift an extra hour because we are on third
         # hour of three hour series and we want timestamp to reflect middle hour
-        fileroot = dfu.image_pathname(config, layer, dfu.TimeSeriesTypes.THREE_HOUR, section, grid.datetimes[i]-timedelta(hours=1))
+        fileroot = dfu.image_pathname(config, height_label, dfu.TimeSeriesTypes.THREE_HOUR, section, grid.datetimes[i]-timedelta(hours=1))
 
         logging.debug("Creating three hour (%s) concentration plot %d of %d " % (section, i+1, grid.num_times))
 
@@ -420,7 +440,7 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
 
 
     # Create a color bar to use in overlays
-    fileroot = dfu.legend_pathname(config, layer, dfu.TimeSeriesTypes.THREE_HOUR, section)
+    fileroot = dfu.legend_pathname(config, height_label, dfu.TimeSeriesTypes.THREE_HOUR, section)
     plot.make_colorbar(fileroot)
 
     # plot will be used for its already computed min/max lat/lon
@@ -428,31 +448,41 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
 
 def create_daily_maximum_dispersion_images(config, grid, section, layer):
     plot = create_color_plot(config, grid, section)
-    max_outdir = dfu.create_image_set_dir(config, layer, dfu.TimeSeriesTypes.DAILY_MAXIMUM, section)
+    height_label = dfu.height_label(grid.heights[layer])
+    max_outdir = dfu.create_image_set_dir(config, height_label,
+        dfu.TimeSeriesTypes.DAILY_MAXIMUM, section)
 
     hours_offset = 0
     grid.calc_aggregate_data(offset=hours_offset)
     for i in range(grid.num_days):
-        logging.debug("Creating daily maximum concentration plot %d of %d " % (i + 1, grid.num_days))
-        fileroot = dfu.image_pathname(config, layer, dfu.TimeSeriesTypes.DAILY_MAXIMUM, section, grid.datetimes[i*24])
+        logging.debug("Creating daily maximum concentration plot %d of %d "
+            % (i + 1, grid.num_days))
+        fileroot = dfu.image_pathname(config, height_label,
+            dfu.TimeSeriesTypes.DAILY_MAXIMUM, section, grid.datetimes[i*24])
         plot.make_contour_plot(grid.max_data[i,layer,:,:], fileroot)
 
-    plot.make_colorbar(dfu.legend_pathname(config, layer, dfu.TimeSeriesTypes.DAILY_MAXIMUM, section))
+    plot.make_colorbar(dfu.legend_pathname(config, height_label,
+        dfu.TimeSeriesTypes.DAILY_MAXIMUM, section))
     return plot
 
 def create_daily_average_dispersion_images(config, grid, section, layer):
     plot = create_color_plot(config, grid, section)
-    avg_outdir = dfu.create_image_set_dir(config, layer, dfu.TimeSeriesTypes.DAILY_AVERAGE, section)
+    height_label = dfu.height_label(grid.heights[layer])
+    avg_outdir = dfu.create_image_set_dir(config, height_label,
+        dfu.TimeSeriesTypes.DAILY_AVERAGE, section)
 
     hours_offset = 0
     grid.calc_aggregate_data(offset=hours_offset)
     for i in range(grid.num_days):
-        logging.debug("Creating daily average concentration plot %d of %d " % (i + 1, grid.num_days))
-        fileroot = dfu.image_pathname(config, layer, dfu.TimeSeriesTypes.DAILY_AVERAGE, section, grid.datetimes[i*24])
+        logging.debug("Creating daily average concentration plot %d of %d "
+            % (i + 1, grid.num_days))
+        fileroot = dfu.image_pathname(config, height_label,
+            dfu.TimeSeriesTypes.DAILY_AVERAGE, section, grid.datetimes[i*24])
         plot.make_contour_plot(grid.avg_data[i,layer,:,:], fileroot)
 
     # Create a color bars to use in overlays
-    plot.make_colorbar(dfu.legend_pathname(config, layer, dfu.TimeSeriesTypes.DAILY_AVERAGE, section))
+    plot.make_colorbar(dfu.legend_pathname(config, height_label,
+        dfu.TimeSeriesTypes.DAILY_AVERAGE, section))
 
     # plot will be used for its already computed min/max lat/lon
     return plot
@@ -462,15 +492,17 @@ def create_aquiptpost_images(config):
     section = 'DispersionGridInput'
     infile = config.get(section, "FILENAME")
     parameters = config.get(section, "PARAMETER").split()
-    layer = int(config.get(section, "LAYER"))
 
     # [DispersionGridOutput] configurations
 
     plot = None
-    for layer in config.get(section, "LAYERS"):
-        for section in dfu.parse_color_map_names(config, "AQUIPT_COLORS"):
-            outdir = dfu.create_image_set_dir(config, layer, dfu.TimeSeriesTypes.AQUIPT, section)
-            for parameter in parameters:
+    grid = None
+    for parameter in parameters:
+        for layer in config.get(section, "LAYERS"):
+            height_label = dfu.height_label(grid.heights[layer])
+            for section in dfu.parse_color_map_names(config, "AQUIPT_COLORS"):
+                outdir = dfu.create_image_set_dir(config, height_label,
+                    dfu.TimeSeriesTypes.AQUIPT, section)
                 grid = BSDispersionGrid(infile, param=parameter)  # dispersion grid instance
                 plot = create_color_plot(config, grid, section, parameter=parameter)
 
@@ -490,4 +522,7 @@ def create_aquiptpost_images(config):
         raise Exception("Configuration ERROR... No color maps defined.")
 
     # Return a tuple lon/lat bounding box of the plot
-    return (plot.lonmin, plot.latmin, plot.lonmax, plot.latmax)
+    return (
+        (plot.lonmin, plot.latmin, plot.lonmax, plot.latmax)
+        grid.heights
+    )
