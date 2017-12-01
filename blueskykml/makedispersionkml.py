@@ -33,7 +33,7 @@ def main(options):
 
         # Post process smoke dispersion images
         logging.info("Formatting dispersion plot images...")
-        dispersionimages.format_dispersion_images(config)
+        dispersionimages.format_dispersion_images(config, heights)
     else:
         start_datetime = config.get("DEFAULT", "DATE") if config.has_option("DEFAULT", "DATE") else datetime.now()
         heights = None

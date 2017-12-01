@@ -48,7 +48,7 @@ class SimpleColor(object):
         return self.r, self.g, self.b, self.a
 
 
-def format_dispersion_images(config, legend_name="colorbar"):
+def format_dispersion_images(config, heights, legend_name="colorbar"):
     # [DispersionImages] configurations
     section = 'DispersionImages'
     image_opacity_factor = config.getfloat(section, "IMAGE_OPACITY_FACTOR")
@@ -65,10 +65,10 @@ def format_dispersion_images(config, legend_name="colorbar"):
     background_color = SimpleColor(red, green, blue, 255)
 
     # [DispersionGridOutput] configurations
-    images = dfu.collect_all_dispersion_images(config)
+    images = dfu.collect_all_dispersion_images(config, heights)
 
-    for layer, layer_dict in images.items():
-        for (time_series_type, time_series_dict) in layer_dict.items():
+    for height_label, height_dict in images.items():
+        for (time_series_type, time_series_dict) in height_dict.items():
             for (color_map_section, color_set_dict) in time_series_dict.items():
                 # iof is the color map section's custom image opacity factor, if specified
                 iof = (config.getfloat(color_map_section, "IMAGE_OPACITY_FACTOR") if
@@ -77,8 +77,8 @@ def format_dispersion_images(config, legend_name="colorbar"):
                 i = 0
                 for image_name in color_set_dict['smoke_images']:
                     i += 1
-                    logging.debug("Applying transparency %s to plot %i of layer %s %s %s" % (
-                        iof, i, layer, TIME_SERIES_PRETTY_NAMES[time_series_type], color_map_section))
+                    logging.debug("Applying transparency %s to plot %i of height %s %s %s" % (
+                        iof, i, height_label, TIME_SERIES_PRETTY_NAMES[time_series_type], color_map_section))
                     image_path = os.path.join(color_set_dict['root_dir'], image_name)
                     image = Image.open(image_path)
                     image = _apply_transparency(image, deepcopy(background_color), iof)

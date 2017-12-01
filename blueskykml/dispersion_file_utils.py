@@ -11,7 +11,9 @@ __all__ = [
     'collect_dispersion_images'
     ]
 
-def height_label(height):
+def create_height_label(height):
+    """Doesn't do much, but it's centralized so that we change easily
+    """
     return height + 'm'
 
 def create_dir_if_does_not_exist(outdir):
@@ -44,12 +46,13 @@ def create_image_set_dir(config, height_label, time_series_type, color_map_type)
     return outdir
 
 def image_pathname(config, height_label, time_series_type, color_map_type, ts):
-    filename = ts.strftime(IMAGE_PREFIXES[time_series_type] + FILE_NAME_TIME_STAMP_PATTERNS[time_series_type])
+    filename = ts.strftime(height_label + '_' + IMAGE_PREFIXES[time_series_type]
+        + FILE_NAME_TIME_STAMP_PATTERNS[time_series_type])
     outdir = image_dir(config, height_label, time_series_type, color_map_type)
     return os.path.join(outdir, filename)
 
 def legend_pathname(config, height_label, time_series_type, color_map_type):
-    filename = "colorbar_%s" % (TIME_SET_DIR_NAMES[time_series_type])
+    filename = "%s_colorbar_%s" % (height_label, TIME_SET_DIR_NAMES[time_series_type])
     outdir = image_dir(config, height_label, time_series_type, color_map_type)
     return os.path.join(outdir, filename)
 
@@ -69,12 +72,12 @@ def is_smoke_image(file_name, time_series_type):
 
 
 @memoizeme
-def collect_all_dispersion_images(config):
+def collect_all_dispersion_images(config, heights):
     """Collect images from all sets of colormap images in each time series category"""
     images = {}
 
-    for layer in config.get('DispersionGridInput', "LAYERS"):
-        height_label = grid.heights[layer]
+    for height in heights:
+        height_label = create_height_label(height)
         images[height_label] = dict((v, {}) for v in TimeSeriesTypes.ALL)
         for time_series_type in TimeSeriesTypes.ALL:
             for color_map_section in parse_color_map_names(config, CONFIG_COLOR_LABELS[time_series_type]):
@@ -97,22 +100,23 @@ def collect_all_dispersion_images(config):
 
 # Note: collect_dispersion_images was copied over from smokedispersionkml.py and
 # refactored to remove redundancy
-def collect_dispersion_images(config):
+def collect_dispersion_images(config, heights):
     """Collect images from first set of colormap images in each time series category"""
     images = {}
 
-    for layer in config.get('DispersionGridInput', "LAYERS"):
-        images[layer] = dict((v, {'smoke_images':[], 'legend': None}) for v in TimeSeriesTypes.ALL)
+    for height in heights:
+        height_label = create_height_label(height)
+        images[height_label] = dict((v, {'smoke_images':[], 'legend': None}) for v in TimeSeriesTypes.ALL)
         for time_series_type in TimeSeriesTypes.ALL:
             color_map_sections = parse_color_map_names(config, CONFIG_COLOR_LABELS[time_series_type])
             if color_map_sections and len(color_map_sections) > 0:
-                outdir = create_image_set_dir(config, layer,
+                outdir = create_image_set_dir(config, height_label,
                     time_series_type, color_map_sections[0])
-                images[layer][time_series_type]['root_dir'] = outdir
+                images[height_label][time_series_type]['root_dir'] = outdir
                 for image in os.listdir(outdir):
                     if image.startswith(IMAGE_PREFIXES[time_series_type]):  # <-- this is to exclude color bar
-                        images[layer][time_series_type]['smoke_images'].append(image)
+                        images[height_label][time_series_type]['smoke_images'].append(image)
                     else:  #  There should only be smoke images and a legend
-                        images[layer][time_series_type]['legend'] = image
+                        images[height_label][time_series_type]['legend'] = image
 
     return images

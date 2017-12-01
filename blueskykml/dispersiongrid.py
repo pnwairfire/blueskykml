@@ -323,7 +323,6 @@ def create_dispersion_images(config):
     plot = None
 
     for layer in layers:
-        height = grid.heights[layer]
         for color_map_section in dfu.parse_color_map_names(
                 config, CONFIG_COLOR_LABELS[TimeSeriesTypes.HOURLY]):
             plot = create_hourly_dispersion_images(
@@ -392,7 +391,7 @@ def create_color_plot(config, grid, section, parameter=None):
 
 def create_hourly_dispersion_images(config, grid, section, layer):
     plot = create_color_plot(config, grid, section)
-    height_label = dfu.height_label(grid.heights[layer])
+    height_label = dfu.create_height_label(grid.heights[layer])
 
     outdir = dfu.create_image_set_dir(config, height_label,
         dfu.TimeSeriesTypes.HOURLY, section)
@@ -403,7 +402,8 @@ def create_hourly_dispersion_images(config, grid, section, layer):
             dfu.TimeSeriesTypes.HOURLY, section,
             grid.datetimes[i]-timedelta(hours=1))
 
-        logging.debug("Creating hourly (%s) concentration plot %d of %d " % (section, i+1, grid.num_times))
+        logging.debug("Creating height %s hourly (%s) concentration "
+            "plot %d of %d " % (height_label, section, i+1, grid.num_times))
 
         # Create a filled contour plot
         plot.make_contour_plot(grid.data[i,layer,:,:], fileroot)
@@ -424,7 +424,7 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
     # TODO: write tests for this function
 
     plot = create_color_plot(config, grid, section)
-    height_label = dfu.height_label(grid.heights[layer])
+    height_label = dfu.create_height_label(grid.heights[layer])
 
     outdir = dfu.create_image_set_dir(config, height_label,
         dfu.TimeSeriesTypes.THREE_HOUR, section)
@@ -436,7 +436,8 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
             dfu.TimeSeriesTypes.THREE_HOUR, section,
             grid.datetimes[i]-timedelta(hours=1))
 
-        logging.debug("Creating three hour (%s) concentration plot %d of %d " % (section, i+1, grid.num_times))
+        logging.debug("Creating height %s three hour (%s) concentration "
+            "plot %d of %d " % (height_label, section, i+1, grid.num_times))
 
         # Create a filled contour plot
         plot.make_contour_plot(np.average(grid.data[i-1:i+2,layer,:,:], 0), fileroot)
@@ -452,15 +453,15 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
 
 def create_daily_maximum_dispersion_images(config, grid, section, layer):
     plot = create_color_plot(config, grid, section)
-    height_label = dfu.height_label(grid.heights[layer])
+    height_label = dfu.create_height_label(grid.heights[layer])
     max_outdir = dfu.create_image_set_dir(config, height_label,
         dfu.TimeSeriesTypes.DAILY_MAXIMUM, section)
 
     hours_offset = 0
     grid.calc_aggregate_data(offset=hours_offset)
     for i in range(grid.num_days):
-        logging.debug("Creating daily maximum concentration plot %d of %d "
-            % (i + 1, grid.num_days))
+        logging.debug("Creating height %s daily maximum concentration "
+            "plot %d of %d "% (height_label, i + 1, grid.num_days))
         fileroot = dfu.image_pathname(config, height_label,
             dfu.TimeSeriesTypes.DAILY_MAXIMUM, section,
             grid.datetimes[i*24])
@@ -472,15 +473,15 @@ def create_daily_maximum_dispersion_images(config, grid, section, layer):
 
 def create_daily_average_dispersion_images(config, grid, section, layer):
     plot = create_color_plot(config, grid, section)
-    height_label = dfu.height_label(grid.heights[layer])
+    height_label = dfu.create_height_label(grid.heights[layer])
     avg_outdir = dfu.create_image_set_dir(config, height_label,
         dfu.TimeSeriesTypes.DAILY_AVERAGE, section)
 
     hours_offset = 0
     grid.calc_aggregate_data(offset=hours_offset)
     for i in range(grid.num_days):
-        logging.debug("Creating daily average concentration plot %d of %d "
-            % (i + 1, grid.num_days))
+        logging.debug("Creating height %s daily average concentration "
+            "plot %d of %d " % (height_label, i + 1, grid.num_days))
         fileroot = dfu.image_pathname(config, height_label,
             dfu.TimeSeriesTypes.DAILY_AVERAGE, section, grid.datetimes[i*24])
         plot.make_contour_plot(grid.avg_data[i,layer,:,:], fileroot)

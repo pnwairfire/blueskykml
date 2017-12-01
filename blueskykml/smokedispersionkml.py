@@ -311,7 +311,7 @@ class KmzCreator(object):
     # Data Generating Methods
 
     def _collect_images(self):
-        return dfu.collect_dispersion_images(self._config)
+        return dfu.collect_dispersion_images(self._config, self._heights)
 
     # Data Gathering Methods
 
@@ -479,9 +479,9 @@ class KmzCreator(object):
     def _create_concentration_information(self):
         kml_root = pykml.Folder().set_name('%s from Wildland Fire' % self._concentration_param_label.upper()).set_open(True)
 
-        for layer in self._dispersion_images:
+        for height_label in self._dispersion_images:
             for time_series_type in TimeSeriesTypes.ALL:
-                images_dict = self._dispersion_images[layer][time_series_type]
+                images_dict = self._dispersion_images[height_label][time_series_type]
                 if images_dict:
                     visible = TimeSeriesTypes.DAILY_MAXIMUM == time_series_type
                     pretty_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
@@ -489,12 +489,12 @@ class KmzCreator(object):
                     if images_dict['legend']:
                         # TODO:  put legends in concentration folders?
                         overlay = self._create_screen_overlay(
-                            'Layer %s %s Key' % (layer, pretty_name), images_dict['legend'],
+                            'Height %s %s Key' % (height_label, pretty_name), images_dict['legend'],
                             visible=visible)
                         kml_root = kml_root.with_feature(overlay)
 
                     if images_dict['smoke_images']:
-                        name = 'Layer %s %s %s' % (layer, pretty_name,
+                        name = 'Height %s %s %s' % (height_label, pretty_name,
                             self._concentration_param_label.upper())
                         data = self._create_concentration_folder(name,
                             images_dict['smoke_images'], visible=visible)
@@ -527,8 +527,8 @@ class KmzCreator(object):
 
     def _collect_image_assets(self):
         images = []
-        for layer in self._dispersion_images:
-            for t_dict in self._dispersion_images[layer].values():
+        for height_label in self._dispersion_images:
+            for t_dict in self._dispersion_images[height_label].values():
                 if t_dict['legend']:
                     images.append(os.path.join(t_dict['root_dir'], t_dict['legend']))
                 if t_dict['smoke_images']:
