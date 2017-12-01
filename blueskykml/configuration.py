@@ -109,9 +109,8 @@ class ConfigBuilder(object):
             config file overlaid with what was specified on the command line
     """
 
-    def __init__(self, options, is_aquipt=False):
+    def __init__(self, options):
         self._options = options
-        self._is_aquipt = is_aquipt
         self._build_config()
 
     def _log(self, msg):
@@ -147,12 +146,9 @@ class ConfigBuilder(object):
 
     DEFAULT_CONFIG = os.path.join(
         os.path.dirname(__file__), 'config/default.ini')
-    DEFAULT_AQUIPT_CONFIG = os.path.join(
-        os.path.dirname(__file__), 'config/default-aquipt.ini')
 
     def _load_default_config_file(self):
-        default_config_file = (self.DEFAULT_AQUIPT_CONFIG
-            if self._is_aquipt else self.DEFAULT_CONFIG)
+        default_config_file = self.DEFAULT_CONFIG
         self._log(" * Loading default config file %s" % (default_config_file))
         self.config = BlueSkyKMLConfigParser()
         self.config.read(default_config_file)

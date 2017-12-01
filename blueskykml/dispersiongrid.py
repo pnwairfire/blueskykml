@@ -426,12 +426,15 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
     plot = create_color_plot(config, grid, section)
     height_label = dfu.height_label(grid.heights[layer])
 
-    outdir = dfu.create_image_set_dir(config, height_label, dfu.TimeSeriesTypes.THREE_HOUR, section)
+    outdir = dfu.create_image_set_dir(config, height_label,
+        dfu.TimeSeriesTypes.THREE_HOUR, section)
 
     for i in range(1, grid.num_times - 1):
         # Shift filename date stamps; shift an extra hour because we are on third
         # hour of three hour series and we want timestamp to reflect middle hour
-        fileroot = dfu.image_pathname(config, height_label, dfu.TimeSeriesTypes.THREE_HOUR, section, grid.datetimes[i]-timedelta(hours=1))
+        fileroot = dfu.image_pathname(config, height_label,
+            dfu.TimeSeriesTypes.THREE_HOUR, section,
+            grid.datetimes[i]-timedelta(hours=1))
 
         logging.debug("Creating three hour (%s) concentration plot %d of %d " % (section, i+1, grid.num_times))
 
@@ -440,7 +443,8 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
 
 
     # Create a color bar to use in overlays
-    fileroot = dfu.legend_pathname(config, height_label, dfu.TimeSeriesTypes.THREE_HOUR, section)
+    fileroot = dfu.legend_pathname(config, height_label,
+        dfu.TimeSeriesTypes.THREE_HOUR, section)
     plot.make_colorbar(fileroot)
 
     # plot will be used for its already computed min/max lat/lon
@@ -458,7 +462,8 @@ def create_daily_maximum_dispersion_images(config, grid, section, layer):
         logging.debug("Creating daily maximum concentration plot %d of %d "
             % (i + 1, grid.num_days))
         fileroot = dfu.image_pathname(config, height_label,
-            dfu.TimeSeriesTypes.DAILY_MAXIMUM, section, grid.datetimes[i*24])
+            dfu.TimeSeriesTypes.DAILY_MAXIMUM, section,
+            grid.datetimes[i*24])
         plot.make_contour_plot(grid.max_data[i,layer,:,:], fileroot)
 
     plot.make_colorbar(dfu.legend_pathname(config, height_label,
@@ -486,43 +491,3 @@ def create_daily_average_dispersion_images(config, grid, section, layer):
 
     # plot will be used for its already computed min/max lat/lon
     return plot
-
-def create_aquiptpost_images(config):
-    # [DispersionGridInput] configurations
-    section = 'DispersionGridInput'
-    infile = config.get(section, "FILENAME")
-    parameters = config.get(section, "PARAMETER").split()
-
-    # [DispersionGridOutput] configurations
-
-    plot = None
-    grid = None
-    for parameter in parameters:
-        for layer in config.get(section, "LAYERS"):
-            height_label = dfu.height_label(grid.heights[layer])
-            for section in dfu.parse_color_map_names(config, "AQUIPT_COLORS"):
-                outdir = dfu.create_image_set_dir(config, height_label,
-                    dfu.TimeSeriesTypes.AQUIPT, section)
-                grid = BSDispersionGrid(infile, param=parameter)  # dispersion grid instance
-                plot = create_color_plot(config, grid, section, parameter=parameter)
-
-                logging.debug("Creating aggregate plot for %s " % (parameter))
-                for i in range(grid.num_times):
-                    fileroot = os.path.join(outdir, parameter)
-                    plot.make_contour_plot(grid.data[i,layer,:,:], fileroot)
-
-                # Create a color bar to use in overlays
-                fileroot = os.path.join(outdir, 'colorbar_'+parameter)
-
-                units = '%' if (parameter and ('PERCENT' in parameter or 'PCNTSIMS' in parameter)) else 'PM25'
-                plot.make_colorbar(fileroot, label=units)
-
-
-    if not plot:
-        raise Exception("Configuration ERROR... No color maps defined.")
-
-    # Return a tuple lon/lat bounding box of the plot
-    return (
-        (plot.lonmin, plot.latmin, plot.lonmax, plot.latmax)
-        grid.heights
-    )

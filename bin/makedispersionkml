@@ -8,7 +8,7 @@ from collections import defaultdict
 
 try:
     from blueskykml import (
-        makedispersionkml, makeaquiptdispersionkml, configuration, __version__
+        makedispersionkml, configuration, __version__
     )
 except:
     import os
@@ -16,7 +16,7 @@ except:
     root_dir = os.path.abspath(os.path.join(sys.path[0], '../'))
     sys.path.insert(0, root_dir)
     from blueskykml import (
-        makedispersionkml, makeaquiptdispersionkml, configuration, __version__
+        makedispersionkml, configuration, __version__
     )
 
 def errout(msg):
@@ -55,7 +55,6 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--configfile", default=None, help="Configuration file")
     parser.add_argument("-p", "--prettykml", default=False, action="store_true", help="Outputs kml in a human readable format")
     parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Increases volume of output.")
-    parser.add_argument("-a", "--aquipt", default=False, action="store_true", help="Run AQUIPT version.")
     parser.add_argument("--version", default=False, action="store_true", help="Output blueskykml version and exit.")
 
     # Optional config overrides
@@ -87,10 +86,7 @@ if __name__ == '__main__':
 
     try:
         # TODO: clean up any outputs created?  Should this be toggleable via command line option?
-        if args.aquipt:
-            makeaquiptdispersionkml.main(args)
-        else:
-            makedispersionkml.main(args)
+        makedispersionkml.main(args)
     except configuration.ConfigurationError as e:
         errout("*** CONFIGURATION ERROR: %s" % (str(e)))
     except Exception as e:

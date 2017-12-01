@@ -44,7 +44,7 @@ def main(options):
 
     # If enabled, reproject concentration images to display in a different projection
     if config.getboolean('DispersionImages', 'REPROJECT_IMAGES'):
-        dispersionimages.reproject_images(config, grid_bbox)
+        dispersionimages.reproject_images(config, grid_bbox, heights)
 
     logging.info("Make Dispersion finished.")
 

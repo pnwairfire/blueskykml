@@ -8,7 +8,7 @@ from .memoize import memoizeme
 __all__ = [
     'create_dispersion_images_dir', 'image_dir', 'create_image_set_dir',
     'image_pathname', 'parse_color_map_names', 'collect_all_dispersion_images',
-    'collect_dispersion_images', 'collect_aquipt_images'
+    'collect_dispersion_images'
     ]
 
 def height_label(height):
@@ -65,10 +65,7 @@ def parse_color_map_names(config, set_name):
     return []
 
 def is_smoke_image(file_name, time_series_type):
-    if time_series_type == TimeSeriesTypes.AQUIPT:
-        return len([p for p in AQUIPT_IMAGE_PREFIXES.values() if file_name.startswith(p)]) > 0
-    else:
-        return file_name.startswith(IMAGE_PREFIXES[time_series_type])
+    return file_name.startswith(IMAGE_PREFIXES[time_series_type])
 
 
 @memoizeme
@@ -78,8 +75,8 @@ def collect_all_dispersion_images(config):
 
     for layer in config.get('DispersionGridInput', "LAYERS"):
         height_label = grid.heights[layer]
-        images[height_label] = dict((v, {}) for v in TimeSeriesTypes.ALL_PLUS_AQUIPT)
-        for time_series_type in TimeSeriesTypes.ALL_PLUS_AQUIPT:
+        images[height_label] = dict((v, {}) for v in TimeSeriesTypes.ALL)
+        for time_series_type in TimeSeriesTypes.ALL:
             for color_map_section in parse_color_map_names(config, CONFIG_COLOR_LABELS[time_series_type]):
                 color_set = {
                     'root_dir': create_image_set_dir(config, height_label,
@@ -117,29 +114,5 @@ def collect_dispersion_images(config):
                         images[layer][time_series_type]['smoke_images'].append(image)
                     else:  #  There should only be smoke images and a legend
                         images[layer][time_series_type]['legend'] = image
-
-    return images
-
-
-# Note: collect_aquipt_images was copied over from smokedispersionkml.py and
-# refactored to remove redundancy
-def collect_aquipt_images(config):
-    images = {}
-
-    for layer in config.get('DispersionGridInput', "LAYERS"):
-        images[layer] = dict((t, {'images': [], 'legends': []}) for t in AquiptImageTypes.ALL)
-        color_map_sections = parse_color_map_names(config, CONFIG_COLOR_LABELS[TimeSeriesTypes.AQUIPT])
-        if color_map_sections and len(color_map_sections) > 0:
-            outdir = create_image_set_dir(config, layer,
-                TimeSeriesTypes.AQUIPT, color_map_sections[0])
-            images[layer]['root_dir'] = outdir
-            for image in os.listdir(outdir):
-                matching_types = [i[0] for i in AQUIPT_IMAGE_PREFIXES.items() if image.startswith(i[1])]
-                image_type = matching_types[0] if len(matching_types) > 0 else None
-
-                if image_type is not None:
-                    images[layer][image_type]['images'].append(image)
-                    legend = "colorbar_%s.png" % image.split('.')[0]
-                    images[layer][image_types]['legends'].append(legend)
 
     return images
