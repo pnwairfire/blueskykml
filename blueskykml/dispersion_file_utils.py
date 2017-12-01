@@ -67,8 +67,8 @@ def parse_color_map_names(config, set_name):
         return [name.strip() for name in config.get("DispersionGridOutput", set_name).split(',')]
     return []
 
-def is_smoke_image(file_name, time_series_type):
-    return file_name.startswith(IMAGE_PREFIXES[time_series_type])
+def is_smoke_image(file_name, height_label, time_series_type):
+    return file_name.startswith(height_label + '_' + IMAGE_PREFIXES[time_series_type])
 
 
 @memoizeme
@@ -88,7 +88,7 @@ def collect_all_dispersion_images(config, heights):
                     'legend': None
                 }
                 for image in os.listdir(color_set['root_dir']):
-                    if is_smoke_image(image, time_series_type):  # <-- this is to exclude color bar
+                    if is_smoke_image(image, height_label, time_series_type):  # <-- this is to exclude color bar
                         color_set['smoke_images'].append(image)
                     else:  #  There should only be smoke images and a legend
                         color_set['legend'] = image
@@ -114,7 +114,7 @@ def collect_dispersion_images(config, heights):
                     time_series_type, color_map_sections[0])
                 images[height_label][time_series_type]['root_dir'] = outdir
                 for image in os.listdir(outdir):
-                    if image.startswith(IMAGE_PREFIXES[time_series_type]):  # <-- this is to exclude color bar
+                    if is_smoke_image(image, height_label, time_series_type):  # <-- this is to exclude color bar
                         images[height_label][time_series_type]['smoke_images'].append(image)
                     else:  #  There should only be smoke images and a legend
                         images[height_label][time_series_type]['legend'] = image
