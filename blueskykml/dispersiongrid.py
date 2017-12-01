@@ -313,6 +313,11 @@ def create_dispersion_images(config):
     parameter = config.get(section, "PARAMETER")
     layers = config.get(section, "LAYERS")
     grid = BSDispersionGrid(infile, param=parameter)  # dispersion grid instance
+    if max(layers) >= grid.sizeZ:
+        raise Exception("Requested layers ({}) outside of what's available in"
+            " dispersion grid (which has {} layer{})".format(
+                ', '.join([str(e) for e in layers]), grid.sizeZ,
+                's' if grid.sizeZ > 1 else ''))
 
     plot = None
 
