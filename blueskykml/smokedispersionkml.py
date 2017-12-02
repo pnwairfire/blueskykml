@@ -235,10 +235,10 @@ class KmzCreator(object):
             include_disclaimer, include_concentration_images, include_polygons):
         kml = pykml.KML()
 
-        root_doc_name = ("%s_%s" % (prefix, self._start_datetime.strftime('%Y%m%d'))
+        root_doc_name = ("%s %s" % (prefix, self._start_datetime.strftime('%Y%m%d'))
             if self._start_datetime else prefix)
         if self._met_type:
-            root_doc_name += "_%s" % (self._met_type)
+            root_doc_name += " %s" % (self._met_type)
         root_doc = pykml.Document().set_name(root_doc_name).set_open(True)
 
         # Set default KML screen time/position
@@ -292,16 +292,16 @@ class KmzCreator(object):
         if (self._config.has_option('SmokeDispersionKMLOutput', "KMZ_FILE")
                 and self._config.get('SmokeDispersionKMLOutput', "KMZ_FILE")):
             self.create(self._config.get('SmokeDispersionKMLOutput', "KMZ_FILE"),
-                'doc.kml', 'BSF', True, True, True, False)
+                'doc.kml', 'BlueSky Smoke Dispersion', True, True, True, False)
 
         if (self._config.has_option('SmokeDispersionKMLOutput', "KMZ_FIRE_FILE")
                 and self._config.get('SmokeDispersionKMLOutput', "KMZ_FIRE_FILE")):
             self.create(self._config.get('SmokeDispersionKMLOutput', "KMZ_FIRE_FILE"),
-                'doc_fires.kml', 'BSFFIRES_', True, False, False, False)
+                'doc_fires.kml', 'BlueSky Fires', True, False, False, False)
 
         if self._do_create_polygons:
             self.create(self._config.get('PolygonsKML', "KMZ_FILE"), 'doc_polygons.kml',
-                'BSF_Polygons', True, False, False, True)
+                'BlueSky Smoke Dispersion- Polygons', True, False, False, True)
 
 
     ##
