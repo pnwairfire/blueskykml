@@ -480,6 +480,7 @@ class KmzCreator(object):
         kml_root = pykml.Folder().set_name('%s from Wildland Fire' % self._concentration_param_label.upper()).set_open(True)
 
         for height_label in self._dispersion_images:
+            height_root = pykml.Folder().set_name('Height %s ' % (height_label))
             for time_series_type in TimeSeriesTypes.ALL:
                 images_dict = self._dispersion_images[height_label][time_series_type]
                 if images_dict:
@@ -489,16 +490,17 @@ class KmzCreator(object):
                     if images_dict['legend']:
                         # TODO:  put legends in concentration folders?
                         overlay = self._create_screen_overlay(
-                            'Height %s %s Key' % (height_label, pretty_name), images_dict['legend'],
+                            '%s Key' % (pretty_name), images_dict['legend'],
                             visible=visible)
-                        kml_root = kml_root.with_feature(overlay)
+                        height_root = height_root.with_feature(overlay)
 
                     if images_dict['smoke_images']:
-                        name = 'Height %s %s %s' % (height_label, pretty_name,
+                        name = '%s %s' % (pretty_name,
                             self._concentration_param_label.upper())
                         data = self._create_concentration_folder(name,
                             images_dict['smoke_images'], visible=visible)
-                        kml_root = kml_root.with_feature(data)
+                        height_root = height_root.with_feature(data)
+            kml_root = kml_root.with_feature(height_root)
 
         return kml_root
 
