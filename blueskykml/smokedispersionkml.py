@@ -478,13 +478,14 @@ class KmzCreator(object):
 
     def _create_concentration_information(self):
         kml_root = pykml.Folder().set_name('%s from Wildland Fire' % self._concentration_param_label.upper()).set_open(True)
-
+        min_height_label = min([int(e.replace('m','')) for e in self._dispersion_images])
         for height_label in self._dispersion_images:
             height_root = pykml.Folder().set_name('Height %s ' % (height_label))
             for time_series_type in TimeSeriesTypes.ALL:
                 images_dict = self._dispersion_images[height_label][time_series_type]
                 if images_dict:
-                    visible = TimeSeriesTypes.DAILY_MAXIMUM == time_series_type
+                    visible = (TimeSeriesTypes.DAILY_MAXIMUM == time_series_type
+                        and height_label == min_height_label)
                     pretty_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
 
                     if images_dict['legend']:
