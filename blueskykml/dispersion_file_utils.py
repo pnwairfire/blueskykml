@@ -20,7 +20,6 @@ def create_dir_if_does_not_exist(outdir):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-
 def create_dispersion_images_dir(config):
     outdir = config.get('DispersionGridOutput', "OUTPUT_DIR")
     create_dir_if_does_not_exist(outdir)
