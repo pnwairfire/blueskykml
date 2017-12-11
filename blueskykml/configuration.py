@@ -24,7 +24,9 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
         'DispersionGridInput': {
             'LAYERS': {"type": list, "nested_type": int},
         },
-        'Foo':{'baz': {'type': int}}
+        'DispersionImages': {
+            'DAILY_IMAGES_UTC_OFFSETS': {"type": list, "nested_type": int},
+        }
     }
 
     def __init__(self, *args, **params):

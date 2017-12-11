@@ -6,10 +6,10 @@ from .constants import *
 from .memoize import memoizeme
 
 __all__ = [
-    'create_dispersion_images_dir', 'image_dir', 'create_image_set_dir',
-    'image_pathname', 'parse_color_map_names', 'collect_all_dispersion_images',
-    'collect_dispersion_images'
-    ]
+    'create_dispersion_images_dir', 'create_image_set_dir',
+    'image_pathname', 'legend_pathname', 'parse_color_map_names',
+    'collect_all_dispersion_images', 'collect_dispersion_images'
+]
 
 def create_height_label(height):
     """Doesn't do much, but it's centralized so that we change easily
@@ -29,32 +29,24 @@ def create_polygon_kmls_dir(config):
     outdir = config.get('PolygonsKML', "POLYGONS_OUTPUT_DIR")
     create_dir_if_does_not_exist(outdir)
 
-# Note: this will memoize for a single instance of the config parse
-# TODO: pass in images_output_dir instead of the config object ?
-@memoizeme
-def image_dir(config, height_label, time_series_type, color_map_type):
-    """Returns the directory containing the specified image set"""
-    images_output_dir = config.get('DispersionGridOutput', "OUTPUT_DIR")
-    return os.path.join(images_output_dir, height_label,
-        TIME_SET_DIR_NAMES[time_series_type], color_map_type)
-
-def create_image_set_dir(config, height_label, time_series_type, color_map_type):
+def create_image_set_dir(config, *dirs):
     """Creates the directory to contain the specified image set, if necessary"""
-    outdir = image_dir(config, height_label, time_series_type, color_map_type)
+    images_output_dir = config.get('DispersionGridOutput', "OUTPUT_DIR")
+    outdir = os.path.join(images_output_dir, *dirs)
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     return outdir
 
-def image_pathname(config, height_label, time_series_type, color_map_type, ts):
-    filename = ts.strftime(height_label + '_' + IMAGE_PREFIXES[time_series_type]
+def image_pathname(image_set_dir, height_label, time_series_type, ts):
+    filename = ts.strftime(height_label + '_'
+        + IMAGE_PREFIXES[time_series_type]
         + FILE_NAME_TIME_STAMP_PATTERNS[time_series_type])
-    outdir = image_dir(config, height_label, time_series_type, color_map_type)
-    return os.path.join(outdir, filename)
+    return os.path.join(image_set_dir, filename)
 
-def legend_pathname(config, height_label, time_series_type, color_map_type):
-    filename = "%s_colorbar_%s" % (height_label, TIME_SET_DIR_NAMES[time_series_type])
-    outdir = image_dir(config, height_label, time_series_type, color_map_type)
-    return os.path.join(outdir, filename)
+def legend_pathname(image_set_dir, height_label, time_series_type):
+    filename = "%s_colorbar_%s" % (height_label,
+        TIME_SET_DIR_NAMES[time_series_type])
+    return os.path.join(image_set_dir, filename)
 
 
 # TODO: parse_color_map_names belongs somewhere else...or maybe this module,
