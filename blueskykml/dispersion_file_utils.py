@@ -32,6 +32,7 @@ def create_polygon_kmls_dir(config):
 def create_image_set_dir(config, *dirs):
     """Creates the directory to contain the specified image set, if necessary"""
     images_output_dir = config.get('DispersionGridOutput', "OUTPUT_DIR")
+    dirs = [str(d) for d in dirs]
     outdir = os.path.join(images_output_dir, *dirs)
     if not os.path.exists(outdir):
         os.makedirs(outdir)
