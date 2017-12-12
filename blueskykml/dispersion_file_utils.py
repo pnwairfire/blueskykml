@@ -37,15 +37,21 @@ def create_image_set_dir(config, *dirs):
         os.makedirs(outdir)
     return outdir
 
-def image_pathname(image_set_dir, height_label, time_series_type, ts):
+def image_pathname(image_set_dir, height_label, time_series_type, ts,
+        utc_offset=None):
     filename = ts.strftime(height_label + '_'
         + IMAGE_PREFIXES[time_series_type]
         + FILE_NAME_TIME_STAMP_PATTERNS[time_series_type])
+    if utc_offset is not None:
+        filename += '_' + utc_label(utc_offset)
     return os.path.join(image_set_dir, filename)
 
-def legend_pathname(image_set_dir, height_label, time_series_type):
+def legend_pathname(image_set_dir, height_label, time_series_type,
+        utc_offset=None):
     filename = "%s_colorbar_%s" % (height_label,
         TIME_SET_DIR_NAMES[time_series_type])
+    if utc_offset is not None:
+        filename += '_' + utc_label(utc_offset)
     return os.path.join(image_set_dir, filename)
 
 def utc_label(utc_offset):

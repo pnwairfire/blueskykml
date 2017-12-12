@@ -473,11 +473,12 @@ def create_daily_maximum_dispersion_images(config, grid, section, layer,
             "plot %d of %d "% (height_label, dfu.utc_label(utc_offset),
                 i + 1, grid.num_days))
         fileroot = dfu.image_pathname(outdir, height_label,
-            dfu.TimeSeriesTypes.DAILY_MAXIMUM, grid.dates[i])
+            dfu.TimeSeriesTypes.DAILY_MAXIMUM, grid.dates[i],
+            utc_offset=utc_offset)
         plot.make_contour_plot(grid.max_data[i,layer,:,:], fileroot)
 
     plot.make_colorbar(dfu.legend_pathname(outdir, height_label,
-        dfu.TimeSeriesTypes.DAILY_MAXIMUM))
+        dfu.TimeSeriesTypes.DAILY_MAXIMUM, utc_offset=utc_offset))
     return plot
 
 def create_daily_average_dispersion_images(config, grid, section, layer,
@@ -494,12 +495,13 @@ def create_daily_average_dispersion_images(config, grid, section, layer,
             "plot %d of %d " % (height_label, dfu.utc_label(utc_offset),
                 i + 1, grid.num_days))
         fileroot = dfu.image_pathname(outdir, height_label,
-            dfu.TimeSeriesTypes.DAILY_AVERAGE, grid.dates[i])
+            dfu.TimeSeriesTypes.DAILY_AVERAGE, grid.dates[i],
+            utc_offset=utc_offset)
         plot.make_contour_plot(grid.avg_data[i,layer,:,:], fileroot)
 
     # Create a color bars to use in overlays
     plot.make_colorbar(dfu.legend_pathname(outdir, height_label,
-        dfu.TimeSeriesTypes.DAILY_AVERAGE))
+        dfu.TimeSeriesTypes.DAILY_AVERAGE, utc_offset=utc_offset))
 
     # plot will be used for its already computed min/max lat/lon
     return plot
