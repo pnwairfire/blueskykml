@@ -76,10 +76,11 @@ def collect_all_dispersion_images(config, heights):
         height_label = create_height_label(height)
         images[height_label] = dict((v, {}) for v in TimeSeriesTypes.ALL)
         for time_series_type in TimeSeriesTypes.ALL:
-            for color_map_section in parse_color_map_names(config, CONFIG_COLOR_LABELS[time_series_type]):
+            for color_map_section in parse_color_map_names(config,
+                    CONFIG_COLOR_LABELS[time_series_type]):
                 color_set = {
                     'root_dir': create_image_set_dir(config, height_label,
-                        time_series_type, color_map_section),
+                        TIME_SET_DIR_NAMES[time_series_type], color_map_section),
                     'smoke_images': [],
                     'legend': None
                 }
@@ -97,17 +98,20 @@ def collect_all_dispersion_images(config, heights):
 # Note: collect_dispersion_images was copied over from smokedispersionkml.py and
 # refactored to remove redundancy
 def collect_dispersion_images(config, heights):
-    """Collect images from first set of colormap images in each time series category"""
+    """Collect images from first set of colormap images in each time series
+    category. Used in KML generation.
+    """
     images = {}
 
     for height in heights:
         height_label = create_height_label(height)
         images[height_label] = dict((v, {'smoke_images':[], 'legend': None}) for v in TimeSeriesTypes.ALL)
         for time_series_type in TimeSeriesTypes.ALL:
-            color_map_sections = parse_color_map_names(config, CONFIG_COLOR_LABELS[time_series_type])
+            color_map_sections = parse_color_map_names(config,
+                CONFIG_COLOR_LABELS[time_series_type])
             if color_map_sections and len(color_map_sections) > 0:
                 outdir = create_image_set_dir(config, height_label,
-                    time_series_type, color_map_sections[0])
+                    TIME_SET_DIR_NAMES[time_series_type], color_map_sections[0])
                 images[height_label][time_series_type]['root_dir'] = outdir
                 for image in os.listdir(outdir):
                     if is_smoke_image(image, height_label, time_series_type):  # <-- this is to exclude color bar
