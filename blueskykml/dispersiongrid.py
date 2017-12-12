@@ -163,11 +163,6 @@ class BSDispersionGrid:
             ehour  = min(ehour + 24, self.num_times)
 
 
-def utc_label(utc_offset):
-    return 'UTC{}{}{}00'.format('+' if utc_offset >= 0 else '-',
-        '0' if abs(utc_offset) < 10 else '', abs(utc_offset))
-
-
 class BSDispersionPlot:
 
     def __init__(self, dpi=75):
@@ -469,13 +464,13 @@ def create_daily_maximum_dispersion_images(config, grid, section, layer,
     plot = create_color_plot(config, grid, section)
     height_label = dfu.create_height_label(grid.heights[layer])
     outdir = dfu.create_image_set_dir(config, height_label,
-        TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.DAILY_MAXIMUM], section,
-        utc_label(utc_offset))
+        TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.DAILY_MAXIMUM],
+        dfu.utc_label(utc_offset), section)
 
     grid.calc_aggregate_data(utc_offset)
     for i in range(grid.num_days):
         logging.debug("Creating height %s %s daily maximum concentration "
-            "plot %d of %d "% (height_label, utc_label(utc_offset),
+            "plot %d of %d "% (height_label, dfu.utc_label(utc_offset),
                 i + 1, grid.num_days))
         fileroot = dfu.image_pathname(outdir, height_label,
             dfu.TimeSeriesTypes.DAILY_MAXIMUM, grid.dates[i])
@@ -490,13 +485,13 @@ def create_daily_average_dispersion_images(config, grid, section, layer,
     plot = create_color_plot(config, grid, section)
     height_label = dfu.create_height_label(grid.heights[layer])
     outdir = dfu.create_image_set_dir(config, height_label,
-        TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.DAILY_AVERAGE], section,
-        utc_label(utc_offset))
+        TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.DAILY_AVERAGE],
+        dfu.utc_label(utc_offset), section)
 
     grid.calc_aggregate_data(utc_offset)
     for i in range(grid.num_days):
         logging.debug("Creating height %s %s daily average concentration "
-            "plot %d of %d " % (height_label, utc_label(utc_offset),
+            "plot %d of %d " % (height_label, dfu.utc_label(utc_offset),
                 i + 1, grid.num_days))
         fileroot = dfu.image_pathname(outdir, height_label,
             dfu.TimeSeriesTypes.DAILY_AVERAGE, grid.dates[i])

@@ -48,6 +48,10 @@ def legend_pathname(image_set_dir, height_label, time_series_type):
         TIME_SET_DIR_NAMES[time_series_type])
     return os.path.join(image_set_dir, filename)
 
+def utc_label(utc_offset):
+    return 'UTC{}{}{}00'.format('+' if utc_offset >= 0 else '-',
+        '0' if abs(utc_offset) < 10 else '', abs(utc_offset))
+
 
 # TODO: parse_color_map_names belongs somewhere else...or maybe this module,
 # dispersion_file_utils, should be renamed more generically
