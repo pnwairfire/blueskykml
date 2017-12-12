@@ -465,12 +465,12 @@ def create_daily_maximum_dispersion_images(config, grid, section, layer,
     height_label = dfu.create_height_label(grid.heights[layer])
     outdir = dfu.create_image_set_dir(config, height_label,
         TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.DAILY_MAXIMUM],
-        dfu.utc_label(utc_offset), section)
+        dfu.get_utc_label(utc_offset), section)
 
     grid.calc_aggregate_data(utc_offset)
     for i in range(grid.num_days):
         logging.debug("Creating height %s %s daily maximum concentration "
-            "plot %d of %d "% (height_label, dfu.utc_label(utc_offset),
+            "plot %d of %d "% (height_label, dfu.get_utc_label(utc_offset),
                 i + 1, grid.num_days))
         fileroot = dfu.image_pathname(outdir, height_label,
             dfu.TimeSeriesTypes.DAILY_MAXIMUM, grid.dates[i],
@@ -487,12 +487,12 @@ def create_daily_average_dispersion_images(config, grid, section, layer,
     height_label = dfu.create_height_label(grid.heights[layer])
     outdir = dfu.create_image_set_dir(config, height_label,
         TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.DAILY_AVERAGE],
-        dfu.utc_label(utc_offset), section)
+        dfu.get_utc_label(utc_offset), section)
 
     grid.calc_aggregate_data(utc_offset)
     for i in range(grid.num_days):
         logging.debug("Creating height %s %s daily average concentration "
-            "plot %d of %d " % (height_label, dfu.utc_label(utc_offset),
+            "plot %d of %d " % (height_label, dfu.get_utc_label(utc_offset),
                 i + 1, grid.num_days))
         fileroot = dfu.image_pathname(outdir, height_label,
             dfu.TimeSeriesTypes.DAILY_AVERAGE, grid.dates[i],

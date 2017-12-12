@@ -43,7 +43,7 @@ def image_pathname(image_set_dir, height_label, time_series_type, ts,
         + IMAGE_PREFIXES[time_series_type]
         + FILE_NAME_TIME_STAMP_PATTERNS[time_series_type])
     if utc_offset is not None:
-        filename += '_' + utc_label(utc_offset)
+        filename += '_' + get_utc_label(utc_offset)
     return os.path.join(image_set_dir, filename)
 
 def legend_pathname(image_set_dir, height_label, time_series_type,
@@ -51,10 +51,10 @@ def legend_pathname(image_set_dir, height_label, time_series_type,
     filename = "%s_colorbar_%s" % (height_label,
         TIME_SET_DIR_NAMES[time_series_type])
     if utc_offset is not None:
-        filename += '_' + utc_label(utc_offset)
+        filename += '_' + get_utc_label(utc_offset)
     return os.path.join(image_set_dir, filename)
 
-def utc_label(utc_offset):
+def get_utc_label(utc_offset):
     return 'UTC{}{}{}00'.format('+' if utc_offset >= 0 else '-',
         '0' if abs(utc_offset) < 10 else '', abs(utc_offset))
 
