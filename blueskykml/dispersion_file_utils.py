@@ -104,7 +104,7 @@ def collect_all_dispersion_images(config, heights):
 def collect_all_colormap_dispersion_images(config, images, height_label,
         time_series_type, utc_offset=None):
     keys = [height_label, TIME_SET_DIR_NAMES[time_series_type]]
-    if utc_offset:
+    if utc_offset is not None:
         keys.append(get_utc_label(utc_offset))
 
     for color_map_section in parse_color_map_names(config,
@@ -150,6 +150,7 @@ def collect_dispersion_images_for_kml(config, heights):
             else:
                 collect_color_map_dispersion_images_section_for_kml(
                     config, images, height_label, time_series_type)
+    return images
 
 def collect_color_map_dispersion_images_section_for_kml(config, images,
         height_label, time_series_type, utc_offset=None):
@@ -158,7 +159,7 @@ def collect_color_map_dispersion_images_section_for_kml(config, images,
     if color_map_sections and len(color_map_sections) > 0:
         # Initialize and get reference to nested color section imatges dict
         keys = [height_label, time_series_type]
-        if utc_offset:
+        if utc_offset is not None:
             keys.append(get_utc_label(utc_offset))
         images_section = initialize_sections_dict(images, *keys)
 
