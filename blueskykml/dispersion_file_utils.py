@@ -103,7 +103,7 @@ def collect_all_dispersion_images(config, heights):
 
 def collect_all_colormap_dispersion_images(config, images, height_label,
         time_series_type, utc_offset=None):
-    keys = [height_label, time_series_type]
+    keys = [height_label, TIME_SET_DIR_NAMES[time_series_type]]
     if utc_offset:
         keys.append(get_utc_label(utc_offset))
 
@@ -113,10 +113,7 @@ def collect_all_colormap_dispersion_images(config, images, height_label,
         _keys = keys + [color_map_section]
         color_set = initialize_sections_dict(images, *_keys)
 
-
         # create output dir
-        _keys[1] = TIME_SET_DIR_NAMES[_keys[1]]
-        _keys.append(color_map_section)
         color_set['root_dir'] = create_image_set_dir(config, *_keys)
 
         # collect images
@@ -187,5 +184,5 @@ def initialize_sections_dict(images, *keys):
         images[keys[0]] = images.get(keys[0], {})
         return initialize_sections_dict(images[keys[0]], *keys[1:])
     else:
-        images[key] = images.get(key, {'smoke_images':[], 'legend': None})
-        return images[key]
+        images[keys[0]] = images.get(keys[0], {'smoke_images':[], 'legend': None})
+        return images[keys[0]]
