@@ -311,7 +311,7 @@ class KmzCreator(object):
     # Data Generating Methods
 
     def _collect_images(self):
-        return dfu.collect_dispersion_images(self._config, self._heights)
+        return dfu.collect_dispersion_images_for_kml(self._config, self._heights)
 
     # Data Gathering Methods
 
