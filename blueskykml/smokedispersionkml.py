@@ -1,7 +1,7 @@
-
 import csv
 import datetime
 import json
+import logging
 import os
 import re
 import subprocess
@@ -476,32 +476,35 @@ class KmzCreator(object):
 
 
     def _create_concentration_information(self):
-        kml_root = pykml.Folder().set_name('%s from Wildland Fire' % self._concentration_param_label.upper()).set_open(True)
-        min_height_label = str(min([int(e.replace('m','')) for e in self._dispersion_images])) + 'm'
+        kml_root = pykml.Folder().set_name('%s from Wildland Fire'
+            % self._concentration_param_label.upper()).set_open(True)
+        min_height_label = str(min([int(e.replace('m',''))
+            for e in self._dispersion_images])) + 'm'
         for height_label in self._dispersion_images:
             height_root = pykml.Folder().set_name('Height %s ' % (height_label))
             for time_series_type in TimeSeriesTypes.ALL:
                 t_dict = self._dispersion_images[height_label][time_series_type]
                 visible = (TimeSeriesTypes.DAILY_MAXIMUM == time_series_type
                     and height_label == min_height_label)
+                time_series_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
                 if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
                         TimeSeriesTypes.DAILY_AVERAGE):
+                    time_series_root = pykml.Folder().set_name(time_series_name)
                     for utc_offset_value, images_dict in t_dict.items():
-                        utc_offset_root = pykml.Folder().set_name(utc_label)
-                        _create_concentration_information_for_images(
-                            utc_offset_root, images_dict, visible)
-                        height_root = height_root.with_feature(utc_offset_root)
+                        self._create_concentration_information_for_images(
+                            time_series_root, images_dict, visible,
+                            utc_offset_value)
                         visible = False # arbitrarily make first time zone
+                    height_root = height_root.with_feature(time_series_root)
                 else:
-                    self.create_concentration_information_for_images(
-                        height_root, t_dict, visible)
+                    self._create_concentration_information_for_images(
+                        height_root, t_dict, visible, time_series_name)
             kml_root = kml_root.with_feature(height_root)
 
-    def create_concentration_information_for_images(self, parent_root,
-            t_dict, visible):
+    def _create_concentration_information_for_images(self, parent_root,
+            images_dict, visible, pretty_name):
+        logging.debug(images_dict)
         if images_dict:
-            pretty_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
-
             if images_dict['legend']:
                 # TODO:  put legends in concentration folders?
                 overlay = self._create_screen_overlay(
@@ -516,10 +519,16 @@ class KmzCreator(object):
                     images_dict['smoke_images'], visible=visible)
                 parent_root = parent_root.with_feature(data)
 
+    UTC_OFFSET_FILENAME_SUFFIX_EXTRACTOR = re.compile('_UTC[+-][0-9]{4}')
+
     def _create_concentration_folder(self, name, images, visible=False):
         concentration_folder = pykml.Folder().set_name(name)
         for image in images:
-            overlay_datetime_str = image.replace('.', '_').split('_')[-2] # Ex: 'hourly_20130101.png' would yield '20130101'
+            # handle files names like '10m_hourly_201405300000.png' and
+            # ' 10m_daily_maximum_20140529_UTC-0700.png'
+            image_name_parts = self.UTC_OFFSET_FILENAME_SUFFIX_EXTRACTOR.sub(
+                '', image).replace('.', '_').split('_')
+            overlay_datetime_str = image_name_parts[-2]
             if len(overlay_datetime_str) == 8:
                 image_datetime_format = '%Y%m%d'
                 overlay_datetime_format = '%Y%m%d'
@@ -540,12 +549,19 @@ class KmzCreator(object):
 
     def _collect_image_assets(self):
         images = []
-        for height_label in self._dispersion_images:
-            for t_dict in self._dispersion_images[height_label].values():
-                if t_dict['legend']:
-                    images.append(os.path.join(t_dict['root_dir'], t_dict['legend']))
-                if t_dict['smoke_images']:
-                    images.extend([os.path.join(t_dict['root_dir'], i) for i in t_dict['smoke_images']])
+
+        def _collect(data):
+            if 'smoke_images' in data:
+                if data['legend']:
+                    images.append(os.path.join(data['root_dir'], data['legend']))
+                if data['smoke_images']:
+                    images.extend([os.path.join(data['root_dir'], i) for i in data['smoke_images']])
+            else:
+                for k in data:
+                    _collect(data[k])
+
+        _collect(self._dispersion_images)
+
         return images
 
 
