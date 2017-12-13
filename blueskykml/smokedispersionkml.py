@@ -475,36 +475,46 @@ class KmzCreator(object):
         return placemark
 
 
-
     def _create_concentration_information(self):
         kml_root = pykml.Folder().set_name('%s from Wildland Fire' % self._concentration_param_label.upper()).set_open(True)
         min_height_label = str(min([int(e.replace('m','')) for e in self._dispersion_images])) + 'm'
         for height_label in self._dispersion_images:
             height_root = pykml.Folder().set_name('Height %s ' % (height_label))
             for time_series_type in TimeSeriesTypes.ALL:
-                images_dict = self._dispersion_images[height_label][time_series_type]
-                if images_dict:
-                    visible = (TimeSeriesTypes.DAILY_MAXIMUM == time_series_type
-                        and height_label == min_height_label)
-                    pretty_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
-
-                    if images_dict['legend']:
-                        # TODO:  put legends in concentration folders?
-                        overlay = self._create_screen_overlay(
-                            '%s Key' % (pretty_name), images_dict['legend'],
-                            visible=visible)
-                        height_root = height_root.with_feature(overlay)
-
-                    if images_dict['smoke_images']:
-                        name = '%s %s' % (pretty_name,
-                            self._concentration_param_label.upper())
-                        data = self._create_concentration_folder(name,
-                            images_dict['smoke_images'], visible=visible)
-                        height_root = height_root.with_feature(data)
+                t_dict = self._dispersion_images[height_label][time_series_type]
+                visible = (TimeSeriesTypes.DAILY_MAXIMUM == time_series_type
+                    and height_label == min_height_label)
+                if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
+                        TimeSeriesTypes.DAILY_AVERAGE):
+                    for utc_offset_value, images_dict in t_dict.items():
+                        utc_offset_root = pykml.Folder().set_name(utc_label)
+                        _create_concentration_information_for_images(
+                            utc_offset_root, images_dict, visible)
+                        height_root = height_root.with_feature(utc_offset_root)
+                        visible = False # arbitrarily make first time zone
+                else:
+                    self.create_concentration_information_for_images(
+                        height_root, t_dict, visible)
             kml_root = kml_root.with_feature(height_root)
 
-        return kml_root
+    def create_concentration_information_for_images(self, parent_root,
+            t_dict, visible):
+        if images_dict:
+            pretty_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
 
+            if images_dict['legend']:
+                # TODO:  put legends in concentration folders?
+                overlay = self._create_screen_overlay(
+                    '%s Key' % (pretty_name), images_dict['legend'],
+                    visible=visible)
+                parent_root = parent_root.with_feature(overlay)
+
+            if images_dict['smoke_images']:
+                name = '%s %s' % (pretty_name,
+                    self._concentration_param_label.upper())
+                data = self._create_concentration_folder(name,
+                    images_dict['smoke_images'], visible=visible)
+                parent_root = parent_root.with_feature(data)
 
     def _create_concentration_folder(self, name, images, visible=False):
         concentration_folder = pykml.Folder().set_name(name)
