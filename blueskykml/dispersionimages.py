@@ -67,22 +67,27 @@ def format_dispersion_images(config, heights, legend_name="colorbar"):
     # [DispersionGridOutput] configurations
     images = dfu.collect_all_dispersion_images(config, heights)
 
-    for height_label, height_dict in images.items():
-        for (time_series_type, time_series_dict) in height_dict.items():
-            for (color_map_section, color_set_dict) in time_series_dict.items():
+    def _format(data, *keys):
+        for k, v in data.items():
+            _keys = list(keys) + [k]
+            if 'smoke_images' in v:
+                # k is the color map section
                 # iof is the color map section's custom image opacity factor, if specified
-                iof = (config.getfloat(color_map_section, "IMAGE_OPACITY_FACTOR") if
-                    config.has_option(color_map_section, "IMAGE_OPACITY_FACTOR") else
+                iof = (config.getfloat(k, "IMAGE_OPACITY_FACTOR") if
+                    config.has_option(k, "IMAGE_OPACITY_FACTOR") else
                     image_opacity_factor)
-                i = 0
-                for image_name in color_set_dict['smoke_images']:
-                    i += 1
-                    logging.debug("Applying transparency %s to plot %i of height %s %s %s" % (
-                        iof, i, height_label, TIME_SERIES_PRETTY_NAMES[time_series_type], color_map_section))
-                    image_path = os.path.join(color_set_dict['root_dir'], image_name)
+                for i, image_name in enumerate(v['smoke_images']):
+                    logging.debug("Applying transparency {} to plot"
+                        " {} of {}".format(iof, i, ' > '.join(_keys)))
+                    image_path = os.path.join(v['root_dir'], image_name)
                     image = Image.open(image_path)
                     image = _apply_transparency(image, deepcopy(background_color), iof)
                     image.save(image_path, "PNG")
+            else:
+                _format(v, *_keys)
+
+    _format(images)
+
 
 def _apply_transparency(image, background_color, opacity_factor):
     """Sets the background color of the image to be fully transparent, and modifies the overall image opacity based on a
@@ -135,13 +140,16 @@ def reproject_images(config, grid_bbox, heights):
     # gdalwarp -      http://www.gdal.org/gdalwarp.html
 
     images = dfu.collect_all_dispersion_images(config, heights)
-    for height, height_dict in images.items():
-        for (time_series_type, time_series_dict) in height_dict.items():
-            for (color_map_section, color_set_dict) in time_series_dict.items():
-                for image in color_set_dict['smoke_images']:
-                    image_path = os.path.join(color_set_dict['root_dir'], image)
-                    tiff_path1 = os.path.join(color_set_dict['root_dir'], 'temp1.tif')
-                    tiff_path2 = os.path.join(color_set_dict['root_dir'], 'temp2.tif')
+
+    def _reproject(data):
+        for k, v in data.items():
+            if 'smoke_images' in v:
+                for i, image_name in enumerate(v['smoke_images']):
+                    logging.debug("Reprojecting image"
+                        " {} of {}".format(i, ' > '.join(_keys)))
+                    image_path = os.path.join(v['root_dir'], image)
+                    tiff_path1 = os.path.join(v['root_dir'], 'temp1.tif')
+                    tiff_path2 = os.path.join(v['root_dir'], 'temp2.tif')
 
                     # Collect inputs for gdal translate and warp commands
                     a_srs = 'WGS84'
@@ -169,3 +177,5 @@ def reproject_images(config, grid_bbox, heights):
                     os.remove(tiff_path1)
                     os.remove(tiff_path2)
                     os.remove(image_path + '.aux.xml')
+            else:
+                _reproject(v)
