@@ -19,6 +19,14 @@ except:
         makedispersionkml, configuration, __version__
     )
 
+# Note: the trailing space seems to be the only way to add an extra trailing line
+EPILOG_STR = """
+Examples
+
+   $ {script_name} -v -o ./tmp/test-output-1-layer-3hr
+ """.format(script_name=sys.argv[0])
+
+
 def errout(msg):
     print(msg)
     print("*** Use the '-h' option to see information about usage and options.")
@@ -45,6 +53,8 @@ class ConfigOptionAction(argparse.Action):
 if __name__ == '__main__':
     # TODO: fix this so that parse.usage is the actual help string/documentation
     parser = argparse.ArgumentParser()
+    parser.epilog = EPILOG_STR
+    parser.formatter_class = argparse.RawTextHelpFormatter
 
     # Required:
     # Note: not setting required=True because then you have to
