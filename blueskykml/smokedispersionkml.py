@@ -1,7 +1,6 @@
 import csv
 import datetime
 import json
-import logging
 import os
 import re
 import subprocess
@@ -500,10 +499,10 @@ class KmzCreator(object):
                     self._create_concentration_information_for_images(
                         height_root, t_dict, visible, time_series_name)
             kml_root = kml_root.with_feature(height_root)
+        return kml_root
 
     def _create_concentration_information_for_images(self, parent_root,
             images_dict, visible, pretty_name):
-        logging.debug(images_dict)
         if images_dict:
             if images_dict['legend']:
                 # TODO:  put legends in concentration folders?
