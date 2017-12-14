@@ -219,6 +219,7 @@ Example uses:
  - DEFINE_HEX --
  - BACKGROUND_COLOR_HEX --
  - IMAGE_OPACITY_FACTOR --
+ - DAILY_IMAGES_UTC_OFFSETS --
  - REPROJECT_IMAGES --
 
 #### SmokeDispersionKMLInput
