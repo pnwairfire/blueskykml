@@ -239,7 +239,7 @@ class TestBuildFuelbeds(object):
         }
         expected = (
             '<div class="section">'
-                ' <div class="header">Daily Emissions Modeled</div>'
+                ' <div class="header">Modeled Daily Emissions</div>'
                 ' <div class="list">'
                     ' <div class="item"> PM2.5: 1.45 tons </div>'
                 ' </div>'
@@ -256,7 +256,7 @@ class TestBuildFuelbeds(object):
         }
         expected = (
             '<div class="section">'
-                ' <div class="header">Daily Emissions Modeled</div>'
+                ' <div class="header">Modeled Daily Emissions</div>'
                 ' <div class="list">'
                     ' <div class="item"> PM2.5: 1.45 tons </div>'
                     ' <div class="item"> PM10: 1.71 tons </div>'
@@ -278,7 +278,7 @@ class TestBuildFuelbeds(object):
         }
         expected = (
             '<div class="section">'
-                ' <div class="header">Daily Emissions Modeled</div>'
+                ' <div class="header">Modeled Daily Emissions</div>'
                 ' <div class="list">'
                     ' <div class="item"> PM2.5: 1.6 tons </div>'
                     ' <div class="item"> PM10: 1.71 tons </div>'
