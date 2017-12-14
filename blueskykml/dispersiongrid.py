@@ -46,6 +46,9 @@ class BSDispersionGrid:
             return (x0, dx, 0.0, y0, 0.0, dy)
 
     def __init__(self, filename, param=None, time=None):
+        if not os.path.exists(filename):
+            raise ValueError("NetCDF file does not exists - {}.".format(
+                filename))
         if param:
             gdal_filename = "NETCDF:%s:%s" % (filename, param)
         else:
