@@ -72,7 +72,7 @@ if __name__ == '__main__':
         help="Config option override, formatted like 'Section.Option=value'")
     # Note: the following must be added to configuration.ConfigBuilder.OVERRIDES
     # in order to be recognized as aliases for the specified config option.
-    parser.add_argument("-i", "--inputfile", default=None,
+    parser.add_argument("-i", "--inputfile", default=None, required=True,
         help="Input smoke dispersion NetCDF file. Alias for -O DispersionGridInput.FILENAME=<filename>")
     parser.add_argument("-l", "--fire-locations-csv", default=None,
         help="Input fire locations csv file. Alias for -O DispersionGridInput.FIRE_LOCATION_CSV=<filename>")
