@@ -141,7 +141,7 @@ Install pip, if it isn't yet installed:
 
 Then, to install, for example, v2.1.0, use the following:
 
-    sudo pip install --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple blueskykml==2.1.0
+    sudo pip install --trusted-host pypi.smoke.airfire.org --extra-index http://pypi.smoke.airfire.org/simple blueskykml==2.1.0
 
 See the Development > Install Dependencies > Notes section, above, for
 notes on resolving pip and gdal issues.
