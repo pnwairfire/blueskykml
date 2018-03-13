@@ -141,15 +141,15 @@ def reproject_images(config, grid_bbox, heights):
 
     images = dfu.collect_all_dispersion_images(config, heights)
 
-    def _reproject(data):
-        for k, v in data.items():
-            if 'smoke_images' in v:
-                for i, image_name in enumerate(v['smoke_images']):
+    def _reproject(data, *keys):
+        if isinstance(data, dict):
+            if 'smoke_images' in data:
+                for i, image_name in enumerate(data['smoke_images']):
                     logging.debug("Reprojecting image"
-                        " {} of {}".format(i, ' > '.join(_keys)))
-                    image_path = os.path.join(v['root_dir'], image)
-                    tiff_path1 = os.path.join(v['root_dir'], 'temp1.tif')
-                    tiff_path2 = os.path.join(v['root_dir'], 'temp2.tif')
+                        " {} of {}".format(i, ' > '.join(keys)))
+                    image_path = os.path.join(data['root_dir'], image_name)
+                    tiff_path1 = os.path.join(data['root_dir'], 'temp1.tif')
+                    tiff_path2 = os.path.join(data['root_dir'], 'temp2.tif')
 
                     # Collect inputs for gdal translate and warp commands
                     a_srs = 'WGS84'
@@ -178,4 +178,7 @@ def reproject_images(config, grid_bbox, heights):
                     os.remove(tiff_path2)
                     os.remove(image_path + '.aux.xml')
             else:
-                _reproject(v)
+                for k, v in data.items():
+                    _reproject(v, *(list(keys) + [k]))
+
+    _reproject(images)
