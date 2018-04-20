@@ -14,7 +14,7 @@ def build_fire_location_description(fire_location):
             {date}
         </h2>
         <div class="section">
-            Anticipated Type: {fire_type}
+            Simulated Type: {fire_type}
         </div>
     """.format(date=date_str, fire_type=fire_location.fire_type)
 
@@ -35,7 +35,7 @@ def build_fire_event_description(fire_event):
             {fire_name}
         </h2>
         <div class="section">
-            <span class="header">Anticipated Type</span>: {fire_type}
+            <span class="header">Simulated Type</span>: {fire_type}
         </div>
     """.format(fire_name=name, fire_type=fire_event.fire_type)
     body += _build_projected_growth_section(fire_event)
