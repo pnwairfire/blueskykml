@@ -24,7 +24,7 @@ KML_TIMESPAN_DATE_FORMAT = "%Y-%m-%d"
 class FireData(object):
     area_units = "acres"
     date_time_format = "%Y%m%d"
-    emission_fields = ['pm25', 'pm10', 'co', 'co2', 'ch4', 'nox', 'nh3', 'so2', 'voc']
+    emission_fields = ['pm2.5', 'pm10', 'co', 'co2', 'ch4', 'nox', 'nh3', 'so2', 'voc']
     fire_types = {'RX': "Prescribed Fire", 'WF': "Wild Fire"}
 
     def __init__(self):

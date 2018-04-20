@@ -103,7 +103,7 @@ def _build_fuelbeds(fire_event):
     return ""
 
 EMISSIONS_SPECIES = collections.OrderedDict([
-    ('pm25', 'PM2.5'),
+    ('pm2.5', 'PM2.5'),
     ('pm10', 'PM10')
 ])
 """Emissions species to include in fire popups. The keys in EMISSIONS_SPECIES
