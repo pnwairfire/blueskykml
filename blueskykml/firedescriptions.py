@@ -86,14 +86,16 @@ def _build_fuelbeds(fire_event):
         sorted_stats = sorted_stats[:MAX_FCCS_ROWS]
         days = len(fire_event.daily_stats_by_fccs_num)
         for fccs_num, fccs_dict in sorted_stats:
-            fuelbeds.append(
-                '<div class="item">'
+            fuelbed_str = ('<div class="item">'
                 '<span class="fccs-num">#{fccs_num}</span> - '
-                '<span class="fccs-area">{area:,} acres</span> - '
-                '<span class="fccs-desc">{desc}</span>'
-                '</div>'.format(
-                area=int(fccs_dict['total_area'] / days), fccs_num=fccs_num,
-                desc=fccs_dict['description'] or ''))
+                '<span class="fccs-area">{area:,} acres</span>'.format(
+                    area=int(fccs_dict['total_area'] / days),
+                    fccs_num=fccs_num))
+            if fccs_dict['description']:
+                fuelbed_str += ' - <span class="fccs-desc">{desc}</span>'.format(
+                    desc=fccs_dict['description'])
+            fuelbed_str += '</div>'
+            fuelbeds.append(fuelbed_str)
         return _convert_single_line("""
             <div class="section">
                 <div class="header">FCCS Fuelbeds</div>
