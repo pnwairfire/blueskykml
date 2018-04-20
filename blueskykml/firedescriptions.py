@@ -93,7 +93,7 @@ def _build_fuelbeds(fire_event):
                 '<span class="fccs-desc">{desc}</span>'
                 '</div>'.format(
                 area=int(fccs_dict['total_area'] / days), fccs_num=fccs_num,
-                desc=fccs_dict['description']))
+                desc=fccs_dict['description'] or ''))
         return _convert_single_line("""
             <div class="section">
                 <div class="header">FCCS Fuelbeds</div>
