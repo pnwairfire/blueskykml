@@ -24,7 +24,7 @@ def build_fire_location_description(fire_location):
 
     return _build_description(body)
 
-UNNAMED_MATCHER = re.compile('^Unnamed fire')
+UNNAMED_MATCHER = re.compile('^(Unnamed fire|Unknown Fire)')
 
 def build_fire_event_description(fire_event):
     start_str = fire_event.start_date_time.strftime(OUTPUT_DATE_FORMAT).replace(' 0', ' ')
