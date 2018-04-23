@@ -49,9 +49,17 @@ class FireLocationInfo(FireData):
         self.fccs_number = None
         # TODO: Add Fuel Loading?
 
-    def _build_event_name(self, state=None, county=None, country=None):
+    def _build_event_name(self, raw_data):
         # TODO: Mimic SFEI event naming?
-        self.event_name = "Unknown Fire in %s, %s" % (state, country)
+        self.event_name = "Satellite Hotspot Detection(s)*"
+        political_info = [raw_data[f] for f in
+            ('state', 'county', 'country') if raw_data.get(f)]
+        if political_info:
+            self.event_name += " in " + ", ".join(political_info)
+        elif raw_data.get('latitude') and raw_data.get('longitude'):
+            self.event_name += " at {}, {}".format(
+                raw_data['latitude'], raw_data['longitude'])
+        # else, leave as "Satellite Hotspot Detection(s)*"
         return self
 
     def _set_date_time(self, date_time_str):
@@ -72,7 +80,7 @@ class FireLocationInfo(FireData):
         if event_name:
             self.event_name = event_name
         else:
-            self._build_event_name(raw_data.get('state'), raw_data.get('county'), raw_data.get('country'))
+            self._build_event_name(raw_data)
         # Set the event id based on optional raw data
         self.event_id = raw_data.get('event_guid', raw_data.get('event_id', self.id))
         # Set the emissions fields based on optional raw data
