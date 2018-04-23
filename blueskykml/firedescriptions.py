@@ -26,7 +26,7 @@ def build_fire_location_description(fire_location):
 
 UNNAMED_MATCHER = re.compile('^(Unnamed fire|Unknown Fire)')
 
-def build_fire_event_description(fire_event):
+def build_fire_event_description(fire_event, include_disclaimer):
     start_str = fire_event.start_date_time.strftime(OUTPUT_DATE_FORMAT).replace(' 0', ' ')
     end_str = fire_event.end_date_time.strftime(OUTPUT_DATE_FORMAT).replace(' 0', ' ')
     name = UNNAMED_MATCHER.sub('Satellite Hotspot Detection(s)*', fire_event.name)
@@ -41,7 +41,8 @@ def build_fire_event_description(fire_event):
     body += _build_projected_growth_section(fire_event)
     body += _build_fuelbeds(fire_event)
     body += _build_emissions(fire_event)
-    body += _build_disclaimer()
+    if include_disclaimer:
+        body += _build_disclaimer()
     return _build_description(body)
 
 def _build_projected_growth_section(fire_event):
@@ -66,7 +67,7 @@ def _build_projected_growth_section(fire_event):
     if growth:
         return _convert_single_line("""
             <div class="section">
-                <div class="header">Modeled Growth (based on persistence)</div>
+                <div class="header">Modeled Growth</div>
                 <div class="list">{growth}</div>
             </div>
         """.format(growth=''.join(growth)))

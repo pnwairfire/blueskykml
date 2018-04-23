@@ -163,8 +163,9 @@ class FireEventInfo(FireData):
         self.lon = lon_sum / self.num_locations  # Set centroid lon
         return self
 
-    def placemark_description(self):
-        return firedescriptions.build_fire_event_description(self)
+    def placemark_description(self, include_disclaimer=True):
+        return firedescriptions.build_fire_event_description(
+            self, include_disclaimer)
 
 class KmzCreator(object):
 
@@ -448,7 +449,11 @@ class KmzCreator(object):
 
 
     def _create_fire_event_folder(self, fire_event):
-        event_description = fire_event.placemark_description()
+        include_disclaimer = self._config.getboolean(
+            'SmokeDispersionKMLOutput',
+            'INCLUDE_DISCLAIMER_IN_FIRE_PLACEMARKS')
+        event_description = fire_event.placemark_description(
+            include_disclaimer=include_disclaimer)
         event_placemark = self._create_placemark(fire_event.name, event_description, '#event', fire_event.lat,
                                             fire_event.lon)
         return (pykml.Folder()
