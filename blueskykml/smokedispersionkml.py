@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import re
+import uuid
 import subprocess
 
 from .constants import *
@@ -362,9 +363,15 @@ class KmzCreator(object):
     def _build_fire_events(self, fire_locations, fire_events_csv):
         fire_events_dict = dict()
         for fire_location in fire_locations:
+            # Set event id to fire's id if event id isn't defined, or make
+            # up a new event id if neither fire id nor event id are defined
+            if not fire_location.event_id:
+                fire_location.event_id = fire_location.id or str(uuid.uuid4())
+
             if fire_location.event_id not in fire_events_dict:
                 fire_events_dict[fire_location.event_id] = FireEventInfo()
             fire_events_dict[fire_location.event_id].fire_locations.append(fire_location)
+
         for event_id in fire_events_dict:
             fire_events_dict[event_id].build_data_from_locations()
 
