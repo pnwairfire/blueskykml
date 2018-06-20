@@ -78,7 +78,8 @@ class FireLocationInfo(FireData):
         self.area = round(float(raw_data['area']), 2)
         # Set the event name based on optional raw data
         event_name = raw_data.get('event_name')
-        if event_name:
+        # HACK: some upstream process is setting event name to '[None]'
+        if event_name and event_name != '[None]':
             self.event_name = event_name
         else:
             self._build_event_name(raw_data)
