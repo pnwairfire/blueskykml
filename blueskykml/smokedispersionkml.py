@@ -83,8 +83,9 @@ class FireLocationInfo(FireData):
             self.event_name = event_name
         else:
             self._build_event_name(raw_data)
-        # Set the event id based on optional raw data
-        self.event_id = raw_data.get('event_guid', raw_data.get('event_id', self.id))
+        # Set event_id based on optional raw data, handling the cases where the
+        # 'event_guid' and/or 'event_id' columns exist but have empty strings
+        self.event_id = raw_data.get('event_guid') or raw_data.get('event_id') or self.id
         # Set the emissions fields based on optional raw data
         for field in self.emission_fields:
             value = raw_data.get(field)
