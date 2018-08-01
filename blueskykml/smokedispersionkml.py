@@ -327,7 +327,7 @@ class KmzCreator(object):
     # Data Gathering Methods
 
     def _build_fire_locations(self, fire_locations_csv):
-        fire_location_dicts = list(csv.DictReader(open(fire_locations_csv, 'r')))
+        fire_location_dicts = list(csv.DictReader(open(fire_locations_csv, 'r', encoding="utf-8")))
 
         fire_locations = list()
         for fire_dict in fire_location_dicts:
@@ -356,7 +356,7 @@ class KmzCreator(object):
             if fire_locations_json == fire_locations_csv:
                 fire_locations_json = os.path.join(os.path.dirname(
                     fire_locations_csv), 'fire_locations.json')
-            with open(fire_locations_json, 'w') as f:
+            with open(fire_locations_json, 'w', encoding="utf-8") as f:
                 f.write(json.dumps(fire_location_dicts))
         except:
             # we can live without the json dump
@@ -379,7 +379,7 @@ class KmzCreator(object):
 
         # fill in fire even names if events csv file was specified
         if fire_events_csv:
-            for row in csv.DictReader(open(fire_events_csv, 'r')):
+            for row in csv.DictReader(open(fire_events_csv, 'r', encoding="utf-8")):
                 # if the event name is defined in the events csv, assume it's
                 # correct and thus don't worry about overriding the possibly
                 # correct name pulled from the locations csv
@@ -643,7 +643,7 @@ class KmzCreator(object):
 
 
     def _create_kml_file(self, kml, kml_name):
-        with open(kml_name, 'w') as out:
+        with open(kml_name, 'w', encoding="utf-8") as out:
             if self._pretty_kml:
                 out.write(kml.to_pretty_kml())
             else:
