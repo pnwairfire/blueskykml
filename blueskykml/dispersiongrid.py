@@ -170,8 +170,8 @@ class BSDispersionPlot:
 
     def __init__(self, config, dpi=75):
         self.parameter_label = config.get(
-            'SmokeDispersionKMLOutput', "PARAMETER_LABEL") or 'PM25'
-        if self.parameter_label == 'PM25':
+            'SmokeDispersionKMLOutput', "PARAMETER_LABEL") or 'PM2.5'
+        if self.parameter_label in ('PM25', 'PM2.5'):
             self.parameter_label = r'$PM_{2.5} \/[\mu g/m^{3}]$'
 
         self.dpi = dpi
