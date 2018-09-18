@@ -168,7 +168,11 @@ class BSDispersionGrid:
 
 class BSDispersionPlot:
 
-    def __init__(self, dpi=75):
+    def __init__(self, config, dpi=75):
+        self.parameter_label = config.get(
+            'SmokeDispersionKMLOutput', "PARAMETER_LABEL") or 'PM25'
+        if self.parameter_label == 'PM25':
+            self.parameter_label = r'$PM_{2.5} \/[\mu g/m^{3}]$'
 
         self.dpi = dpi
         self.export_format = 'png'
@@ -297,11 +301,7 @@ class BSDispersionPlot:
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
 
-    def make_colorbar(self, fileroot, label='PM25'):
-        if label == 'PM25':
-            cb_label = r'$PM_{2.5} \/[\mu g/m^{3}]$'
-        else:
-            cb_label = label
+    def make_colorbar(self, fileroot):
         mpl.rc('mathtext', default='regular')
         assert len(self.levels) == self.colormap.N + 1
         fig = plt.figure(figsize=(8,1))
@@ -311,7 +311,7 @@ class BSDispersionPlot:
                                            norm=self.cb_norm,
                                            ticks=self.cb_levels[0:-1],
                                            orientation='horizontal')
-        cb.set_label(cb_label, size=12)
+        cb.set_label(self.parameter_label, size=12)
         plt.savefig(fileroot+'.'+self.export_format, dpi=self.dpi/3)
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
@@ -371,7 +371,7 @@ def create_color_plot(config, grid, section, parameter=None):
     # Note that grid.data has dimensions of: [time,lay,row,col]
 
       # Create a dispersion plot instance
-    plot = BSDispersionPlot(dpi=150)
+    plot = BSDispersionPlot(config, dpi=150)
 
     # Data levels for binning and contouring
     if parameter and ('PERCENT' in parameter or 'PCNTSIMS' in parameter):
