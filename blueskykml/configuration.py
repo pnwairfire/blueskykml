@@ -28,6 +28,7 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
         },
         'DispersionImages': {
             'DAILY_IMAGES_UTC_OFFSETS': {
+                "marsal_method": "marshal_daily_images_utc_offsets",
                 "type": list, "nested_type": int
             }
         }
@@ -37,6 +38,10 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
         super(BlueSkyKMLConfigParser, self).__init__(*args, **params)
         self._converted = defaultdict(lambda: {})
 
+    ##
+    ## Set Methods
+    ##
+
     def set(self, *args, **params):
         # in case we need to update args[2], make args is an mutable
         args = list(args)
@@ -44,18 +49,24 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
         param = args[1]
         val = args[2]
 
-        # use duck typing to see if it's a list or compatible type
-        if hasattr(val, 'append'):
-            val = self.set_list(val, section, param, type(val[0]))
+        # see if it has special set method
+        if (section in self.TO_CONVERT and param in self.TO_CONVERT[section]
+                and 'marsal_method' in self.TO_CONVERT[section][param]):
+            m = getattr(self, self.TO_CONVERT[section][param]['marsal_method'])
+            val = m(val, section, param, self.TO_CONVERT[section][param])
+
+        # else, use duck typing to see if it's a list or compatible type
+        elif hasattr(val, 'append'):
+            val = self.marshal_list(val, section, param, type(val[0]))
 
         elif hasattr(val, 'real'):
-            val = self.set_scalar(val, section, param, type(val))
+            val = self.marshal_scalar(val, section, param, type(val))
 
         args[2] = val
 
         return super(BlueSkyKMLConfigParser, self).set(*args, **params)
 
-    def set_list(self, val, section, param, nested_type):
+    def marshal_list(self, val, section, param, nested_type):
         logging.debug(' * Converting %s.%s from list of %s to string',
             section, param, nested_type)
         self._converted[section][param] = {
@@ -63,13 +74,38 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
         }
         return ','.join([str(l) for l in val])
 
-    def set_scalar(self, val, section, param, _type):
+    def marshal_scalar(self, val, section, param, _type):
         logging.debug(' * Converting %s.%s from %s to string',
             section, param, _type)
         self._converted[section][param] = {"type": _type}
         return str(val)
 
+    def marshal_daily_images_utc_offsets(self, val, section, param, kwargs):
+        # section, param, kwargs aren't really required here, but they're passed
+        # into all special marshal methods in case any future ones are generic
+        # enough to handle multiple, different config fields.  So, we'll use
+        # them in this function, rather can hard code 'DispersionImages',
+        # 'DAILY_IMAGES_UTC_OFFSETS', and 'int'
 
+        if hasattr(val, 'append'):
+            return self.marshal_list(val, section, param, kwargs['nested_type'])
+
+        elif hasattr(val, 'strip'):
+            # is a string
+            val = val.strip()
+            if val == 'auto':
+                # empty list will indicate that it needs to be filled in
+                return ''
+            return val
+
+        else:
+            raise ConfigurationError("Invalid type for '{}' > '{}': {}".format(
+                section, param, val))
+
+
+    ##
+    ## Get Methods
+    ##
 
     def get(self, *args, **params):
         section = args[0]
@@ -97,6 +133,8 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
     def get_list(self, val, section, param, nested_type):
         logging.debug('Converting %s.%s from string to list of %s',
             section, param, nested_type)
+        if val == '':
+            return []
         return [nested_type(l) for l in val.split(',')]
 
     def get_scalar(self, val, section, param, _type):

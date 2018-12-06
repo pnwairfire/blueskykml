@@ -1,6 +1,8 @@
 from py.test import raises
 
-from blueskykml.configuration import BlueSkyKMLConfigParser
+from blueskykml.configuration import (
+    BlueSkyKMLConfigParser, ConfigurationError
+)
 
 
 class TestBlueSkyKMLConfigParser(object):
@@ -50,7 +52,23 @@ class TestBlueSkyKMLConfigParser(object):
 
 
     def test_set_and_get_utc_offsets(self):
-        pass
+        section = "DispersionImages"
+        param = "DAILY_IMAGES_UTC_OFFSETS"
+        self.config_parser.add_section(section)
+
+        self.config_parser.set(section, param, "1,2,3")
+        assert [1, 2, 3] == self.config_parser.get(section, param)
+
+        self.config_parser.set(section, param, [1,2,3])
+        assert [1, 2, 3] == self.config_parser.get(section, param)
+
+        self.config_parser.set(section, param, 'auto')
+        assert [] == self.config_parser.get(section, param)
+
+        with raises(ConfigurationError) as e:
+            self.config_parser.set(section, param, 4)
+        with raises(ConfigurationError) as e:
+            self.config_parser.set(section, param, 4.5)
 
     # TODO: add tests where config options are loaded from file
     #   might need to modify self.config_parser.TO_CONVERT to
