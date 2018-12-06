@@ -22,10 +22,14 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
     # even if they were originally specified as strings
     TO_CONVERT = {
         'DispersionGridInput': {
-            'LAYERS': {"type": list, "nested_type": int},
+            'LAYERS': {
+                "type": list, "nested_type": int
+            }
         },
         'DispersionImages': {
-            'DAILY_IMAGES_UTC_OFFSETS': {"type": list, "nested_type": int},
+            'DAILY_IMAGES_UTC_OFFSETS': {
+                "type": list, "nested_type": int
+            }
         }
     }
 
@@ -42,16 +46,16 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
 
         # use duck typing to see if it's a list or compatible type
         if hasattr(val, 'append'):
-            val = self.convert_from_list(val, section, param, type(val[0]))
+            val = self.set_list(val, section, param, type(val[0]))
 
         elif hasattr(val, 'real'):
-            val = self.convert_from_scalar(val, section, param, type(val))
+            val = self.set_scalar(val, section, param, type(val))
 
         args[2] = val
 
         return super(BlueSkyKMLConfigParser, self).set(*args, **params)
 
-    def convert_from_list(self, val, section, param, nested_type):
+    def set_list(self, val, section, param, nested_type):
         logging.debug(' * Converting %s.%s from list of %s to string',
             section, param, nested_type)
         self._converted[section][param] = {
@@ -59,7 +63,7 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
         }
         return ','.join([str(l) for l in val])
 
-    def convert_from_scalar(self, val, section, param, _type):
+    def set_scalar(self, val, section, param, _type):
         logging.debug(' * Converting %s.%s from %s to string',
             section, param, _type)
         self._converted[section][param] = {"type": _type}
@@ -76,26 +80,26 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
         # Config settings that were converted on input
         if info:
             if info['type'] == list:
-                val = self.convert_to_list(val, section, param,
+                val = self.get_list(val, section, param,
                     info['nested_type'])
             else:
-                val = self.convert_to_scalar(val, section, param, info['type'])
+                val = self.get_scalar(val, section, param, info['type'])
 
         elif section in self.TO_CONVERT and param in self.TO_CONVERT[section]:
             info = self.TO_CONVERT[section][param]
             if info['type'] == list:
-                val = self.convert_to_list(val, section, param, info['nested_type'])
+                val = self.get_list(val, section, param, info['nested_type'])
             else:
-                val = self.convert_to_scalar(val, section, param, info['type'])
+                val = self.get_scalar(val, section, param, info['type'])
 
         return val
 
-    def convert_to_list(self, val, section, param, nested_type):
+    def get_list(self, val, section, param, nested_type):
         logging.debug('Converting %s.%s from string to list of %s',
             section, param, nested_type)
         return [nested_type(l) for l in val.split(',')]
 
-    def convert_to_scalar(self, val, section, param, _type):
+    def get_scalar(self, val, section, param, _type):
         logging.debug('Converting %s.%s from string to %s',
             section, param, _type)
         return _type(val)
