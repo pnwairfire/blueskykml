@@ -42,16 +42,16 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
 
         # use duck typing to see if it's a list or compatible type
         if hasattr(val, 'append'):
-            val = self.convert_list_to_string(val, section, param, type(val[0]))
+            val = self.convert_from_list(val, section, param, type(val[0]))
 
         elif hasattr(val, 'real'):
-            val = self.convert_scalar_to_string(val, section, param, type(val))
+            val = self.convert_from_scalar(val, section, param, type(val))
 
         args[2] = val
 
         return super(BlueSkyKMLConfigParser, self).set(*args, **params)
 
-    def convert_list_to_string(self, val, section, param, nested_type):
+    def convert_from_list(self, val, section, param, nested_type):
         logging.debug(' * Converting %s.%s from list of %s to string',
             section, param, nested_type)
         self._converted[section][param] = {
@@ -59,7 +59,7 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
         }
         return ','.join([str(l) for l in val])
 
-    def convert_scalar_to_string(self, val, section, param, _type):
+    def convert_from_scalar(self, val, section, param, _type):
         logging.debug(' * Converting %s.%s from %s to string',
             section, param, _type)
         self._converted[section][param] = {"type": _type}
