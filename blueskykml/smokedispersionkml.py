@@ -8,7 +8,7 @@ from .constants import *
 from .dispersiongrid import BSDispersionGrid
 from .polygon_generator import PolygonGenerator
 from . import dispersion_file_utils as dfu
-from . import firedescriptions
+
 try:
     from .pykml import pykml
     from .pykml.kml_utilities import zip_files
