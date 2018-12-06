@@ -43,6 +43,7 @@ class BlueSkyKMLConfigParser(configparser.ConfigParser):
     ##
 
     def set(self, *args, **params):
+        logging.debug("Setting %s", args)
         # in case we need to update args[2], make args is an mutable
         args = list(args)
         section = args[0]
