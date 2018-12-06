@@ -7,6 +7,7 @@ from . import dispersiongrid as dg
 from . import dispersion_file_utils as dfu
 from . import dispersionimages
 from . import smokedispersionkml
+from . import fires
 
 
 def main(options):
@@ -18,6 +19,11 @@ def main(options):
     logging.info("Starting Make Dispersion KML.")
 
     config = configuration.ConfigBuilder(options).config
+
+    # this will load fires and events, dump to json, and
+    # update the daily images utc offsets field if it was
+    # auto
+    fires_manager = fires.FiresManager(config)
 
     # Determine which mode to run OutputKML in
     if 'dispersion' in config.get('DEFAULT', 'MODES').split():
@@ -41,7 +47,7 @@ def main(options):
 
     # Generate KMZ
     smokedispersionkml.KmzCreator(config, grid_bbox, heights,
-        start_datetime=start_datetime).create_all()
+        fires_manager, start_datetime=start_datetime).create_all()
 
     # If enabled, reproject concentration images to display in a different projection
     if config.getboolean('DispersionImages', 'REPROJECT_IMAGES'):
