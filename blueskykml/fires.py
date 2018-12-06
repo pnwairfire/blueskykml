@@ -3,6 +3,8 @@ import csv
 import json
 import logging
 
+from afdatetime.parsing import parse_utc_offset
+
 from . import firedescriptions
 
 class FireData(object):
@@ -59,10 +61,16 @@ class FireLocationInfo(FireData):
         self._set_date_time(raw_data['date_time'])
         self.lat = float(raw_data['latitude'])
         self.lon = float(raw_data['longitude'])
+
         # 'utc_offset' was recently introduced to the fire locations
         # csv, so handle case where it doesn't exist
         if raw_data.get('utc_offset'):
-            self.utc_offset = int(raw_data['utc_offset'])
+            try:
+                self.utc_offset = int(parse_utc_offset(raw_data['utc_offset']))
+            except ValueError as e:
+                # cast to float before int, since int('-5.0') raises value error
+                self.utc_offset = int(float(raw_data['utc_offset']))
+
         self.area = round(float(raw_data['area']), 2)
         # Set the event name based on optional raw data
         event_name = raw_data.get('event_name')
