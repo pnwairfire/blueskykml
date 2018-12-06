@@ -234,7 +234,7 @@ class TestBuildFuelbeds(object):
         self.fire_event.daily_emissions = {
             datetime.datetime(2014, 5, 31, 0, 0): {
                 'co2': 295.05, 'co': 14.9, 'voc': 3.58, 'so2': 0.18,
-                'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm25': 1.45
+                'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm2.5': 1.45
             }
         }
         expected = (
@@ -251,7 +251,7 @@ class TestBuildFuelbeds(object):
         self.fire_event.daily_emissions = {
             datetime.datetime(2014, 5, 31, 0, 0): {
                 'co2': 295.05, 'co': 14.9, 'pm10': 1.71, 'voc': 3.58,
-                'so2': 0.18, 'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm25': 1.45
+                'so2': 0.18, 'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm2.5': 1.45
             }
         }
         expected = (
@@ -269,11 +269,11 @@ class TestBuildFuelbeds(object):
         self.fire_event.daily_emissions = {
             datetime.datetime(2014, 5, 31, 0, 0): {
                 'co2': 295.05, 'co': 14.9, 'pm10': 1.71, 'voc': 3.58,
-                'so2': 0.18, 'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm25': 1.50
+                'so2': 0.18, 'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm2.5': 1.50
             },
             datetime.datetime(2014, 6, 2, 0, 0): {
                 'co2': 295.05, 'co': 14.9, 'pm10': 1.71, 'voc': 3.58,
-                'so2': 0.18, 'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm25': 1.70
+                'so2': 0.18, 'nox': 0.42, 'nh3': 0.25, 'ch4': 0.77, 'pm2.5': 1.70
             }
         }
         expected = (
