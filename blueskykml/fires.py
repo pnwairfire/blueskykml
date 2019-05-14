@@ -255,7 +255,8 @@ class FiresManager(object):
         if not self.config.get("DispersionImages", "DAILY_IMAGES_UTC_OFFSETS"):
             utc_offsets = set([f.utc_offset
                 for f in self.fire_locations if f.utc_offset is not None])
-            utc_offsets = list(utc_offsets) if utc_offsets else [0]
+            utc_offsets.add(0)
+            utc_offsets = list(utc_offsets)
             logging.debug("Auto setting DispersionImages > DAILY_IMAGES_UTC_OFFSETS"
                 " to %s", utc_offsets)
             self.config.set("DispersionImages", "DAILY_IMAGES_UTC_OFFSETS",
