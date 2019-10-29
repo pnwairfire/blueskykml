@@ -40,7 +40,7 @@ setup(
         #"numpy",
         #"GDAL==1.11.2",
         "afdatetime>=1.1.1,<2.0.0",
-        "Pillow==2.8.1",
+        "Pillow==6.2.0",
         "matplotlib==1.4.3"
     ],
     dependency_links=[
