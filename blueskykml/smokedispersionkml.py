@@ -39,6 +39,9 @@ class KmzCreator(object):
         self._modes = config.get('DEFAULT', 'MODES')
         self._concentration_param_label = config.get(
             'SmokeDispersionKMLOutput', "PARAMETER_LABEL")
+        if re.sub("[ _-]*", "", self._concentration_param_label.lower()) == 'visiblerange':
+            self._concentration_param_label = "Visible Range"
+
         self._dispersion_image_dir = config.get(
             'DispersionGridOutput', "OUTPUT_DIR")
 
@@ -277,7 +280,7 @@ class KmzCreator(object):
 
     def _create_concentration_information(self):
         kml_root = pykml.Folder().set_name('%s from Wildland Fire'
-            % self._concentration_param_label.upper()).set_open(True)
+            % self._concentration_param_label).set_open(True)
         min_height_label = str(min([int(e.replace('m',''))
             for e in self._dispersion_images])) + 'm'
         for height_label in self._dispersion_images:
@@ -314,7 +317,7 @@ class KmzCreator(object):
 
             if images_dict['smoke_images']:
                 name = '%s %s' % (pretty_name,
-                    self._concentration_param_label.upper())
+                    self._concentration_param_label)
                 data = self._create_concentration_folder(name,
                     images_dict['smoke_images'], visible=visible)
                 parent_root = parent_root.with_feature(data)
@@ -367,7 +370,7 @@ class KmzCreator(object):
 
     def _create_polygon_information(self, polygon_kmls):
         kml_root = pykml.Folder().set_name('%s from Wildland Fire' %
-            self._concentration_param_label.upper()).set_open(True)
+            self._concentration_param_label).set_open(True)
         for (poly_kml, dt) in polygon_kmls:
             link = pykml.Link().set_href(os.path.basename(poly_kml))
             list_style = pykml.ListStyle().set_list_item_type('checkHideChildren')
