@@ -188,6 +188,8 @@ class BSDispersionPlot:
             'SmokeDispersionKMLOutput', "PARAMETER_LABEL") or 'PM2.5'
         if self.parameter_label in ('PM25', 'PM2.5'):
             self.parameter_label = r'$PM_{2.5} \/[\mu g/m^{3}]$'
+        elif re.sub("[ _-]*", "", self.parameter_label.lower()) == 'visiblerange':
+            self.parameter_label = 'Visible Range (miles)'
 
         self.dpi = dpi
         self.export_format = 'png'
