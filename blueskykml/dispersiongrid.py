@@ -168,6 +168,7 @@ class BSDispersionGrid:
 
         self.compute_days_spanned(utc_offset)
         self.max_data = np.zeros((self.num_days, self.sizeZ, self.sizeY, self.sizeX), dtype=np.float)
+        self.min_data = np.zeros((self.num_days, self.sizeZ, self.sizeY, self.sizeX), dtype=np.float)
         self.avg_data = np.zeros((self.num_days, self.sizeZ, self.sizeY, self.sizeX), dtype=np.float)
 
         shour = 0
@@ -176,6 +177,7 @@ class BSDispersionGrid:
         for day in range(self.num_days):
             for layer in range(self.sizeZ):
                 self.max_data[day,layer,:,:] = np.max(self.data[shour:ehour,layer,:,:], axis=0)
+                self.min_data[day,layer,:,:] = np.min(self.data[shour:ehour,layer,:,:], axis=0)
                 self.avg_data[day,layer,:,:] = np.average(self.data[shour:ehour,layer,:,:], axis=0)
             shour = ehour
             ehour  = min(ehour + 24, self.num_times)
@@ -363,14 +365,23 @@ def create_dispersion_images(config):
         for color_map_section in dfu.parse_color_map_names(
                 config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MAXIMUM]):
             for utc_offset in utc_offsets:
-                plot = create_daily_maximum_dispersion_images(
-                    config, grid, color_map_section, layer, utc_offset)
+                plot = create_daily_dispersion_images(
+                    config, grid, color_map_section, layer, utc_offset,
+                    dfu.TimeSeriesTypes.DAILY_MAXIMUM)
+
+        for color_map_section in dfu.parse_color_map_names(
+                config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MINIMUM]):
+            for utc_offset in utc_offsets:
+                plot = create_daily_dispersion_images(
+                    config, grid, color_map_section, layer, utc_offset,
+                    dfu.TimeSeriesTypes.DAILY_MINIMUM)
 
         for color_map_section in dfu.parse_color_map_names(
                 config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_AVERAGE]):
             for utc_offset in utc_offsets:
-                plot = create_daily_average_dispersion_images(
-                    config, grid, color_map_section, layer, utc_offset)
+                plot = create_daily_dispersion_images(
+                    config, grid, color_map_section, layer, utc_offset,
+                    dfu.TimeSeriesTypes.DAILY_AVERAGE)
 
     if not plot:
         raise Exception("Configuration ERROR... No color maps defined.")
@@ -479,49 +490,30 @@ def create_three_hour_dispersion_images(config, grid, section, layer):
     # plot will be used for its already computed min/max lat/lon
     return plot
 
-def create_daily_maximum_dispersion_images(config, grid, section, layer,
-        utc_offset):
+DATA_ATTR = {
+    dfu.TimeSeriesTypes.DAILY_MAXIMUM: 'max_data',
+    dfu.TimeSeriesTypes.DAILY_MINIMUM: 'min_data',
+    dfu.TimeSeriesTypes.DAILY_AVERAGE: 'avg_data'
+}
+def create_daily_dispersion_images(config, grid, section, layer,
+        utc_offset, time_series_type):
     plot = create_color_plot(config, grid, section)
     height_label = dfu.create_height_label(grid.heights[layer])
     outdir = dfu.create_image_set_dir(config, height_label,
-        TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.DAILY_MAXIMUM],
+        TIME_SET_DIR_NAMES[time_series_type],
         dfu.get_utc_label(utc_offset), section)
 
     grid.calc_aggregate_data(utc_offset)
+    data = getattr(grid, DATA_ATTR[time_series_type])
     for i in range(grid.num_days):
-        logging.debug("Creating height %s %s daily maximum concentration "
-            "plot %d of %d "% (height_label, dfu.get_utc_label(utc_offset),
-                i + 1, grid.num_days))
-        fileroot = dfu.image_pathname(outdir, height_label,
-            dfu.TimeSeriesTypes.DAILY_MAXIMUM, grid.dates[i],
-            utc_offset=utc_offset)
-        plot.make_contour_plot(grid.max_data[i,layer,:,:], fileroot)
-
-    plot.make_colorbar(dfu.legend_pathname(outdir, height_label,
-        dfu.TimeSeriesTypes.DAILY_MAXIMUM, utc_offset=utc_offset))
-    return plot
-
-def create_daily_average_dispersion_images(config, grid, section, layer,
-        utc_offset):
-    plot = create_color_plot(config, grid, section)
-    height_label = dfu.create_height_label(grid.heights[layer])
-    outdir = dfu.create_image_set_dir(config, height_label,
-        TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.DAILY_AVERAGE],
-        dfu.get_utc_label(utc_offset), section)
-
-    grid.calc_aggregate_data(utc_offset)
-    for i in range(grid.num_days):
-        logging.debug("Creating height %s %s daily average concentration "
+        logging.debug("Creating height %s %s daily %s concentration "
             "plot %d of %d " % (height_label, dfu.get_utc_label(utc_offset),
-                i + 1, grid.num_days))
+                dfu.TIME_SET_DIR_NAMES[time_series_type], i + 1, grid.num_days))
         fileroot = dfu.image_pathname(outdir, height_label,
-            dfu.TimeSeriesTypes.DAILY_AVERAGE, grid.dates[i],
+            time_series_type, grid.dates[i],
             utc_offset=utc_offset)
-        plot.make_contour_plot(grid.avg_data[i,layer,:,:], fileroot)
+        plot.make_contour_plot(data[i,layer,:,:], fileroot)
 
-    # Create a color bars to use in overlays
     plot.make_colorbar(dfu.legend_pathname(outdir, height_label,
-        dfu.TimeSeriesTypes.DAILY_AVERAGE, utc_offset=utc_offset))
-
-    # plot will be used for its already computed min/max lat/lon
+        time_series_type, utc_offset=utc_offset))
     return plot

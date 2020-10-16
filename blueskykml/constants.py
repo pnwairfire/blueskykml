@@ -7,8 +7,8 @@ __all__ = [
 class TimeSeriesTypes:
     """Effectively an enum of image time series types"""
     # Enum to represent different time series
-    NUM_TYPES = 4
-    HOURLY, THREE_HOUR, DAILY_MAXIMUM, DAILY_AVERAGE = list(range(NUM_TYPES))
+    NUM_TYPES = 5
+    HOURLY, THREE_HOUR, DAILY_MAXIMUM, DAILY_MINIMUM, DAILY_AVERAGE = list(range(NUM_TYPES))
     ALL = list(range(NUM_TYPES))
 
 
@@ -19,6 +19,7 @@ TIME_SET_DIR_NAMES = {
     TimeSeriesTypes.HOURLY: 'hourly',
     TimeSeriesTypes.THREE_HOUR: 'three_hour',
     TimeSeriesTypes.DAILY_MAXIMUM: 'daily_maximum',
+    TimeSeriesTypes.DAILY_MINIMUM: 'daily_minimum',
     TimeSeriesTypes.DAILY_AVERAGE: 'daily_average'
 }
 
@@ -32,7 +33,8 @@ TIME_SERIES_PRETTY_NAMES = dict(
 CONFIG_COLOR_LABELS = {
     TimeSeriesTypes.HOURLY: 'HOURLY_COLORS',
     TimeSeriesTypes.THREE_HOUR: 'THREE_HOUR_COLORS',
-    TimeSeriesTypes.DAILY_MAXIMUM: 'HOURLY_COLORS',
+    TimeSeriesTypes.DAILY_MAXIMUM: 'HOURLY_COLORS', # Is this right?
+    TimeSeriesTypes.DAILY_MINIMUM: 'HOURLY_COLORS', # Is this right?
     TimeSeriesTypes.DAILY_AVERAGE: 'DAILY_COLORS'
 }
 
@@ -40,5 +42,6 @@ FILE_NAME_TIME_STAMP_PATTERNS = {
     TimeSeriesTypes.HOURLY:     "%Y%m%d%H%M",
     TimeSeriesTypes.THREE_HOUR:     "%Y%m%d%H%M",
     TimeSeriesTypes.DAILY_MAXIMUM: "%Y%m%d",
+    TimeSeriesTypes.DAILY_MINIMUM: "%Y%m%d",
     TimeSeriesTypes.DAILY_AVERAGE: "%Y%m%d"
 }

@@ -83,6 +83,8 @@ def collect_all_dispersion_images(config, heights):
     """Collect images from all sets of colormap images in each time series
     category
     """
+    utc_offsets = config.get('DispersionImages', "DAILY_IMAGES_UTC_OFFSETS")
+
     images = {}
 
     for height in heights:
@@ -90,9 +92,8 @@ def collect_all_dispersion_images(config, heights):
         images[height_label] = dict((v, {}) for v in TimeSeriesTypes.ALL)
         for time_series_type in TimeSeriesTypes.ALL:
             if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
+                    TimeSeriesTypes.DAILY_MINIMUM,
                     TimeSeriesTypes.DAILY_AVERAGE):
-                utc_offsets = config.get('DispersionImages',
-                    "DAILY_IMAGES_UTC_OFFSETS")
                 for utc_offset in utc_offsets:
                     collect_all_colormap_dispersion_images(config, images,
                         height_label, time_series_type, utc_offset=utc_offset)
@@ -134,15 +135,16 @@ def collect_dispersion_images_for_kml(config, heights):
     """Collect images from first set of colormap images in each time series
     category. Used in KML generation.
     """
+    utc_offsets = config.get('DispersionImages', "DAILY_IMAGES_UTC_OFFSETS")
+
     images = {}
 
     for height in heights:
         height_label = create_height_label(height)
         for time_series_type in TimeSeriesTypes.ALL:
             if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
+                    TimeSeriesTypes.DAILY_MINIMUM,
                     TimeSeriesTypes.DAILY_AVERAGE):
-                utc_offsets = config.get('DispersionImages',
-                    "DAILY_IMAGES_UTC_OFFSETS")
                 for utc_offset in utc_offsets:
                     collect_color_map_dispersion_images_section_for_kml(
                         config, images, height_label, time_series_type,

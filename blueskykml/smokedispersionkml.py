@@ -37,10 +37,12 @@ class KmzCreator(object):
         self._pretty_kml = pretty_kml
 
         self._modes = config.get('DEFAULT', 'MODES')
+
+        self._is_visual_range = re.sub("[ _-]*", "", self._config.get(
+            'DispersionGridInput', "PARAMETER").lower()) == 'visualrange'
+
         self._concentration_param_label = config.get(
             'SmokeDispersionKMLOutput', "PARAMETER_LABEL")
-        if re.sub("[ _-]*", "", self._concentration_param_label.lower()) == 'visualrange':
-            self._concentration_param_label = "Visual Range"
 
         self._dispersion_image_dir = config.get(
             'DispersionGridOutput', "OUTPUT_DIR")
@@ -287,10 +289,16 @@ class KmzCreator(object):
             height_root = pykml.Folder().set_name('Height %s ' % (height_label))
             for time_series_type in TimeSeriesTypes.ALL:
                 t_dict = self._dispersion_images[height_label][time_series_type]
-                visible = (TimeSeriesTypes.DAILY_MAXIMUM == time_series_type
-                    and height_label == min_height_label)
+
+                # Show lowest level daily max images first, unless we're
+                # creating visual range output, in which case we show daily min images
+                visible = (height_label == min_height_label and (
+                    (not self._is_visual_range and TimeSeriesTypes.DAILY_MAXIMUM == time_series_type)
+                    or (self._is_visual_range and TimeSeriesTypes.DAILY_MINIMUM == time_series_type)))
+
                 time_series_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
                 if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
+                        TimeSeriesTypes.DAILY_MINIMUM,
                         TimeSeriesTypes.DAILY_AVERAGE):
                     time_series_root = pykml.Folder().set_name(time_series_name)
                     for utc_offset_value, images_dict in t_dict.items():
