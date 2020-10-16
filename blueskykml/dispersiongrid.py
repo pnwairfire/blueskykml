@@ -53,9 +53,9 @@ class BSDispersionGrid:
         if not param:
             raise ValueError ("No NetCDF parameter supplied.")
 
-        # if param is "visibile range", we're actually read PM25
-        is_visible_range = re.sub("[ _-]*", "", param.lower()) == 'visiblerange'
-        file_param = 'PM25' if is_visible_range else param
+        # if param is "visual range", we actually read PM25
+        is_visual_range = re.sub("[ _-]*", "", param.lower()) == 'visualrange'
+        file_param = 'PM25' if is_visual_range else param
         gdal_filename = "NETCDF:%s:%s" % (filename, file_param)
         logging.debug("loading gdal file %s", gdal_filename)
 
@@ -94,9 +94,9 @@ class BSDispersionGrid:
         for i in range(self.ds.RasterCount):
             rb = self.ds.GetRasterBand(i+1)
             data = rb.ReadAsArray(0, 0, self.sizeX, self.sizeY)
-            # if param is "visibile range", we need to convert PM25 values
-            if is_visible_range:
-                logging.debug("Converting PM2.5 to visible range")
+            # if param is "visual range", we need to convert PM25 values
+            if is_visual_range:
+                logging.debug("Converting PM2.5 to visual range")
                 for d in data:
                     for i in range(len(d)):
                         # Visual Range (miles) = 539/PM2.5, but set to 539
@@ -188,8 +188,8 @@ class BSDispersionPlot:
             'SmokeDispersionKMLOutput', "PARAMETER_LABEL") or 'PM2.5'
         if self.parameter_label in ('PM25', 'PM2.5'):
             self.parameter_label = r'$PM_{2.5} \/[\mu g/m^{3}]$'
-        elif re.sub("[ _-]*", "", self.parameter_label.lower()) == 'visiblerange':
-            self.parameter_label = 'Visible Range (miles)'
+        elif re.sub("[ _-]*", "", self.parameter_label.lower()) == 'visualrange':
+            self.parameter_label = 'Visual Range (miles)'
 
         self.dpi = dpi
         self.export_format = 'png'

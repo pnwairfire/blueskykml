@@ -39,8 +39,8 @@ class KmzCreator(object):
         self._modes = config.get('DEFAULT', 'MODES')
         self._concentration_param_label = config.get(
             'SmokeDispersionKMLOutput', "PARAMETER_LABEL")
-        if re.sub("[ _-]*", "", self._concentration_param_label.lower()) == 'visiblerange':
-            self._concentration_param_label = "Visible Range"
+        if re.sub("[ _-]*", "", self._concentration_param_label.lower()) == 'visualrange':
+            self._concentration_param_label = "Visual Range"
 
         self._dispersion_image_dir = config.get(
             'DispersionGridOutput', "OUTPUT_DIR")
