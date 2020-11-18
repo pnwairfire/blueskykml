@@ -54,8 +54,8 @@ class BSDispersionGrid:
             raise ValueError ("No NetCDF parameter supplied.")
 
         # if param is "visual range", we actually read PM25
-        is_visual_range = re.sub("[ _-]*", "", param.lower()) == 'visualrange'
-        file_param = 'PM25' if is_visual_range else param
+        self.is_visual_range = re.sub("[ _-]*", "", param.lower()) == 'visualrange'
+        file_param = 'PM25' if self.is_visual_range else param
         gdal_filename = "NETCDF:%s:%s" % (filename, file_param)
         logging.debug("loading gdal file %s", gdal_filename)
 
@@ -95,7 +95,7 @@ class BSDispersionGrid:
             rb = self.ds.GetRasterBand(i+1)
             data = rb.ReadAsArray(0, 0, self.sizeX, self.sizeY)
             # if param is "visual range", we need to convert PM25 values
-            if is_visual_range:
+            if self.is_visual_range:
                 logging.debug("Converting PM2.5 to visual range")
                 for d in data:
                     for i in range(len(d)):
@@ -362,19 +362,22 @@ def create_dispersion_images(config):
             plot = create_three_hour_dispersion_images(
                 config, grid, color_map_section, layer)
 
-        for color_map_section in dfu.parse_color_map_names(
-                config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MAXIMUM]):
-            for utc_offset in utc_offsets:
-                plot = create_daily_dispersion_images(
-                    config, grid, color_map_section, layer, utc_offset,
-                    dfu.TimeSeriesTypes.DAILY_MAXIMUM)
-
-        for color_map_section in dfu.parse_color_map_names(
-                config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MINIMUM]):
-            for utc_offset in utc_offsets:
-                plot = create_daily_dispersion_images(
-                    config, grid, color_map_section, layer, utc_offset,
-                    dfu.TimeSeriesTypes.DAILY_MINIMUM)
+        # Create MIN only for VR, and MAX only for all other;
+        #  update any other parts of the code as necessary
+        if grid.is_visual_range:
+            for color_map_section in dfu.parse_color_map_names(
+                    config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MINIMUM]):
+                for utc_offset in utc_offsets:
+                    plot = create_daily_dispersion_images(
+                        config, grid, color_map_section, layer, utc_offset,
+                        dfu.TimeSeriesTypes.DAILY_MINIMUM)
+        else:
+            for color_map_section in dfu.parse_color_map_names(
+                    config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MAXIMUM]):
+                for utc_offset in utc_offsets:
+                    plot = create_daily_dispersion_images(
+                        config, grid, color_map_section, layer, utc_offset,
+                        dfu.TimeSeriesTypes.DAILY_MAXIMUM)
 
         for color_map_section in dfu.parse_color_map_names(
                 config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_AVERAGE]):
