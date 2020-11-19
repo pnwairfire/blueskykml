@@ -68,9 +68,17 @@ def get_utc_label(utc_offset):
 # Note: this will memoize for a single instance of the config parse
 # TODO: pass in color map names string instead of the config object ?
 @memoizeme
-def parse_color_map_names(config, set_name):
-    if config.has_option("DispersionGridOutput", set_name):
-        return [name.strip() for name in config.get("DispersionGridOutput", set_name).split(',')]
+def parse_color_map_names(config, parameter, set_name):
+    def _to_array(val):
+        return [name.strip() for name in val.split(',')]
+
+    key = "{}_{}".format(set_name, parameter.upper())
+    if config.has_option("DispersionGridOutput", key):
+        return _to_array(config.get("DispersionGridOutput", key))
+
+    elif config.has_option("DispersionGridOutput", set_name):
+        return _to_array(config.get("DispersionGridOutput", set_name))
+
     return []
 
 def is_smoke_image(file_name, height_label, time_series_type):
@@ -112,7 +120,7 @@ def collect_all_colormap_dispersion_images(config, parameter, images, height_lab
     if utc_offset is not None:
         keys.append(get_utc_label(utc_offset))
 
-    for color_map_section in parse_color_map_names(config,
+    for color_map_section in parse_color_map_names(config, parameter,
             CONFIG_COLOR_LABELS[time_series_type]):
         # Initialize and get reference to nested color section imatges dict
         _keys = keys + [color_map_section]
@@ -161,7 +169,7 @@ def collect_dispersion_images_for_kml(config, parameter, heights):
 
 def collect_color_map_dispersion_images_section_for_kml(config, parameter,
         images, height_label, time_series_type, utc_offset=None):
-    color_map_sections = parse_color_map_names(config,
+    color_map_sections = parse_color_map_names(config, parameter,
         CONFIG_COLOR_LABELS[time_series_type])
     if color_map_sections and len(color_map_sections) > 0:
         # Initialize and get reference to nested color section imatges dict

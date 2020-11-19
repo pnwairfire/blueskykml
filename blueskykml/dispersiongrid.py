@@ -349,35 +349,35 @@ def create_dispersion_images(config, parameter):
     plot = None
 
     for layer in layers:
-        for color_map_section in dfu.parse_color_map_names(
-                config, CONFIG_COLOR_LABELS[TimeSeriesTypes.HOURLY]):
+        for color_map_section in dfu.parse_color_map_names(config, parameter,
+            CONFIG_COLOR_LABELS[TimeSeriesTypes.HOURLY]):
             plot = create_hourly_dispersion_images(
                 config, parameter, grid, color_map_section, layer)
 
-        for color_map_section in dfu.parse_color_map_names(
-                config, CONFIG_COLOR_LABELS[TimeSeriesTypes.THREE_HOUR]):
+        for color_map_section in dfu.parse_color_map_names(config, parameter,
+            CONFIG_COLOR_LABELS[TimeSeriesTypes.THREE_HOUR]):
             plot = create_three_hour_dispersion_images(
                 config, parameter, grid, color_map_section, layer)
 
         # Create MIN only for VR, and MAX only for all other;
         #  update any other parts of the code as necessary
         if grid.is_visual_range:
-            for color_map_section in dfu.parse_color_map_names(
-                    config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MINIMUM]):
+            for color_map_section in dfu.parse_color_map_names(config, parameter,
+                CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MINIMUM]):
                 for utc_offset in utc_offsets:
                     plot = create_daily_dispersion_images(
                         config, parameter, grid, color_map_section, layer, utc_offset,
                         dfu.TimeSeriesTypes.DAILY_MINIMUM)
         else:
-            for color_map_section in dfu.parse_color_map_names(
-                    config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MAXIMUM]):
+            for color_map_section in dfu.parse_color_map_names(config, parameter,
+                CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MAXIMUM]):
                 for utc_offset in utc_offsets:
                     plot = create_daily_dispersion_images(
                         config, parameter, grid, color_map_section, layer, utc_offset,
                         dfu.TimeSeriesTypes.DAILY_MAXIMUM)
 
-        for color_map_section in dfu.parse_color_map_names(
-                config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_AVERAGE]):
+        for color_map_section in dfu.parse_color_map_names(config, parameter,
+            CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_AVERAGE]):
             for utc_offset in utc_offsets:
                 plot = create_daily_dispersion_images(
                     config, parameter, grid, color_map_section, layer, utc_offset,
