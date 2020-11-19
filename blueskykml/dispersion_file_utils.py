@@ -102,7 +102,7 @@ def collect_all_dispersion_images(config, parameter, heights):
     for height in heights:
         height_label = create_height_label(height)
         images[height_label] = dict((v, {}) for v in TimeSeriesTypes.ALL)
-        for time_series_type in TimeSeriesTypes.ALL:
+        for time_series_type in TimeSeriesTypes.all_for_parameter(parameter):
             if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
                     TimeSeriesTypes.DAILY_MINIMUM,
                     TimeSeriesTypes.DAILY_AVERAGE):
@@ -153,7 +153,7 @@ def collect_dispersion_images_for_kml(config, parameter, heights):
 
     for height in heights:
         height_label = create_height_label(height)
-        for time_series_type in TimeSeriesTypes.ALL:
+        for time_series_type in TimeSeriesTypes.all_for_parameter(parameter):
             if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
                     TimeSeriesTypes.DAILY_MINIMUM,
                     TimeSeriesTypes.DAILY_AVERAGE):

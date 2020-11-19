@@ -307,7 +307,8 @@ class KmzCreator(object):
             for e in self._dispersion_images])) + 'm'
         for height_label in self._dispersion_images:
             height_root = pykml.Folder().set_name('Height %s ' % (height_label))
-            for time_series_type in TimeSeriesTypes.ALL:
+            for time_series_type in TimeSeriesTypes.all_for_parameter(self._parameter):
+
                 t_dict = self._dispersion_images[height_label][time_series_type]
 
                 # Show lowest level daily max images first, unless we're

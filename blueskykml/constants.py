@@ -1,3 +1,5 @@
+import re
+
 __all__ = [
     'TimeSeriesTypes', 'TIME_SET_DIR_NAMES', 'IMAGE_PREFIXES',
     'TIME_SERIES_PRETTY_NAMES', 'CONFIG_COLOR_LABELS',
@@ -11,6 +13,14 @@ class TimeSeriesTypes:
     NUM_TYPES = 5
     HOURLY, THREE_HOUR, DAILY_MAXIMUM, DAILY_MINIMUM, DAILY_AVERAGE = list(range(NUM_TYPES))
     ALL = list(range(NUM_TYPES))
+
+    @classmethod
+    def all_for_parameter(cls, parameter):
+        is_visual_range = re.sub("[ _-]*", "", parameter.lower()) == 'visualrange'
+        return [a for a in cls.ALL
+            if not (is_visual_range and cls.DAILY_MAXIMUM == a) and
+              not (not is_visual_range and cls.DAILY_MINIMUM == a)]
+
 
 
 # Define the time set keys, used in the image paths and filenames, here rather
