@@ -89,7 +89,8 @@ class PolygonGenerator(object):
         self._generate_legend()
 
     def _create_output_dir(self):
-        self.output_dir = self._config.get(self.POLYGONS_CONFIG_SECTION, 'POLYGONS_OUTPUT_DIR')
+        self.output_dir = self._config.get(self.POLYGONS_CONFIG_SECTION,
+            'POLYGONS_OUTPUT_DIR') + '-' + self._parameter
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
