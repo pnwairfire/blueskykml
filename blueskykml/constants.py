@@ -1,7 +1,8 @@
 __all__ = [
     'TimeSeriesTypes', 'TIME_SET_DIR_NAMES', 'IMAGE_PREFIXES',
     'TIME_SERIES_PRETTY_NAMES', 'CONFIG_COLOR_LABELS',
-    'FILE_NAME_TIME_STAMP_PATTERNS'
+    'FILE_NAME_TIME_STAMP_PATTERNS', 'PARAMETER_LABELS',
+    'PARAMETER_PLOT_LABELS'
 ]
 
 class TimeSeriesTypes:
@@ -44,4 +45,14 @@ FILE_NAME_TIME_STAMP_PATTERNS = {
     TimeSeriesTypes.DAILY_MAXIMUM: "%Y%m%d",
     TimeSeriesTypes.DAILY_MINIMUM: "%Y%m%d",
     TimeSeriesTypes.DAILY_AVERAGE: "%Y%m%d"
+}
+
+PARAMETER_LABELS = {
+    'PM25': 'PM2.5',
+    'VisualRange': 'Visual Range'
+}
+
+PARAMETER_PLOT_LABELS = {
+    'PM25': r'$PM_{2.5} \/[\mu g/m^{3}]$',
+    'VisualRange': 'Visual Range (miles)'
 }

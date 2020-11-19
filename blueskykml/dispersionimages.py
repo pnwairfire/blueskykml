@@ -48,7 +48,7 @@ class SimpleColor(object):
         return self.r, self.g, self.b, self.a
 
 
-def format_dispersion_images(config, heights, legend_name="colorbar"):
+def format_dispersion_images(config, parameter, heights, legend_name="colorbar"):
     # [DispersionImages] configurations
     section = 'DispersionImages'
     image_opacity_factor = config.getfloat(section, "IMAGE_OPACITY_FACTOR")
@@ -65,7 +65,7 @@ def format_dispersion_images(config, heights, legend_name="colorbar"):
     background_color = SimpleColor(red, green, blue, 255)
 
     # [DispersionGridOutput] configurations
-    images = dfu.collect_all_dispersion_images(config, heights)
+    images = dfu.collect_all_dispersion_images(config, parameter, heights)
 
     def _format(data, *keys):
         for k, v in data.items():
@@ -119,7 +119,7 @@ def _apply_transparency(image, background_color, opacity_factor):
                 pixdata[x, y] = pixel_color.get_color_tuple()
     return image
 
-def reproject_images(config, grid_bbox, heights):
+def reproject_images(config, parameter, grid_bbox, heights):
     """Reproject images for display on map software (i.e. OpenLayers).
     PNG images will first be translated to TIF files via the 'gdal_translate' command.  The new TIF file will then be
     reprojected using the 'gdalwarp' command.  Finally, the reprojected TIF file will be warped back into PNG image form.
@@ -139,7 +139,7 @@ def reproject_images(config, grid_bbox, heights):
     # gdal_translate - http://www.gdal.org/gdal_translate.html
     # gdalwarp -      http://www.gdal.org/gdalwarp.html
 
-    images = dfu.collect_all_dispersion_images(config, heights)
+    images = dfu.collect_all_dispersion_images(config, parameter, heights)
 
     def _reproject(data, *keys):
         if isinstance(data, dict):

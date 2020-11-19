@@ -20,17 +20,21 @@ def create_dir_if_does_not_exist(outdir):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-def create_dispersion_images_dir(config):
-    outdir = config.get('DispersionGridOutput', "OUTPUT_DIR")
+def images_dir_name(config, parameter):
+    return (config.get('DispersionGridOutput', "OUTPUT_DIR")
+        + '-' + parameter.lower())
+
+def create_dispersion_images_dir(config, parameter):
+    outdir = images_dir_name(config, parameter)
     create_dir_if_does_not_exist(outdir)
 
 def create_polygon_kmls_dir(config):
-    outdir = config.get('PolygonsKML', "POLYGONS_OUTPUT_DIR")
+    outdir = images_dir_name(config, parameter)
     create_dir_if_does_not_exist(outdir)
 
-def create_image_set_dir(config, *dirs):
+def create_image_set_dir(config, parameter, *dirs):
     """Creates the directory to contain the specified image set, if necessary"""
-    images_output_dir = config.get('DispersionGridOutput', "OUTPUT_DIR")
+    images_output_dir = images_dir_name(config, parameter)
     dirs = [str(d) for d in dirs]
     outdir = os.path.join(images_output_dir, *dirs)
     if not os.path.exists(outdir):
@@ -79,7 +83,7 @@ def is_smoke_image(file_name, height_label, time_series_type):
 ##
 
 @memoizeme
-def collect_all_dispersion_images(config, heights):
+def collect_all_dispersion_images(config, parameter, heights):
     """Collect images from all sets of colormap images in each time series
     category
     """
@@ -95,14 +99,14 @@ def collect_all_dispersion_images(config, heights):
                     TimeSeriesTypes.DAILY_MINIMUM,
                     TimeSeriesTypes.DAILY_AVERAGE):
                 for utc_offset in utc_offsets:
-                    collect_all_colormap_dispersion_images(config, images,
+                    collect_all_colormap_dispersion_images(config, parameter, images,
                         height_label, time_series_type, utc_offset=utc_offset)
             else:
-                collect_all_colormap_dispersion_images(config, images,
+                collect_all_colormap_dispersion_images(config, parameter, images,
                     height_label, time_series_type)
     return images
 
-def collect_all_colormap_dispersion_images(config, images, height_label,
+def collect_all_colormap_dispersion_images(config, parameter, images, height_label,
         time_series_type, utc_offset=None):
     keys = [height_label, TIME_SET_DIR_NAMES[time_series_type]]
     if utc_offset is not None:
@@ -115,7 +119,7 @@ def collect_all_colormap_dispersion_images(config, images, height_label,
         color_set = initialize_sections_dict(images, *_keys)
 
         # create output dir
-        color_set['root_dir'] = create_image_set_dir(config, *_keys)
+        color_set['root_dir'] = create_image_set_dir(config, parameter, *_keys)
 
         # collect images
         for image in os.listdir(color_set['root_dir']):
@@ -131,7 +135,7 @@ def collect_all_colormap_dispersion_images(config, images, height_label,
 
 # Note: collect_dispersion_images_for_kml was copied over from
 # smokedispersionkml.py and refactored to remove redundancy
-def collect_dispersion_images_for_kml(config, heights):
+def collect_dispersion_images_for_kml(config, parameter, heights):
     """Collect images from first set of colormap images in each time series
     category. Used in KML generation.
     """
@@ -147,15 +151,16 @@ def collect_dispersion_images_for_kml(config, heights):
                     TimeSeriesTypes.DAILY_AVERAGE):
                 for utc_offset in utc_offsets:
                     collect_color_map_dispersion_images_section_for_kml(
-                        config, images, height_label, time_series_type,
-                        utc_offset)
+                        config, parameter, images, height_label,
+                        time_series_type, utc_offset=utc_offset)
             else:
                 collect_color_map_dispersion_images_section_for_kml(
-                    config, images, height_label, time_series_type)
+                    config, parameter, images, height_label,
+                    time_series_type)
     return images
 
-def collect_color_map_dispersion_images_section_for_kml(config, images,
-        height_label, time_series_type, utc_offset=None):
+def collect_color_map_dispersion_images_section_for_kml(config, parameter,
+        images, height_label, time_series_type, utc_offset=None):
     color_map_sections = parse_color_map_names(config,
         CONFIG_COLOR_LABELS[time_series_type])
     if color_map_sections and len(color_map_sections) > 0:
@@ -168,7 +173,7 @@ def collect_color_map_dispersion_images_section_for_kml(config, images,
         # create output dir
         keys[1] = TIME_SET_DIR_NAMES[keys[1]]
         keys.append(color_map_sections[0])
-        outdir = create_image_set_dir(config, *keys)
+        outdir = create_image_set_dir(config, parameter, *keys)
 
         # collect images
         images_section['root_dir'] = outdir

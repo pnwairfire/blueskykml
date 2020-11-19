@@ -26,10 +26,11 @@ class KmzCreator(object):
 
     URL_MATCHER = re.compile('^https?://')
 
-    def __init__(self, config, grid_bbox, heights,
+    def __init__(self, config, parameter, grid_bbox, heights,
             fires_manager, start_datetime=None,
             legend_name="colorbar.png", pretty_kml=False):
         self._config = config
+        self._parameter = parameter
         self._grid_bbox = grid_bbox
         self._heights = heights
 
@@ -38,11 +39,10 @@ class KmzCreator(object):
 
         self._modes = config.get('DEFAULT', 'MODES')
 
-        self._is_visual_range = re.sub("[ _-]*", "", self._config.get(
-            'DispersionGridInput', "PARAMETER").lower()) == 'visualrange'
 
-        self._concentration_param_label = config.get(
-            'SmokeDispersionKMLOutput', "PARAMETER_LABEL")
+        self._is_visual_range = re.sub("[ _-]*", "", parameter.lower()) == 'visualrange'
+
+        self._concentration_param_label = PARAMETER_LABELS.get(parameter) or parameter
 
         self._dispersion_image_dir = config.get(
             'DispersionGridOutput', "OUTPUT_DIR")
@@ -84,7 +84,7 @@ class KmzCreator(object):
             self._concentration_information = self._create_concentration_information()
             self._image_assets = self._collect_image_assets()
             if self._do_create_polygons:
-                pgGen = PolygonGenerator(self._config)
+                pgGen = PolygonGenerator(self._config, parameter)
                 self._polygon_kmls = [(os.path.join(pgGen.output_dir, f), dt) for f,dt in pgGen.kml_files]
                 self._polygon_legend = os.path.join(pgGen.output_dir, pgGen.legend_filename)
                 self._polygon_information = self._create_polygon_information(self._polygon_kmls)
@@ -149,20 +149,26 @@ class KmzCreator(object):
         os.remove(kml_name)
 
     def create_all(self):
-        if (self._config.has_option('SmokeDispersionKMLOutput', "KMZ_FILE")
-                and self._config.get('SmokeDispersionKMLOutput', "KMZ_FILE")):
-            self.create(self._config.get('SmokeDispersionKMLOutput', "KMZ_FILE"),
-                'doc.kml', 'BlueSky Smoke Dispersion', True, True, True, False)
+        kmz_file_name = self._file_name(
+            'SmokeDispersionKMLOutput', "KMZ_FILE")
+        if (kmz_file_name):
+            self.create(kmz_file_name,
+                'doc.kml', 'BlueSky Smoke Dispersion',
+                True, True, True, False)
 
-        if (self._config.has_option('SmokeDispersionKMLOutput', "KMZ_FIRE_FILE")
-                and self._config.get('SmokeDispersionKMLOutput', "KMZ_FIRE_FILE")):
-            self.create(self._config.get('SmokeDispersionKMLOutput', "KMZ_FIRE_FILE"),
-                'doc_fires.kml', 'BlueSky Fires', True, False, False, False)
+        kmz_fire_file_name = self._file_name(
+            'SmokeDispersionKMLOutput', "KMZ_FIRE_FILE")
+        if kmz_fire_file_name:
+            self.create(kmz_fire_file_name,
+                'doc_fires.kml', 'BlueSky Fires',
+                True, False, False, False)
 
         if self._do_create_polygons:
-            self.create(self._config.get('PolygonsKML', "KMZ_FILE"), 'doc_polygons.kml',
-                'BlueSky Smoke Dispersion- Polygons', True, False, False, True)
-
+            polygon_kmz_file_name = self._file_name('PolygonsKML', "KMZ_FILE")
+            if polygon_kmz_file_name:
+                self.create(polygon_kmz_file_name,
+                    'doc_polygons.kml', 'BlueSky Smoke Dispersion - Polygons',
+                    True, False, False, True)
 
     ##
     ## Private Methods
@@ -171,10 +177,24 @@ class KmzCreator(object):
     # Data Generating Methods
 
     def _collect_images(self):
-        return dfu.collect_dispersion_images_for_kml(self._config, self._heights)
+        return dfu.collect_dispersion_images_for_kml(
+            self._config, self._parameter, self._heights)
 
 
     # KML Creation Methods
+
+    def _file_name(self, section, key):
+        if self._config.has_option(section, key):
+            name = self._config.get(section, key)
+            if name:
+                if name.find('{parameter}') >= 0:
+                    name = name.format(parameter=self._parameter)
+                elif self._parameter.lower() != 'pm25':
+                    # embed '-<parameter>' before file extension
+                    parts = name.split('.')
+                    name = '.'.join(parts[:-1]) + '-' + self._parameter.lower() + '.' + parts[-1]
+                # else, don't embed pm25 into filename, for backwards compatibility
+                return name
 
     def _create_screen_lookat(self, start=None, end=None, latitude=40, longitude=-100,
                               altitude=4000000, altitude_mode='relativeToGround'):

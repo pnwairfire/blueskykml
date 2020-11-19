@@ -20,38 +20,52 @@ def main(options):
 
     config = configuration.ConfigBuilder(options).config
 
+    parameters = (config.get('DispersionGridInput', "PARAMETERS")
+        or config.get('DispersionGridInput', "PARAMETER"))
+    if not parameters:
+        raise ValueError ("No NetCDF parameter(s) supplied.")
+    if hasattr(parameters, "capitalize"):
+        parameters = parameters.split()
+
+
     # this will load fires and events, dump to json, and
     # update the daily images utc offsets field if it was
     # auto
     fires_manager = fires.FiresManager(config)
 
-    # Determine which mode to run OutputKML in
-    if 'dispersion' in config.get('DEFAULT', 'MODES').split():
-        # Create dispersion images directory within the specified bsf output directory
-        dfu.create_dispersion_images_dir(config)
+    for parameter in parameters:
 
-        # Generate smoke dispersion images
-        logging.info("Processing smoke dispersion NetCDF data into plot images...")
-        start_datetime, grid_bbox, heights = dg.create_dispersion_images(config)
+        # Determine which mode to run OutputKML in
+        if 'dispersion' in config.get('DEFAULT', 'MODES').split():
 
-        # Output dispersion grid bounds
-        _output_grid_bbox(grid_bbox, config)
+            # Create dispersion images directory within the specified
+            # bsf output directory
+            # For backwards compatibility, support old config key 'PARAMETER'
+            dfu.create_dispersion_images_dir(config, parameter)
 
-        # Post process smoke dispersion images
-        logging.info("Formatting dispersion plot images...")
-        dispersionimages.format_dispersion_images(config, heights)
-    else:
-        start_datetime = config.get("DEFAULT", "DATE") if config.has_option("DEFAULT", "DATE") else datetime.now()
-        heights = None
-        grid_bbox = None
+            # Generate smoke dispersion images
+            logging.info("Processing smoke dispersion NetCDF data into plot images...")
+            start_datetime, grid_bbox, heights = dg.create_dispersion_images(config, parameter)
 
-    # Generate KMZ
-    smokedispersionkml.KmzCreator(config, grid_bbox, heights,
-        fires_manager, start_datetime=start_datetime).create_all()
+            # Output dispersion grid bounds
+            _output_grid_bbox(grid_bbox, config)
 
-    # If enabled, reproject concentration images to display in a different projection
-    if config.getboolean('DispersionImages', 'REPROJECT_IMAGES'):
-        dispersionimages.reproject_images(config, grid_bbox, heights)
+            # Post process smoke dispersion images
+            logging.info("Formatting dispersion plot images...")
+            dispersionimages.format_dispersion_images(config, parameter, heights)
+        else:
+            start_datetime = config.get("DEFAULT", "DATE") if config.has_option("DEFAULT", "DATE") else datetime.now()
+            heights = None
+            grid_bbox = None
+
+        # Generate KMZ
+        for parameter in parameters:
+            smokedispersionkml.KmzCreator(config, parameter, grid_bbox, heights,
+                fires_manager, start_datetime=start_datetime).create_all()
+
+        # If enabled, reproject concentration images to display in a different projection
+        if config.getboolean('DispersionImages', 'REPROJECT_IMAGES'):
+            dispersionimages.reproject_images(config, parameter, grid_bbox, heights)
 
     logging.info("Make Dispersion finished.")
 

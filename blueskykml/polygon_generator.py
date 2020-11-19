@@ -74,8 +74,9 @@ class PolygonGenerator(object):
     POLYGONS_CONFIG_SECTION = 'PolygonsKML'
 
     # TODO: pass in individual values from confif rather than config itself.
-    def __init__(self, config):
+    def __init__(self, config, parameter):
         self._config = config
+        self._parameter = parameter
 
         # TODO: support multiple color schemes
         self._color_bar_section = self._config.get(self.POLYGONS_CONFIG_SECTION, 'POLYGON_COLORS').split(',')[0]
@@ -93,13 +94,9 @@ class PolygonGenerator(object):
             os.makedirs(self.output_dir)
 
     def _import_grid(self):
-        netcdf_param = self._config.get('DispersionGridInput', "PARAMETER")
-        if not netcdf_param:
-            raise ValueError ("No NetCDF parameter supplied.")
-
         self._infile = self._config.get('DispersionGridInput', "FILENAME")
-        self._makepolygons_infile = "NETCDF:%s:%s" % (self._infile, netcdf_param)
-        self._grid = BSDispersionGrid(self._infile, param=netcdf_param)  # dispersion grid instance
+        self._makepolygons_infile = "NETCDF:%s:%s" % (self._infile, self._parameter)
+        self._grid = BSDispersionGrid(self._infile, param=self._parameter)  # dispersion grid instance
 
     def _generate_custom_cutpoints_file(self):
         self._custom_cutpoints_filename = os.path.join(self.output_dir, 'CutpointsGateway.csv')
@@ -188,7 +185,7 @@ class PolygonGenerator(object):
     LEGEND_FILENAME_ROOT = 'colorbar_polygons'
 
     def _generate_legend(self):
-        plot = create_color_plot(self._config, self._grid, self._color_bar_section)
+        plot = create_color_plot(self._config, self._parameter, self._grid, self._color_bar_section)
         plot.make_colorbar(os.path.join(self.output_dir, self.LEGEND_FILENAME_ROOT))
         self.legend_filename = "%s.%s" % (self.LEGEND_FILENAME_ROOT,
             plot.export_format)

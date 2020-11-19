@@ -14,7 +14,10 @@ import matplotlib.pyplot as plt
 from .memoize import memoizeme
 
 from . import dispersion_file_utils as dfu
-from .constants import TimeSeriesTypes, CONFIG_COLOR_LABELS, TIME_SET_DIR_NAMES
+from .constants import (
+    TimeSeriesTypes, CONFIG_COLOR_LABELS,
+    TIME_SET_DIR_NAMES, PARAMETER_PLOT_LABELS
+)
 
 class BSDispersionGrid:
 
@@ -185,13 +188,8 @@ class BSDispersionGrid:
 
 class BSDispersionPlot:
 
-    def __init__(self, config, dpi=75):
-        self.parameter_label = config.get(
-            'SmokeDispersionKMLOutput', "PARAMETER_LABEL") or 'PM2.5'
-        if self.parameter_label in ('PM25', 'PM2.5'):
-            self.parameter_label = r'$PM_{2.5} \/[\mu g/m^{3}]$'
-        elif re.sub("[ _-]*", "", self.parameter_label.lower()) == 'visualrange':
-            self.parameter_label = 'Visual Range (miles)'
+    def __init__(self, config, parameter, dpi=75):
+        self.parameter_label = PARAMETER_PLOT_LABELS.get(parameter) or parameter
 
         self.dpi = dpi
         self.export_format = 'png'
@@ -335,10 +333,9 @@ class BSDispersionPlot:
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
 
-def create_dispersion_images(config):
+def create_dispersion_images(config, parameter):
     # [DispersionGridInput] configurations
     infile = config.get('DispersionGridInput', "FILENAME")
-    parameter = config.get('DispersionGridInput', "PARAMETER")
     layers = config.get('DispersionGridInput', "LAYERS")
     utc_offsets = config.get('DispersionImages', "DAILY_IMAGES_UTC_OFFSETS")
 
@@ -355,12 +352,12 @@ def create_dispersion_images(config):
         for color_map_section in dfu.parse_color_map_names(
                 config, CONFIG_COLOR_LABELS[TimeSeriesTypes.HOURLY]):
             plot = create_hourly_dispersion_images(
-                config, grid, color_map_section, layer)
+                config, parameter, grid, color_map_section, layer)
 
         for color_map_section in dfu.parse_color_map_names(
                 config, CONFIG_COLOR_LABELS[TimeSeriesTypes.THREE_HOUR]):
             plot = create_three_hour_dispersion_images(
-                config, grid, color_map_section, layer)
+                config, parameter, grid, color_map_section, layer)
 
         # Create MIN only for VR, and MAX only for all other;
         #  update any other parts of the code as necessary
@@ -369,21 +366,21 @@ def create_dispersion_images(config):
                     config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MINIMUM]):
                 for utc_offset in utc_offsets:
                     plot = create_daily_dispersion_images(
-                        config, grid, color_map_section, layer, utc_offset,
+                        config, parameter, grid, color_map_section, layer, utc_offset,
                         dfu.TimeSeriesTypes.DAILY_MINIMUM)
         else:
             for color_map_section in dfu.parse_color_map_names(
                     config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_MAXIMUM]):
                 for utc_offset in utc_offsets:
                     plot = create_daily_dispersion_images(
-                        config, grid, color_map_section, layer, utc_offset,
+                        config, parameter, grid, color_map_section, layer, utc_offset,
                         dfu.TimeSeriesTypes.DAILY_MAXIMUM)
 
         for color_map_section in dfu.parse_color_map_names(
                 config, CONFIG_COLOR_LABELS[TimeSeriesTypes.DAILY_AVERAGE]):
             for utc_offset in utc_offsets:
                 plot = create_daily_dispersion_images(
-                    config, grid, color_map_section, layer, utc_offset,
+                    config, parameter, grid, color_map_section, layer, utc_offset,
                     dfu.TimeSeriesTypes.DAILY_AVERAGE)
 
     if not plot:
@@ -397,12 +394,12 @@ def create_dispersion_images(config):
     )
 
 @memoizeme
-def create_color_plot(config, grid, section, parameter=None):
+def create_color_plot(config, parameter, grid, section):
     # Create plots
     # Note that grid.data has dimensions of: [time,lay,row,col]
 
-      # Create a dispersion plot instance
-    plot = BSDispersionPlot(config, dpi=150)
+    # Create a dispersion plot instance
+    plot = BSDispersionPlot(config, parameter, dpi=150)
 
     # Data levels for binning and contouring
     if parameter and ('PERCENT' in parameter or 'PCNTSIMS' in parameter):
@@ -432,11 +429,11 @@ def create_color_plot(config, grid, section, parameter=None):
 
     return plot
 
-def create_hourly_dispersion_images(config, grid, section, layer):
-    plot = create_color_plot(config, grid, section)
+def create_hourly_dispersion_images(config, parameter, grid, section, layer):
+    plot = create_color_plot(config, parameter, grid, section)
     height_label = dfu.create_height_label(grid.heights[layer])
 
-    outdir = dfu.create_image_set_dir(config, height_label,
+    outdir = dfu.create_image_set_dir(config, parameter, height_label,
         TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.HOURLY], section)
 
     for i in range(grid.num_times):
@@ -458,17 +455,17 @@ def create_hourly_dispersion_images(config, grid, section, layer):
     # plot will be used for its already computed min/max lat/lon
     return plot
 
-def create_three_hour_dispersion_images(config, grid, section, layer):
+def create_three_hour_dispersion_images(config, parameter, grid, section, layer):
 
     # TODO: switch to iterating over time first and then over color scheme, to
     # avoid redundant average computations
 
     # TODO: write tests for this function
 
-    plot = create_color_plot(config, grid, section)
+    plot = create_color_plot(config, parameter, grid, section)
     height_label = dfu.create_height_label(grid.heights[layer])
 
-    outdir = dfu.create_image_set_dir(config, height_label,
+    outdir = dfu.create_image_set_dir(config, parameter, height_label,
         TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.THREE_HOUR], section)
 
     for i in range(1, grid.num_times - 1):
@@ -498,11 +495,11 @@ DATA_ATTR = {
     dfu.TimeSeriesTypes.DAILY_MINIMUM: 'min_data',
     dfu.TimeSeriesTypes.DAILY_AVERAGE: 'avg_data'
 }
-def create_daily_dispersion_images(config, grid, section, layer,
+def create_daily_dispersion_images(config, parameter, grid, section, layer,
         utc_offset, time_series_type):
-    plot = create_color_plot(config, grid, section)
+    plot = create_color_plot(config, parameter, grid, section)
     height_label = dfu.create_height_label(grid.heights[layer])
-    outdir = dfu.create_image_set_dir(config, height_label,
+    outdir = dfu.create_image_set_dir(config, parameter, height_label,
         TIME_SET_DIR_NAMES[time_series_type],
         dfu.get_utc_label(utc_offset), section)
 

@@ -182,56 +182,56 @@ Example uses:
  - MODES -- e.g. 'fires dispersion'
 
 #### Section 'PolygonsKML'
- - MAKE_POLYGONS_KMZ --
- - POLYGONS_OUTPUT_DIR --
- - MAKEPOLYGONS_BINARY --
- - KMZ_FILE --
- - OVERLAY_TITLE --
- - POLYGON_COLORS --
+ - `MAKE_POLYGONS_KMZ` --
+ - `POLYGONS_OUTPUT_DIR` --
+ - `MAKEPOLYGONS_BINARY` --
+ - `KMZ_FILE` --
+ - `OVERLAY_TITLE` --
+ - `POLYGON_COLORS` --
 
 #### Section 'DispersionGridInput'
- - FILENAME --
- - PARAMETER --
- - LAYERS --
+ - `FILENAME` --
+ - `PARAMETER[S]` --
+ - `LAYERS` --
 
 #### DispersionGridOutput
- - OUTPUT_DIR --
- - GRID_INFO_JSON --
- - HOURLY_COLORS --
- - THREE_HOUR_COLORS --
- - DAILY_COLORS --
+ - `OUTPUT_DIR` --
+ - `GRID_INFO_JSON` --
+ - `HOURLY_COLORS[_<parameter>]` --
+ - `THREE_HOUR_COLORS[_<parameter>]` --
+ - `DAILY_COLORS[_<parameter>]` --
 
 #### RedColorBar
- - DEFINE_RGB --
- - DATA_LEVELS --
- - GREEN --
- - BLUE --
- - RED --
- - IMAGE_OPACITY_FACTOR --
- - DEFINE_HEX --
- - HEX_COLORS --
+ - `DEFINE_RGB` --
+ - `DATA_LEVELS` --
+ - `GREEN` --
+ - `BLUE` --
+ - `RED` --
+ - `IMAGE_OPACITY_FACTOR` --
+ - `DEFINE_HEX` --
+ - `HEX_COLORS` --
 
 #### DispersionImages
- - DEFINE_RGB --
- - BACKGROUND_COLOR_RED --
- - BACKGROUND_COLOR_GREEN --
- - BACKGROUND_COLOR_BLUE --
- - DEFINE_HEX --
- - BACKGROUND_COLOR_HEX --
- - IMAGE_OPACITY_FACTOR --
- - DAILY_IMAGES_UTC_OFFSETS --
- - REPROJECT_IMAGES --
+ - `DEFINE_RGB` --
+ - `BACKGROUND_COLOR_RED` --
+ - `BACKGROUND_COLOR_GREEN` --
+ - `BACKGROUND_COLOR_BLUE` --
+ - `DEFINE_HEX` --
+ - `BACKGROUND_COLOR_HEX` --
+ - `IMAGE_OPACITY_FACTOR` --
+ - `DAILY_IMAGES_UTC_OFFSETS` --
+ - `REPROJECT_IMAGES` --
 
 #### SmokeDispersionKMLInput
- - MET_TYPE --
- - FIRE_LOCATION_CSV --
- - FIRE_EVENT_CSV --
- - DISCLAIMER_IMAGE --
- - FIRE_EVENT_ICON --
- - FIRE_LOCATION_ICON --
+ - `MET_TYPE` --
+ - `FIRE_LOCATION_CSV` --
+ - `FIRE_EVENT_CSV` --
+ - `DISCLAIMER_IMAGE` --
+ - `FIRE_EVENT_ICON` --
+ - `FIRE_LOCATION_ICON` --
 
 #### SmokeDispersionKMLOutput
- - KMZ_FILE --
+ - `KMZ_FILE` --
 
 ## Distributing
 
