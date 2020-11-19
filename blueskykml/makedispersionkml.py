@@ -59,9 +59,8 @@ def main(options):
             grid_bbox = None
 
         # Generate KMZ
-        for parameter in parameters:
-            smokedispersionkml.KmzCreator(config, parameter, grid_bbox, heights,
-                fires_manager, start_datetime=start_datetime).create_all()
+        smokedispersionkml.KmzCreator(config, parameter, grid_bbox, heights,
+            fires_manager, start_datetime=start_datetime).create_all()
 
         # If enabled, reproject concentration images to display in a different projection
         if config.getboolean('DispersionImages', 'REPROJECT_IMAGES'):
