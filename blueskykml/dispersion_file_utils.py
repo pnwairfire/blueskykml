@@ -101,8 +101,9 @@ def collect_all_dispersion_images(config, parameter, heights):
 
     for height in heights:
         height_label = create_height_label(height)
-        images[height_label] = dict((v, {}) for v in TimeSeriesTypes.ALL)
-        for time_series_type in TimeSeriesTypes.all_for_parameter(parameter):
+        time_series_types = TimeSeriesTypes.all_for_parameter(parameter)
+        images[height_label] = dict((v, {}) for v in time_series_types)
+        for time_series_type in time_series_types:
             if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
                     TimeSeriesTypes.DAILY_MINIMUM,
                     TimeSeriesTypes.DAILY_AVERAGE):
