@@ -26,23 +26,23 @@ class KmzCreator(object):
 
     URL_MATCHER = re.compile('^https?://')
 
-    def __init__(self, config, parameter, grid_bbox, heights,
-            fires_manager, start_datetime=None,
+    def __init__(self, config, all_parameter_args, fires_manager,
             legend_name="colorbar.png", pretty_kml=False):
-        self._config = config
-        self._parameter = parameter
-        self._grid_bbox = grid_bbox
-        self._heights = heights
 
-        self._start_datetime = start_datetime
+        self._config = config
+        self._all_parameter_args =  all_parameter_args
+        for param_args in self._all_parameter_args:
+            param_args['label'] = PARAMETER_LABELS.get(
+                param_args['parameter']) or param_args['parameter']
+
+        # user earliest start
+        start_datetimes = [p['start_datetime'] for p in all_parameter_args
+            if p.get('start_datetime')]
+        self._start_datetime = min(start_datetimes) if start_datetimes else None
+
         self._pretty_kml = pretty_kml
 
         self._modes = config.get('DEFAULT', 'MODES')
-
-
-        self._is_visual_range = re.sub("[ _-]*", "", parameter.lower()) == 'visualrange'
-
-        self._concentration_param_label = PARAMETER_LABELS.get(parameter) or parameter
 
         self._dispersion_image_dir = config.get(
             'DispersionGridOutput', "OUTPUT_DIR")
@@ -67,8 +67,9 @@ class KmzCreator(object):
             fires_manager.fire_events)
 
         self._screen_lookat = None
-        if start_datetime:
-            self._screen_lookat = self._create_screen_lookat(start=start_datetime, end=start_datetime)
+        if self._start_datetime:
+            self._screen_lookat = self._create_screen_lookat(
+                start=self._start_datetime, end=self._start_datetime)
         location_style_group = self._create_style_group('location',
             os.path.basename(self._fire_location_icon) if not
             self._fire_location_icon_is_url else self._fire_location_icon)
@@ -76,20 +77,27 @@ class KmzCreator(object):
             os.path.basename(self._fire_event_icon) if not
             self._fire_event_icon_is_url else self._fire_event_icon)
         self._combined_style_group = location_style_group + event_style_group
-        self._disclaimer = self._create_screen_overlay('Disclaimer', os.path.basename(self._disclaimer_image),
-                                            overlay_x=1.0, overlay_y=1.0, screen_x=1.0, screen_y=1.0)
+        self._disclaimer = self._create_screen_overlay(
+            'Disclaimer', os.path.basename(self._disclaimer_image),
+            overlay_x=1.0, overlay_y=1.0, screen_x=1.0, screen_y=1.0)
+
         self._concentration_information = None
         if 'dispersion' in self._modes:
             self._dispersion_images = self._collect_images()
             self._concentration_information = self._create_concentration_information()
             self._image_assets = self._collect_image_assets()
             if self._do_create_polygons:
-                pgGen = PolygonGenerator(self._config, parameter)
-                self._polygon_kmls = [(os.path.join(pgGen.output_dir, f), dt) for f,dt in pgGen.kml_files]
-                self._polygon_legend = os.path.join(pgGen.output_dir, pgGen.legend_filename)
-                self._polygon_information = self._create_polygon_information(self._polygon_kmls)
-                # TODO: set color on _polygon_screen_overlay?
-                self._polygon_screen_overlay = self._create_screen_overlay('Legend', pgGen.legend_filename)
+                self._polygon_kmls = []
+                self._polygon_legend = []
+                self._polygon_information = []
+                self._polygon_screen_overlay = []
+                for param_args in self._all_parameter_args:
+                    pgGen = PolygonGenerator(self._config, param_args['parameter'])
+                    self._polygon_kmls.extend([(os.path.join(pgGen.output_dir, f), dt) for f,dt in pgGen.kml_files])
+                    self._polygon_legend.append(os.path.join(pgGen.output_dir, pgGen.legend_filename))
+                    self._polygon_information.append(self._create_polygon_information(self._polygon_kmls))
+                    # TODO: set color on _polygon_screen_overlay?
+                    self._polygon_screen_overlay.append(self._create_screen_overlay('Legend', pgGen.legend_filename))
 
     def create(self, kmz_name, kml_name, prefix, include_fire_information,
             include_disclaimer, include_concentration_images, include_polygons):
@@ -118,8 +126,10 @@ class KmzCreator(object):
             if include_concentration_images:
                 root_doc.with_feature(self._concentration_information)
             if include_polygons:
-                root_doc.with_feature(self._polygon_screen_overlay)
-                root_doc.with_feature(self._polygon_information)
+                for pso in self._polygon_screen_overlay:
+                    root_doc.with_feature(pso)
+                for pi in self._polygon_information:
+                    root_doc.with_feature(pi)
 
         kml.add_element(root_doc)
 
@@ -143,21 +153,19 @@ class KmzCreator(object):
                 kmz_assets.extend(self._image_assets)
             if include_polygons:
                 kmz_assets.extend([e[0] for e in self._polygon_kmls])
-                kmz_assets.append(self._polygon_legend)
+                kmz_assets.extend(self._polygon_legends)
 
         self._create_kmz(kmz_name, kmz_assets)
         os.remove(kml_name)
 
     def create_all(self):
-        kmz_file_name = self._file_name(
-            'SmokeDispersionKMLOutput', "KMZ_FILE")
+        kmz_file_name = self._file_name('SmokeDispersionKMLOutput', "KMZ_FILE")
         if (kmz_file_name):
             self.create(kmz_file_name,
                 'doc.kml', 'BlueSky Smoke Dispersion',
                 True, True, True, False)
 
-        kmz_fire_file_name = self._file_name(
-            'SmokeDispersionKMLOutput', "KMZ_FIRE_FILE")
+        kmz_fire_file_name = self._file_name('SmokeDispersionKMLOutput', "KMZ_FIRE_FILE")
         if kmz_fire_file_name:
             self.create(kmz_fire_file_name,
                 'doc_fires.kml', 'BlueSky Fires',
@@ -177,24 +185,19 @@ class KmzCreator(object):
     # Data Generating Methods
 
     def _collect_images(self):
-        return dfu.collect_dispersion_images_for_kml(
-            self._config, self._parameter, self._heights)
+        collected = []
+        for param_args in self._all_parameter_args:
+            collected.append(dfu.collect_dispersion_images_for_kml(
+                self._config, param_args['parameter'], param_args['heights']))
+
+        return collected
 
 
     # KML Creation Methods
 
     def _file_name(self, section, key):
         if self._config.has_option(section, key):
-            name = self._config.get(section, key)
-            if name:
-                if name.find('{parameter}') >= 0:
-                    name = name.format(parameter=self._parameter)
-                elif self._parameter.lower() != 'pm25':
-                    # embed '-<parameter>' before file extension
-                    parts = name.split('.')
-                    name = '.'.join(parts[:-1]) + '-' + self._parameter.lower() + '.' + parts[-1]
-                # else, don't embed pm25 into filename, for backwards compatibility
-                return name
+            return self._config.get(section, key)
 
     def _create_screen_lookat(self, start=None, end=None, latitude=40, longitude=-100,
                               altitude=4000000, altitude_mode='relativeToGround'):
@@ -301,41 +304,46 @@ class KmzCreator(object):
 
 
     def _create_concentration_information(self):
-        kml_root = pykml.Folder().set_name('%s from Wildland Fire'
-            % self._concentration_param_label).set_open(True)
-        min_height_label = str(min([int(e.replace('m',''))
-            for e in self._dispersion_images])) + 'm'
-        for height_label in self._dispersion_images:
-            height_root = pykml.Folder().set_name('Height %s ' % (height_label))
-            for time_series_type in TimeSeriesTypes.all_for_parameter(self._parameter):
+        kml_root = pykml.Folder().set_name('Wildland Fire').set_open(True)
+        for i, param_args in enumerate(self._all_parameter_args):
+            param_root = pykml.Folder().set_name('{} from Wildland Fire'.format(
+                param_args['label'])).set_open(True)
+            min_height_label = str(min([int(e.replace('m',''))
+                for e in self._dispersion_images[i]])) + 'm'
+            for height_label in self._dispersion_images[i]:
+                height_root = pykml.Folder().set_name('Height %s ' % (height_label))
+                for time_series_type in TimeSeriesTypes.all_for_parameter(param_args['parameter']):
 
-                t_dict = self._dispersion_images[height_label][time_series_type]
+                    t_dict = self._dispersion_images[i][height_label][time_series_type]
 
-                # Show lowest level daily max images first, unless we're
-                # creating visual range output, in which case we show daily min images
-                visible = (height_label == min_height_label and (
-                    (not self._is_visual_range and TimeSeriesTypes.DAILY_MAXIMUM == time_series_type)
-                    or (self._is_visual_range and TimeSeriesTypes.DAILY_MINIMUM == time_series_type)))
+                    # Show lowest level daily max images first, unless we're
+                    # creating visual range output, in which case we show daily min images
+                    is_visual_range = re.sub("[ _-]*", "", param_args['parameter'].lower()) == 'visualrange'
+                    visible = (i == 0 and height_label == min_height_label and (
+                        (not is_visual_range and TimeSeriesTypes.DAILY_MAXIMUM == time_series_type)
+                        or (is_visual_range and TimeSeriesTypes.DAILY_MINIMUM == time_series_type)))
 
-                time_series_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
-                if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
-                        TimeSeriesTypes.DAILY_MINIMUM,
-                        TimeSeriesTypes.DAILY_AVERAGE):
-                    time_series_root = pykml.Folder().set_name(time_series_name)
-                    for utc_offset_value, images_dict in t_dict.items():
+                    time_series_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
+                    if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
+                            TimeSeriesTypes.DAILY_MINIMUM,
+                            TimeSeriesTypes.DAILY_AVERAGE):
+                        time_series_root = pykml.Folder().set_name(time_series_name)
+                        for utc_offset_value, images_dict in t_dict.items():
+                            self._create_concentration_information_for_images(
+                                param_args, time_series_root, images_dict, visible,
+                                utc_offset_value)
+                            visible = False # arbitrarily make first time zone
+                        height_root = height_root.with_feature(time_series_root)
+                    else:
                         self._create_concentration_information_for_images(
-                            time_series_root, images_dict, visible,
-                            utc_offset_value)
-                        visible = False # arbitrarily make first time zone
-                    height_root = height_root.with_feature(time_series_root)
-                else:
-                    self._create_concentration_information_for_images(
-                        height_root, t_dict, visible, time_series_name)
-            kml_root = kml_root.with_feature(height_root)
+                            param_args, height_root, t_dict, visible, time_series_name)
+
+                param_root = param_root.with_feature(height_root)
+            kml_root = kml_root.with_feature(param_root)
         return kml_root
 
-    def _create_concentration_information_for_images(self, parent_root,
-            images_dict, visible, pretty_name):
+    def _create_concentration_information_for_images(self, param_args,
+            parent_root, images_dict, visible, pretty_name):
         if images_dict:
             if images_dict['legend']:
                 # TODO:  put legends in concentration folders?
@@ -345,15 +353,14 @@ class KmzCreator(object):
                 parent_root = parent_root.with_feature(overlay)
 
             if images_dict['smoke_images']:
-                name = '%s %s' % (pretty_name,
-                    self._concentration_param_label)
-                data = self._create_concentration_folder(name,
+                name = '%s %s' % (pretty_name, PARAMETER_LABELS.get(param_args['parameter']) or param_args['parameter'])
+                data = self._create_concentration_folder(param_args, name,
                     images_dict['smoke_images'], visible=visible)
                 parent_root = parent_root.with_feature(data)
 
     UTC_OFFSET_FILENAME_SUFFIX_EXTRACTOR = re.compile('_UTC[+-][0-9]{4}')
 
-    def _create_concentration_folder(self, name, images, visible=False):
+    def _create_concentration_folder(self, param_args, name, images, visible=False):
         concentration_folder = pykml.Folder().set_name(name)
         for image in images:
             # handle files names like '10m_hourly_201405300000.png' and
@@ -372,7 +379,7 @@ class KmzCreator(object):
             overlay_start = datetime.datetime.strptime(overlay_datetime_str, image_datetime_format)
             overlay_end = overlay_start + datetime.timedelta(hours=end_offset, seconds=-1)
             overlay_name = "%s %s" % (name, overlay_start.strftime(overlay_datetime_format))
-            concentration_overlay = self._create_ground_overlay(
+            concentration_overlay = self._create_ground_overlay(param_args,
                 overlay_name, image, start_date_time=overlay_start,
                 end_date_time=overlay_end, visible=visible)
             concentration_folder.with_feature(concentration_overlay)
@@ -392,14 +399,15 @@ class KmzCreator(object):
                 for k in data:
                     _collect(data[k])
 
-        _collect(self._dispersion_images)
+        for di in self._dispersion_images:
+            _collect(di)
 
         return images
 
 
     def _create_polygon_information(self, polygon_kmls):
         kml_root = pykml.Folder().set_name('%s from Wildland Fire' %
-            self._concentration_param_label).set_open(True)
+            PARAMETER_LABELS.get(parameter) or parameter).set_open(True)
         for (poly_kml, dt) in polygon_kmls:
             link = pykml.Link().set_href(os.path.basename(poly_kml))
             list_style = pykml.ListStyle().set_list_item_type('checkHideChildren')
@@ -430,7 +438,7 @@ class KmzCreator(object):
         return sorted(tuple_list, key=alphanum_key)
 
 
-    def _create_ground_overlay(self, name, image_path, start_date_time=None, end_date_time=None, visible=False):
+    def _create_ground_overlay(self, param_args, name, image_path, start_date_time=None, end_date_time=None, visible=False):
         if start_date_time:
             start_date_str = start_date_time.strftime(KML_TIMESPAN_DATETIME_FORMAT)
         else:
@@ -443,7 +451,7 @@ class KmzCreator(object):
                      .set_begin(start_date_str)
                      .set_end(end_date_str))
         icon = pykml.Icon().set_href(image_path)
-        west, south, east, north = (float(val) for val in self._grid_bbox)
+        west, south, east, north = (float(val) for val in param_args['grid_bbox'])
         lat_lon_box = pykml.LatLonBox().set_west(west).set_south(south).set_east(east).set_north(north)
         return (pykml.GroundOverlay()
                 .set_name(name)

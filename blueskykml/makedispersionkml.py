@@ -33,6 +33,7 @@ def main(options):
     # auto
     fires_manager = fires.FiresManager(config)
 
+    all_parameter_args = []
     for parameter in parameters:
 
         # Determine which mode to run OutputKML in
@@ -58,13 +59,21 @@ def main(options):
             heights = None
             grid_bbox = None
 
-        # Generate KMZ
-        smokedispersionkml.KmzCreator(config, parameter, grid_bbox, heights,
-            fires_manager, start_datetime=start_datetime).create_all()
+        all_parameter_args.append({
+            "parameter": parameter,
+            "start_datetime": start_datetime,
+            "heights": heights,
+            "grid_bbox": grid_bbox
+        })
 
-        # If enabled, reproject concentration images to display in a different projection
-        if config.getboolean('DispersionImages', 'REPROJECT_IMAGES'):
-            dispersionimages.reproject_images(config, parameter, grid_bbox, heights)
+    # Generate single KMZ
+    smokedispersionkml.KmzCreator(config, all_parameter_args, fires_manager).create_all()
+
+    # If enabled, reproject concentration images to display in a different projection
+    if config.getboolean('DispersionImages', 'REPROJECT_IMAGES'):
+        for a in all_parameter_args:
+            dispersionimages.reproject_images(config, a['parameter'],
+                a['grid_bbox'], a['heights'])
 
     logging.info("Make Dispersion finished.")
 
