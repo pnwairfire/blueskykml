@@ -92,6 +92,11 @@ class KmzCreator(object):
                 self._polygon_information = []
                 self._polygon_screen_overlay = []
                 for param_args in self._all_parameter_args:
+                    if param_args['parameter'] == 'VisualRange':
+                        # makepolygons only works with parameters that
+                        # are defined in the hytplis output .nc file, not
+                        # derived parameters such as VisualRange
+                        continue
                     pgGen = PolygonGenerator(self._config, param_args['parameter'])
                     self._polygon_kmls.extend([(os.path.join(pgGen.output_dir, f), dt) for f,dt in pgGen.kml_files])
                     self._polygon_legends.append(os.path.join(pgGen.output_dir, pgGen.legend_filename))
