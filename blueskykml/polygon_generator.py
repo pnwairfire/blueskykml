@@ -188,6 +188,6 @@ class PolygonGenerator(object):
     def _generate_legend(self):
         plot = create_color_plot(self._config, self._parameter, self._grid, self._color_bar_section)
         plot.make_colorbar(os.path.join(self.output_dir, self.LEGEND_FILENAME_ROOT))
-        self.legend_filename = "%s.%s" % (self.LEGEND_FILENAME_ROOT,
-            plot.export_format)
+        self.legend_filename = "%s_%s.%s" % (self._parameter,
+            self.LEGEND_FILENAME_ROOT, plot.export_format)
 

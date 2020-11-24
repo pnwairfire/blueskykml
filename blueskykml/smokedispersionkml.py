@@ -374,8 +374,8 @@ class KmzCreator(object):
     def _create_concentration_folder(self, param_args, name, images, visible=False):
         concentration_folder = pykml.Folder().set_name(name)
         for image in images:
-            # handle files names like '10m_hourly_201405300000.png' and
-            # ' 10m_daily_maximum_20140529_UTC-0700.png'
+            # handle files names like 'pm25_10m_hourly_201405300000.png' and
+            # ' pm25_10m_daily_maximum_20140529_UTC-0700.png'
             image_name_parts = self.UTC_OFFSET_FILENAME_SUFFIX_EXTRACTOR.sub(
                 '', image).replace('.', '_').split('_')
             overlay_datetime_str = image_name_parts[-2]
