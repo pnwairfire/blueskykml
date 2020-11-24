@@ -370,13 +370,13 @@ class KmzCreator(object):
                     overlay = self._create_screen_overlay(
                         'Key', images_dict['legend'],
                         visible=visible)
-                    parent_root = parent_root.with_feature(overlay)
+                    colorscheme_root = colorscheme_root.with_feature(overlay)
 
                 if images_dict['smoke_images']:
                     name = PARAMETER_LABELS.get(param_args['parameter']) or param_args['parameter']
                     data = self._create_concentration_folder(param_args, name,
                         images_dict['smoke_images'], visible=visible)
-                    parent_root = parent_root.with_feature(data)
+                    colorscheme_root = colorscheme_root.with_feature(data)
 
                 visible = False # arbitrarily make first color scheme visible
 
