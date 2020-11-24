@@ -90,7 +90,7 @@ class PolygonGenerator(object):
 
     def _create_output_dir(self):
         self.output_dir = self._config.get(self.POLYGONS_CONFIG_SECTION,
-            'POLYGONS_OUTPUT_DIR').rstrip('/') + '-' + self._parameter
+            'POLYGONS_OUTPUT_DIR').rstrip('/') + '-' + self._parameter.lower()
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
@@ -144,7 +144,7 @@ class PolygonGenerator(object):
     def _generate_kmls(self):
         self._kml_file_basename, ext = os.path.splitext(os.path.basename(self._infile))
 
-        dfu.create_polygon_kmls_dir(self._config)
+        dfu.create_polygon_kmls_dir(self._config, self._parameter)
         self.kml_files = []
 
         # def my_output_handler(logger, output, is_stderr):
@@ -186,8 +186,10 @@ class PolygonGenerator(object):
     LEGEND_FILENAME_ROOT = 'colorbar_polygons'
 
     def _generate_legend(self):
-        plot = create_color_plot(self._config, self._parameter, self._grid, self._color_bar_section)
-        plot.make_colorbar(os.path.join(self.output_dir, self.LEGEND_FILENAME_ROOT))
-        self.legend_filename = "%s_%s.%s" % (self._parameter,
-            self.LEGEND_FILENAME_ROOT, plot.export_format)
+        plot = create_color_plot(self._config, self._parameter, self._grid,
+            self._color_bar_section)
+        root_w_parameter = "{}_{}".format(self._parameter.lower(),
+            self.LEGEND_FILENAME_ROOT)
+        plot.make_colorbar(os.path.join(self.output_dir, root_w_parameter))
+        self.legend_filename = "%s.%s" % (root_w_parameter, plot.export_format)
 

@@ -88,14 +88,16 @@ class KmzCreator(object):
             self._image_assets = self._collect_image_assets()
             if self._do_create_polygons:
                 self._polygon_kmls = []
-                self._polygon_legend = []
+                self._polygon_legends = []
                 self._polygon_information = []
                 self._polygon_screen_overlay = []
                 for param_args in self._all_parameter_args:
                     pgGen = PolygonGenerator(self._config, param_args['parameter'])
                     self._polygon_kmls.extend([(os.path.join(pgGen.output_dir, f), dt) for f,dt in pgGen.kml_files])
-                    self._polygon_legend.append(os.path.join(pgGen.output_dir, pgGen.legend_filename))
-                    self._polygon_information.append(self._create_polygon_information(self._polygon_kmls))
+                    self._polygon_legends.append(os.path.join(pgGen.output_dir, pgGen.legend_filename))
+                    self._polygon_information.append(
+                        self._create_polygon_information(
+                            self._polygon_kmls, param_args['parameter']))
                     # TODO: set color on _polygon_screen_overlay?
                     self._polygon_screen_overlay.append(self._create_screen_overlay('Legend', pgGen.legend_filename))
 
@@ -416,7 +418,7 @@ class KmzCreator(object):
         return images
 
 
-    def _create_polygon_information(self, polygon_kmls):
+    def _create_polygon_information(self, polygon_kmls, parameter):
         kml_root = pykml.Folder().set_name('%s from Wildland Fire' %
             PARAMETER_LABELS.get(parameter) or parameter).set_open(True)
         for (poly_kml, dt) in polygon_kmls:

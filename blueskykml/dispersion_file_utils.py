@@ -28,7 +28,7 @@ def create_dispersion_images_dir(config, parameter):
     outdir = images_dir_name(config, parameter)
     create_dir_if_does_not_exist(outdir)
 
-def create_polygon_kmls_dir(config):
+def create_polygon_kmls_dir(config, parameter):
     outdir = images_dir_name(config, parameter)
     create_dir_if_does_not_exist(outdir)
 
