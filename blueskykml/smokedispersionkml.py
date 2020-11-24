@@ -27,7 +27,7 @@ class KmzCreator(object):
     URL_MATCHER = re.compile('^https?://')
 
     def __init__(self, config, all_parameter_args, fires_manager,
-            legend_name="colorbar.png", pretty_kml=False):
+            pretty_kml=False):
 
         self._config = config
         self._all_parameter_args =  all_parameter_args
