@@ -387,8 +387,7 @@ class KmzCreator(object):
         for image in images:
             # handle files names like 'pm25_10m_hourly_201405300000.png' and
             # ' pm25_10m_daily_maximum_20140529_UTC-0700.png'
-            image_name_parts = name.split('_')
-            overlay_datetime_str = image_name_parts[-2]
+            overlay_datetime_str = image.split('_')[-1].split('.')[0]
             if len(overlay_datetime_str) == 8:
                 image_datetime_format = '%Y%m%d'
                 overlay_datetime_format = '%Y%m%d'
