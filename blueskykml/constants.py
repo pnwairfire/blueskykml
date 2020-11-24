@@ -1,7 +1,7 @@
 import re
 
 __all__ = [
-    'TimeSeriesTypes', 'TIME_SET_DIR_NAMES', 'IMAGE_PREFIXES',
+    'TimeSeriesTypes', 'TIME_SET_DIR_NAMES',
     'TIME_SERIES_PRETTY_NAMES', 'CONFIG_COLOR_LABELS',
     'FILE_NAME_TIME_STAMP_PATTERNS', 'PARAMETER_LABELS',
     'PARAMETER_PLOT_LABELS'
@@ -33,8 +33,6 @@ TIME_SET_DIR_NAMES = {
     TimeSeriesTypes.DAILY_MINIMUM: 'daily_minimum',
     TimeSeriesTypes.DAILY_AVERAGE: 'daily_average'
 }
-
-IMAGE_PREFIXES = dict((t, TIME_SET_DIR_NAMES[t] + '_') for t in TimeSeriesTypes.ALL)
 
 TIME_SERIES_PRETTY_NAMES = dict(
     (t, ' '.join([d.capitalize()
