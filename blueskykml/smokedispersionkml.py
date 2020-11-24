@@ -304,10 +304,11 @@ class KmzCreator(object):
 
 
     def _create_concentration_information(self):
-        kml_root = pykml.Folder().set_name('Wildland Fire').set_open(True)
-        for i, param_args in enumerate(self._all_parameter_args):
-            param_root = pykml.Folder().set_name('{} from Wildland Fire'.format(
-                param_args['label'])).set_open(True)
+
+        def _create_param_folder(i, param_args, use_short_label):
+            label = (param_args['label'] if use_short_label
+                else '{} from Wildland Fire'.format(param_args['label']))
+            param_root = pykml.Folder().set_name(label).set_open(True)
             min_height_label = str(min([int(e.replace('m',''))
                 for e in self._dispersion_images[i]])) + 'm'
             for height_label in self._dispersion_images[i]:
@@ -339,8 +340,18 @@ class KmzCreator(object):
                             param_args, height_root, t_dict, visible, time_series_name)
 
                 param_root = param_root.with_feature(height_root)
-            kml_root = kml_root.with_feature(param_root)
-        return kml_root
+            return param_root
+
+        if len(self._all_parameter_args) == 1:
+            return _create_param_folder(0, self._all_parameter_args[0], False)
+
+        else:
+            kml_root = pykml.Folder().set_name('{} from Wildland Fire'.format(
+                ', '.join([pa['label'] for pa in self._all_parameter_args]))).set_open(True)
+            for i, param_args in enumerate(self._all_parameter_args):
+                param_root = _create_param_folder(i, param_args, True)
+                kml_root = kml_root.with_feature(param_root)
+            return kml_root
 
     def _create_concentration_information_for_images(self, param_args,
             parent_root, images_dict, visible, pretty_name):
