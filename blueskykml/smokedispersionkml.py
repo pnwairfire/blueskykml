@@ -332,20 +332,20 @@ class KmzCreator(object):
                         or (is_visual_range and TimeSeriesTypes.DAILY_MINIMUM == time_series_type)))
 
                     time_series_name = TIME_SERIES_PRETTY_NAMES[time_series_type]
+                    time_series_root = pykml.Folder().set_name(time_series_name)
                     if time_series_type in (TimeSeriesTypes.DAILY_MAXIMUM,
                             TimeSeriesTypes.DAILY_MINIMUM,
                             TimeSeriesTypes.DAILY_AVERAGE):
-                        time_series_root = pykml.Folder().set_name(time_series_name)
-                        for utc_offset_value, images_dict in t_dict.items():
+                        for utc_offset_value, utc_offset_dict in t_dict.items():
+                            utc_offset_root = pykml.Folder().set_name(utc_offset_value)
                             self._create_concentration_information_for_images(
-                                param_args, time_series_root, images_dict, visible,
-                                utc_offset_value)
+                                param_args, utc_offset_root, utc_offset_dict, visible)
                             visible = False # arbitrarily make first time zone
-                        height_root = height_root.with_feature(time_series_root)
+                            time_series_root = time_series_root.with_feature(utc_offset_root)
                     else:
                         self._create_concentration_information_for_images(
-                            param_args, height_root, t_dict, visible, time_series_name)
-
+                            param_args, time_series_root, t_dict, visible)
+                    height_root = height_root.with_feature(time_series_root)
                 param_root = param_root.with_feature(height_root)
             return param_root
 
@@ -361,30 +361,33 @@ class KmzCreator(object):
             return kml_root
 
     def _create_concentration_information_for_images(self, param_args,
-            parent_root, images_dict, visible, pretty_name):
-        if images_dict:
-            if images_dict['legend']:
-                # TODO:  put legends in concentration folders?
-                overlay = self._create_screen_overlay(
-                    '%s Key' % (pretty_name), images_dict['legend'],
-                    visible=visible)
-                parent_root = parent_root.with_feature(overlay)
+            parent_root, outer_images_dict, visible):
+        for colorscheme_name, images_dict in outer_images_dict.items():
+            colorscheme_root = pykml.Folder().set_name(colorscheme_name)
+            if images_dict:
+                if images_dict['legend']:
+                    # TODO:  put legends in concentration folders?
+                    overlay = self._create_screen_overlay(
+                        'Key', images_dict['legend'],
+                        visible=visible)
+                    parent_root = parent_root.with_feature(overlay)
 
-            if images_dict['smoke_images']:
-                name = '%s %s' % (pretty_name, PARAMETER_LABELS.get(param_args['parameter']) or param_args['parameter'])
-                data = self._create_concentration_folder(param_args, name,
-                    images_dict['smoke_images'], visible=visible)
-                parent_root = parent_root.with_feature(data)
+                if images_dict['smoke_images']:
+                    name = PARAMETER_LABELS.get(param_args['parameter']) or param_args['parameter']
+                    data = self._create_concentration_folder(param_args, name,
+                        images_dict['smoke_images'], visible=visible)
+                    parent_root = parent_root.with_feature(data)
 
-    UTC_OFFSET_FILENAME_SUFFIX_EXTRACTOR = re.compile('_UTC[+-][0-9]{4}')
+                visible = False # arbitrarily make first color scheme visible
+
+            parent_root = parent_root.with_feature(colorscheme_root)
 
     def _create_concentration_folder(self, param_args, name, images, visible=False):
         concentration_folder = pykml.Folder().set_name(name)
         for image in images:
             # handle files names like 'pm25_10m_hourly_201405300000.png' and
             # ' pm25_10m_daily_maximum_20140529_UTC-0700.png'
-            image_name_parts = self.UTC_OFFSET_FILENAME_SUFFIX_EXTRACTOR.sub(
-                '', image).replace('.', '_').split('_')
+            image_name_parts = name.split('_')
             overlay_datetime_str = image_name_parts[-2]
             if len(overlay_datetime_str) == 8:
                 image_datetime_format = '%Y%m%d'

@@ -439,7 +439,8 @@ def create_hourly_dispersion_images(config, parameter, grid, section, layer):
     for i in range(grid.num_times):
         # Shift filename date stamps
         fileroot = dfu.image_pathname(outdir, parameter, height_label,
-            dfu.TimeSeriesTypes.HOURLY, grid.datetimes[i]-timedelta(hours=1))
+            dfu.TimeSeriesTypes.HOURLY, section,
+            grid.datetimes[i]-timedelta(hours=1))
 
         logging.debug("Creating height %s hourly (%s) concentration "
             "plot %d of %d " % (height_label, section, i+1, grid.num_times))
@@ -449,7 +450,7 @@ def create_hourly_dispersion_images(config, parameter, grid, section, layer):
 
     # Create a color bar to use in overlays
     fileroot = dfu.legend_pathname(outdir, parameter, height_label,
-        dfu.TimeSeriesTypes.HOURLY)
+        dfu.TimeSeriesTypes.HOURLY, section)
     plot.make_colorbar(fileroot)
 
     # plot will be used for its already computed min/max lat/lon
@@ -472,7 +473,7 @@ def create_three_hour_dispersion_images(config, parameter, grid, section, layer)
         # Shift filename date stamps; shift an extra hour because we are on third
         # hour of three hour series and we want timestamp to reflect middle hour
         fileroot = dfu.image_pathname(outdir, parameter, height_label,
-            dfu.TimeSeriesTypes.THREE_HOUR,
+            dfu.TimeSeriesTypes.THREE_HOUR, section,
             grid.datetimes[i]-timedelta(hours=1))
 
         logging.debug("Creating height %s three hour (%s) concentration "
@@ -484,7 +485,7 @@ def create_three_hour_dispersion_images(config, parameter, grid, section, layer)
 
     # Create a color bar to use in overlays
     fileroot = dfu.legend_pathname(outdir, parameter, height_label,
-        dfu.TimeSeriesTypes.THREE_HOUR)
+        dfu.TimeSeriesTypes.THREE_HOUR, section)
     plot.make_colorbar(fileroot)
 
     # plot will be used for its already computed min/max lat/lon
@@ -510,10 +511,9 @@ def create_daily_dispersion_images(config, parameter, grid, section, layer,
             "plot %d of %d " % (height_label, dfu.get_utc_label(utc_offset),
                 dfu.TIME_SET_DIR_NAMES[time_series_type], i + 1, grid.num_days))
         fileroot = dfu.image_pathname(outdir, parameter, height_label,
-            time_series_type, grid.dates[i],
-            utc_offset=utc_offset)
+            time_series_type, section, grid.dates[i], utc_offset=utc_offset)
         plot.make_contour_plot(data[i,layer,:,:], fileroot)
 
     plot.make_colorbar(dfu.legend_pathname(outdir, parameter, height_label,
-        time_series_type, utc_offset=utc_offset))
+        time_series_type, section, utc_offset=utc_offset))
     return plot
