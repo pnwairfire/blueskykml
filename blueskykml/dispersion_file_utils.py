@@ -81,8 +81,8 @@ def parse_color_map_names(config, parameter, set_name):
 
     return []
 
-def is_smoke_image(file_name, height_label, time_series_type):
-    return (file_name.startswith(height_label + '_'
+def is_smoke_image(file_name, parameter, height_label, time_series_type):
+    return (file_name.startswith(parameter.lower() + '_' + height_label + '_'
         + IMAGE_PREFIXES[time_series_type]))
 
 
@@ -132,7 +132,7 @@ def collect_all_colormap_dispersion_images(config, parameter, images, height_lab
 
         # collect images
         for image in os.listdir(color_set['root_dir']):
-            if is_smoke_image(image, height_label, time_series_type):  # <-- this is to exclude color bar
+            if is_smoke_image(image, parameter, height_label, time_series_type):  # <-- this is to exclude color bar
                 color_set['smoke_images'].append(image)
             else:  #  There should only be smoke images and a legend
                 color_set['legend'] = image
@@ -187,7 +187,7 @@ def collect_color_map_dispersion_images_section_for_kml(config, parameter,
         # collect images
         images_section['root_dir'] = outdir
         for image in os.listdir(outdir):
-            if is_smoke_image(image, height_label, time_series_type):  # <-- this is to exclude color bar
+            if is_smoke_image(image, parameter, height_label, time_series_type):  # <-- this is to exclude color bar
                 images_section['smoke_images'].append(image)
             else:  #  There should only be smoke images and a legend
                 images_section['legend'] = image
