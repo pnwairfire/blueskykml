@@ -48,7 +48,7 @@ class SimpleColor(object):
         return self.r, self.g, self.b, self.a
 
 
-def format_dispersion_images(config, parameter, heights, legend_name="colorbar"):
+def format_dispersion_images(config, parameter, heights):
     # [DispersionImages] configurations
     section = 'DispersionImages'
     image_opacity_factor = config.getfloat(section, "IMAGE_OPACITY_FACTOR")
