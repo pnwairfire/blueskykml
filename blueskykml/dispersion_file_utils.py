@@ -59,10 +59,10 @@ def legend_pathname(image_set_dir, parameter, height_label, time_series_type,
     filename = (
         parameter.lower()
         + '_' + height_label
-        + '_' + "colorbar"
         + '_' + TIME_SET_DIR_NAMES[time_series_type]
         + ('_' + get_utc_label(utc_offset) if utc_offset is not None else '')
         +  '_' + color_map_section
+        + '_' + "colorbar"
     )
 
     return os.path.join(image_set_dir, filename)
@@ -92,7 +92,7 @@ def parse_color_map_names(config, parameter, set_name):
 
 def is_smoke_image(file_name, parameter, height_label, time_series_type):
     return (file_name.startswith(parameter.lower() + '_' + height_label + '_'
-        + IMAGE_PREFIXES[time_series_type]))
+        + IMAGE_PREFIXES[time_series_type])) and file_name.find('colorbar') == -1
 
 
 ##
