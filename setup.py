@@ -28,8 +28,7 @@ setup(
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.8",
         "Operating System :: POSIX",
         "Operating System :: MacOS"
     ],
@@ -37,11 +36,9 @@ setup(
     description='Package for creating kmls from BlueSky smoke dispersion output.',
     install_requires=[
         # Note: numpy and gdal must now be installed manually beforehand
-        #"numpy",
-        #"GDAL==1.11.2",
-        "afdatetime>=1.1.1,<2.0.0",
-        "Pillow==2.8.1",
-        "matplotlib==1.4.3"
+        "afdatetime>=2.0.0,<3.0.0",
+        "Pillow==8.1.0",
+        "matplotlib==3.3.4"
     ],
     dependency_links=[
         "https://pypi.airfire.org/simple/afdatetime/",

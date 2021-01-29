@@ -9,9 +9,9 @@ provisional; use at own risk.***
 
 ## Python 2 and 3 Support
 
-This package was originally developed to support python 2.7, but has since
-been refactored to support 3.5. Attempts to support both 2.7 and 3.5 have
-been made but are not guaranteed.
+This package was originally developed to support python 2.7 and then 3.5, but
+has since been refactored to support 3.8. Attempts to support both 2.7 and 3.5
+have been made but are not guaranteed.
 
 ## External Dependencies
 
@@ -38,7 +38,9 @@ on your platform.
     gdal-config --version
     pip install gdal==`gdal-config --version`
 
-### Ubuntu 12.04, 14.04, 16.04
+### Ubuntu
+
+#### Ubuntu 12.04, 14.04, 16.04
 
     sudo apt-get update
     sudo apt-get install -y python3 python3-dev python3-pip
@@ -48,6 +50,25 @@ on your platform.
     sudo apt-get install -y python3-numpy python3-gdal
     sudo apt-get install -y libxml2-dev libxslt1-dev
     sudo apt-get install -y mapserver-bin python3-mapscript
+
+#### Ubuntu 20.04 LTS
+
+    sudo apt-get update && sudo apt-get install -y \
+        python3 python3-dev python3-pip \
+        libnetcdf-dev libproj-dev \
+        libgdal-dev \
+        python3-numpy python3-gdal \
+        libxml2-dev libxslt1-dev
+
+### pyenv on ubuntu
+
+If using pyenv, you'll need to install numpy and gdal with pip:
+
+    pip install numpy
+    export CPLUS_INCLUDE_PATH=/usr/include/gdal
+    export CPLUS_INCLUDE_PATH=/usr/include/gdal
+    pip install gdal==`gdal-config --version`
+
 
 ## Development
 
@@ -63,17 +84,10 @@ or http:
 
 ### Install Python Dependencies
 
-#### Main dependencies
-
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
     pip install --extra-index https://pypi.airfire.org/simple -r requirements.txt
-
-#### Dev and test dependencies
-
-Run the following to install packages required for testing:
-
     pip install -r requirements-dev.txt
     pip install -r requirements-test.txt
 
