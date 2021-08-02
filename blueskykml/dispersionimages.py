@@ -1,8 +1,9 @@
 import logging
+import os
+import re
 from PIL import Image
 # from PIL import ImageColor # TODO: Can this replace SimpleColor?
 from copy import deepcopy
-import os
 
 from . import dispersion_file_utils as dfu
 from .constants import TIME_SERIES_PRETTY_NAMES
@@ -52,12 +53,14 @@ def format_dispersion_images(config, parameter, heights):
     # [DispersionImages] configurations
     section = 'DispersionImages'
     image_opacity_factor = config.getfloat(section, "IMAGE_OPACITY_FACTOR")
+    vr_part = ("_VISUAL_RANGE"
+        if re.sub("[ _-]*", "", parameter.lower()) == 'visualrange' else "")
     if config.getboolean(section, "DEFINE_RGB"):
-        red = config.getint(section, "BACKGROUND_COLOR_RED")
-        green = config.getint(section, "BACKGROUND_COLOR_GREEN")
-        blue = config.getint(section, "BACKGROUND_COLOR_BLUE")
+        red = config.getint(section, f"BACKGROUND_COLOR{vr_part}_RED")
+        green = config.getint(section, f"BACKGROUND_COLOR{vr_part}_GREEN")
+        blue = config.getint(section, f"BACKGROUND_COLOR{vr_part}_BLUE")
     elif config.getboolean(section, "DEFINE_HEX"): # Convert hex to RGB integers
-        background_color_hex = config.get(section, "BACKGROUND_COLOR_HEX")
+        background_color_hex = config.get(section, f"BACKGROUND_COLOR{vr_part}_HEX")
         rgb_hex = background_color_hex[1:3], background_color_hex[3:5], background_color_hex[5:7]
         red, green, blue = ((int(hex_val, 16) for hex_val in rgb_hex))
     else:
