@@ -189,12 +189,14 @@ class BSDispersionGrid:
 class BSDispersionPlot:
 
     def __init__(self, config, parameter, dpi=75):
+        self.config = config
+        self.is_visual_range = re.sub("[ _-]*", "", parameter.lower()) == 'visualrange'
         self.parameter_label = PARAMETER_PLOT_LABELS.get(parameter) or parameter
 
         self.dpi = dpi
         self.export_format = 'png'
 
-    def colormap_from_RGB(self, r, g, b):
+    def colormap_from_RGB(self, section, r, g, b):
         """ Create a colormap from lists of non-normalized RGB values (0-255)"""
 
         # Validate the RGB vectors
@@ -215,10 +217,22 @@ class BSDispersionPlot:
         self.colormap.set_under( color=(r[0],g[0],b[0]) )
         self.colormap.set_over( color=(r[-1],g[-1],b[-1]) )
 
-        # Create special colormap without the first color for colorbars
-        self.cb_colormap = mpl.colors.ListedColormap(list(zip(r[1:],g[1:],b[1:])))
+        # colors are normalized to [0,1] RGB values
+        bg_color = (
+            float(self.get_background_color(
+                section, 'BACKGROUND_COLOR_RED')) / 255,
+            float(self.get_background_color(
+                section, 'BACKGROUND_COLOR_GREEN')) / 255,
+            float(self.get_background_color(
+                section, 'BACKGROUND_COLOR_BLUE')) / 255
+        )
 
-    def colormap_from_hex(self, hex_colors):
+        colors = list(zip(r,g,b))
+        colors = self.replace_and_remove_background_colors(colors, bg_color)
+
+        self.cb_colormap = mpl.colors.ListedColormap(colors)
+
+    def colormap_from_hex(self, section, hex_colors):
         """Create colormap from list of hex colors."""
 
         # Convert colors from hex to matplotlib-style normalized [0,1] values
@@ -233,8 +247,49 @@ class BSDispersionPlot:
         self.colormap.set_under( color=mpl.colors.hex2color(hex_colors[0]) )
         self.colormap.set_over( color=mpl.colors.hex2color(hex_colors[-1]) )
 
-        # Create special colormap without the first color for colorbars
-        self.cb_colormap = mpl.colors.ListedColormap(colors[1:])
+        bg_color = mpl.colors.hex2color(
+            self.get_background_color(section, 'BACKGROUND_COLOR_HEX'))
+
+        # Work on a copy of `colors` (i.e. `list(colors)`), in order to not
+        # corrupt the main copy of `colors`, whiv id udrf in `self.colormap`
+        #colors = self.replace_and_remove_background_colors(list(colors), bg_color)
+
+        self.cb_colormap = mpl.colors.ListedColormap(colors)
+
+    def get_background_color(self, section, key):
+        # Looks under section for the specified key. If not defined there,
+        # get the default value defined under 'DispersionImages', inserting
+        # 'VISUAL_RANGE_' in key if necessary
+        if self.config.has_option(section, key):
+            return self.config.get(section, key)
+        else:
+            if self.is_visual_range:
+                key =  key.replace('BACKGROUND_COLOR_',
+                    'BACKGROUND_COLOR_VISUAL_RANGE_')
+            return self.config.get('DispersionImages', key)
+
+    def replace_and_remove_background_colors(self, colors, bg_color):
+        """Modify colormap colors to handle background colors as follows:
+          1. truncate leading color(s) if background
+          2. truncate trailing color(s) if background
+          3. replace internal color, if background, with white (which is
+             the background color of the color bar image)
+        """
+        logging.debug(f"Colors before adjusting for BG: {colors}")
+
+        while colors and colors[0] == bg_color:
+            colors.pop(0)
+        while colors and colors[-1] == bg_color:
+            colors.pop(-1)
+        for i, color in enumerate(colors[1:-1]):
+            if color == bg_color:
+                # i is zero based, even though we're starting with
+                # second (index 1) element in colors
+                colors[i+1] = (1, 1, 1)
+
+        logging.debug(f"Colors after adjusting for BG: {colors}")
+
+        return colors
 
     def set_plot_bounds(self, grid):
         """Set X-axis and Y-axis coordinate values for the plot.
@@ -412,11 +467,11 @@ def create_color_plot(config, parameter, grid, section):
         r = [int(s) for s in config.get(section, "RED").split()]
         g = [int(s) for s in config.get(section, "GREEN").split()]
         b = [int(s) for s in config.get(section, "BLUE").split()]
-        plot.colormap_from_RGB(r, g, b)
+        plot.colormap_from_RGB(section, r, g, b)
 
     elif config.getboolean(section, "DEFINE_HEX"):
         hex_colors = config.get(section, "HEX_COLORS").split()
-        plot.colormap_from_hex(hex_colors)
+        plot.colormap_from_hex(section, hex_colors)
 
     else:
         raise Exception("Configuration ERROR... ColorMap.DEFINE_RGB or ColorMap.HEX_COLORS must be true.")
