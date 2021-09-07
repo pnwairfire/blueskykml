@@ -228,7 +228,7 @@ class BSDispersionPlot:
         )
 
         colors = list(zip(r,g,b))
-        colors = self.replace_and_remove_background_colors(colors, bg_color)
+        colors = self.replace_background_color(colors, bg_color)
 
         self.cb_colormap = mpl.colors.ListedColormap(colors)
 
@@ -252,7 +252,7 @@ class BSDispersionPlot:
 
         # Work on a copy of `colors` (i.e. `list(colors)`), in order to not
         # corrupt the main copy of `colors`, whiv id udrf in `self.colormap`
-        #colors = self.replace_and_remove_background_colors(list(colors), bg_color)
+        colors = self.replace_background_color(list(colors), bg_color)
 
         self.cb_colormap = mpl.colors.ListedColormap(colors)
 
@@ -268,24 +268,14 @@ class BSDispersionPlot:
                     'BACKGROUND_COLOR_VISUAL_RANGE_')
             return self.config.get('DispersionImages', key)
 
-    def replace_and_remove_background_colors(self, colors, bg_color):
-        """Modify colormap colors to handle background colors as follows:
-          1. truncate leading color(s) if background
-          2. truncate trailing color(s) if background
-          3. replace internal color, if background, with white (which is
-             the background color of the color bar image)
+    def replace_background_color(self, colors, bg_color):
+        """Modifies the colormap colors such that, if any data level range is
+        set to the background color, it is displayed as white in the colorbar
+        legend image (since white is the background color of the image)
         """
         logging.debug(f"Colors before adjusting for BG: {colors}")
 
-        while colors and colors[0] == bg_color:
-            colors.pop(0)
-        while colors and colors[-1] == bg_color:
-            colors.pop(-1)
-        for i, color in enumerate(colors[1:-1]):
-            if color == bg_color:
-                # i is zero based, even though we're starting with
-                # second (index 1) element in colors
-                colors[i+1] = (1, 1, 1)
+        colors = [(1, 1, 1) if c == bg_color else c for c in colors]
 
         logging.debug(f"Colors after adjusting for BG: {colors}")
 
@@ -319,8 +309,7 @@ class BSDispersionPlot:
                                             ncolors=self.colormap.N)
 
         # for colorbar
-        self.cb_levels = self.levels[1:]
-        self.cb_norm = mpl.colors.BoundaryNorm(self.cb_levels,
+        self.cb_norm = mpl.colors.BoundaryNorm(self.levels,
                                                ncolors=self.cb_colormap.N)
 
     def make_quadmesh_plot(self, raster_data, fileroot):
@@ -381,7 +370,7 @@ class BSDispersionPlot:
         ax.tick_params(labelsize=12)
         cb = mpl.colorbar.ColorbarBase(ax, cmap=self.cb_colormap,
                                            norm=self.cb_norm,
-                                           ticks=self.cb_levels[0:-1],
+                                           ticks=self.levels[0:-1],
                                            orientation='horizontal')
         cb.set_label(self.parameter_label, size=12)
         plt.savefig(fileroot+'.'+self.export_format, dpi=self.dpi/3)
