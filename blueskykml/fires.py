@@ -3,13 +3,13 @@ import csv
 import json
 import logging
 
-from afdatetime.parsing import parse_utc_offset
+from afdatetime.parsing import parse_utc_offset, parse as parse_dt
 
 from . import firedescriptions
 
 class FireData(object):
     area_units = "acres"
-    date_time_format = "%Y%m%d"
+    supported_date_time_formats = ['%Y%m%d%H%M%z', "%Y%m%d"]
     emission_fields = ['pm2.5', 'pm10', 'co', 'co2', 'ch4', 'nox', 'nh3', 'so2', 'voc']
     fire_types = {'RX': "Prescribed Fire", 'WF': "Wild Fire"}
 
@@ -51,7 +51,8 @@ class FireLocationInfo(FireData):
 
     def _set_date_time(self, date_time_str):
         date_time_str = date_time_str[:8]  # grab only yyyymmdd
-        self.start_date_time = datetime.datetime.strptime(date_time_str, self.date_time_format)
+        self.start_date_time = parse_dt(date_time_str,
+            extra_formats=self.supported_date_time_formats)
         self.end_date_time = self.start_date_time + datetime.timedelta(days=1, seconds=-1)
         return self
 
