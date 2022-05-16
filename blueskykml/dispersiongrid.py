@@ -104,7 +104,7 @@ class BSDispersionGrid:
                     for i in range(len(d)):
                         # Visual Range (miles) = 539/PM2.5, but set to 539
                         # if PM2.5 < 1.0
-                        d[i] = 539 / max(1, d[i])
+                        d[i] = 541 / max(1, d[i])
 
             self.data[timeid,layerid,:,:] = data
 
