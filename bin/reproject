@@ -116,7 +116,7 @@ class ImageReprojector(object):
 
         if not image_files:
             raise RuntimeError("No dispersion images found under %s",
-                input_images_dir)
+                self.input_images_dir)
 
         return image_files
 
