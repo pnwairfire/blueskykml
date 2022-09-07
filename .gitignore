@@ -5,3 +5,4 @@ MANIFEST
 blueskykml.egg-info/
 .cache/
 tmp/
+.private/
