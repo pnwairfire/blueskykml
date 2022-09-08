@@ -127,6 +127,9 @@ class ImageReprojector(object):
         #subprocess.call(cmd_args)
         #os.system(' '.join(cmd_args))
 
+    def remove_file(self, filename):
+        if os.path.exists(filename):
+            os.remove(filename)
 
     def reproject_image(self, input_image_file):
         logging.info("reprojecting %s", input_image_file)
@@ -148,6 +151,10 @@ class ImageReprojector(object):
 
         self.run_command('gdal_translate', '-of', 'PNG',
             temp_tif_2, output_image_file)
+
+        self.remove_file(temp_tif_1)
+        self.remove_file(temp_tif_2)
+        self.remove_file(output_image_file+'.aux.xml')
 
     def reproject(self):
         try:
