@@ -22,7 +22,8 @@ setup(
         ]
     },
     scripts=[
-        'bin/makedispersionkml'
+        'bin/makedispersionkml',
+        'bin/reproject'
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
