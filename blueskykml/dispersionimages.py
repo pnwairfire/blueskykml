@@ -144,6 +144,12 @@ def reproject_images(config, parameter, grid_bbox, heights):
 
     images = dfu.collect_all_dispersion_images(config, parameter, heights)
 
+    # Collect inputs for gdal translate and warp commands
+    a_srs = 'WGS84'
+    a_ullr = '%s %s %s %s' % (str(grid_bbox[0]), str(grid_bbox[3]), str(grid_bbox[2]), str(grid_bbox[1]))
+    t_srs = config.get('DispersionImages', "REPROJECT_IMAGES_SRS")
+    logging.info("Reprojecting images to SRS: %s", t_srs)
+
     def _reproject(data, *keys):
         if isinstance(data, dict):
             if 'smoke_images' in data:
@@ -153,11 +159,6 @@ def reproject_images(config, parameter, grid_bbox, heights):
                     image_path = os.path.join(data['root_dir'], image_name)
                     tiff_path1 = os.path.join(data['root_dir'], 'temp1.tif')
                     tiff_path2 = os.path.join(data['root_dir'], 'temp2.tif')
-
-                    # Collect inputs for gdal translate and warp commands
-                    a_srs = 'WGS84'
-                    a_ullr = '%s %s %s %s' % (str(grid_bbox[0]), str(grid_bbox[3]), str(grid_bbox[2]), str(grid_bbox[1]))
-                    t_srs = '+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 
                     # Build gdal translate and warp command line strings
                     gdal_translate_cmd1 = 'gdal_translate -a_srs %s -a_ullr %s %s %s' % (a_srs, a_ullr, image_path, tiff_path1)
