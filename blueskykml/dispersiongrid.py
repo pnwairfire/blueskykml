@@ -373,7 +373,7 @@ class BSDispersionPlot:
                                            ticks=self.levels[0:-1],
                                            orientation='horizontal')
         cb.set_label(self.parameter_label, size=12)
-        plt.savefig(fileroot+'.'+self.export_format, dpi=self.dpi/3)
+        plt.savefig(fileroot+'.'+self.export_format, dpi=self.dpi/3, bbox_inches='tight')
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
 
