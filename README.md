@@ -235,6 +235,8 @@ Example uses:
  - `IMAGE_OPACITY_FACTOR` --
  - `DAILY_IMAGES_UTC_OFFSETS` --
  - `REPROJECT_IMAGES` --
+ - `REPROJECT_IMAGES_SRS` --
+ - `REPROJECT_IMAGES_SAVE_ORIGINAL` --
 
 #### SmokeDispersionKMLInput
  - `MET_TYPE` --

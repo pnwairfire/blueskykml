@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import shutil
 from PIL import Image
 # from PIL import ImageColor # TODO: Can this replace SimpleColor?
 from copy import deepcopy
@@ -149,6 +150,12 @@ def reproject_images(config, parameter, grid_bbox, heights):
     a_ullr = '%s %s %s %s' % (str(grid_bbox[0]), str(grid_bbox[3]), str(grid_bbox[2]), str(grid_bbox[1]))
     t_srs = config.get('DispersionImages', "REPROJECT_IMAGES_SRS")
     logging.info("Reprojecting images to SRS: %s", t_srs)
+
+    if config.getboolean('DispersionImages', 'REPROJECT_IMAGES_SAVE_ORIGINAL'):
+        orig = dfu.images_dir_name(config, parameter)
+        saved = orig + f'-{a_srs}'
+        logging.info("Saving pre-reprojected images (%s) to %s", orig, saved)
+        shutil.copytree(orig, saved)
 
     def _reproject(data, *keys):
         if isinstance(data, dict):
