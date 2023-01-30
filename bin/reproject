@@ -137,6 +137,18 @@ class ImageReprojector(object):
         output_dir = os.path.dirname(input_image_file).replace(
             self.input_images_dir, self.output_images_dir)
         os.makedirs(output_dir, exist_ok=True)
+
+        # TODO: reproject without gdal, if possible.
+        # Note: At least some of the python package alternatives to running
+        #  gdal binaries (rasterio, geopandas, etc) depend on the gdal lib
+        # Links:
+        #  - https://www.earthdatascience.org/courses/use-data-open-source-python/intro-raster-data-python/raster-data-processing/reproject-raster/
+        #  - https://gis.stackexchange.com/questions/34509/alternatives-to-using-arcpy
+        #import matplotlib.image as mpimg
+        #img = mpimg.imread(input_image_file)
+        #import PIL
+        #img = PIL.Image.open(input_image_file)
+
         temp_tif_1 = os.path.join(output_dir, 'temp1.tif')
         temp_tif_2 = os.path.join(output_dir, 'temp2.tif')
         output_image_file = os.path.join(output_dir,
