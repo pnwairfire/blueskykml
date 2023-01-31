@@ -151,11 +151,7 @@ def reproject_images(config, parameter, grid_bbox, heights):
     t_srs = config.get('DispersionImages', "REPROJECT_IMAGES_SRS")
     logging.info("Reprojecting images to SRS: %s", t_srs)
 
-    if config.getboolean('DispersionImages', 'REPROJECT_IMAGES_SAVE_ORIGINAL'):
-        orig = dfu.images_dir_name(config, parameter)
-        saved = orig + f'-{a_srs}'
-        logging.info("Saving pre-reprojected images (%s) to %s", orig, saved)
-        shutil.copytree(orig, saved)
+    _save_original(config, parameter, a_srs)
 
     def _reproject(data, *keys):
         if isinstance(data, dict):
@@ -193,3 +189,17 @@ def reproject_images(config, parameter, grid_bbox, heights):
                     _reproject(v, *(list(keys) + [k]))
 
     _reproject(images)
+
+
+def _save_original(config, parameter, a_srs):
+    if config.getboolean('DispersionImages', 'REPROJECT_IMAGES_SAVE_ORIGINAL'):
+        orig = dfu.images_dir_name(config, parameter)
+        saved = os.path.join(os.path.dirname(orig), 'saved-original-images',
+            a_srs, os.path.basename(orig))
+        logging.info("Saving pre-reprojected images (%s) to %s", orig, saved)
+        # delete existing, if any
+        if os.path.exists(saved):
+            shutil.rmtree(saved)
+        # create path to save destination, if necessary
+        os.makedirs(os.path.dirname(saved), exist_ok=True)
+        shutil.copytree(orig, saved)
