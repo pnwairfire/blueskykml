@@ -8,7 +8,7 @@ from blueskykml import firedescriptions
 
 class TestBuildFuelbeds(object):
 
-    def setup(self):
+    def setup_method(self):
         self.fire_event = mock.Mock()
 
     def test_build_fuelbeds_empty(self):
@@ -212,7 +212,7 @@ class TestBuildFuelbeds(object):
 
 class TestBuildFuelbeds(object):
 
-    def setup(self):
+    def setup_method(self):
         self.fire_event = mock.Mock()
 
     def test_build_emissions_empty(self):

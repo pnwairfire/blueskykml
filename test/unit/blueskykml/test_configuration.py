@@ -7,7 +7,7 @@ from blueskykml.configuration import (
 
 class TestBlueSkyKMLConfigParser(object):
 
-    def setup(self):
+    def setup_method(self):
         self.config_parser = BlueSkyKMLConfigParser()
 
     def test_set_and_get_string(self):
