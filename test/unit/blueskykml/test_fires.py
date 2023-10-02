@@ -1,6 +1,6 @@
 import datetime
 
-from py.test import raises
+from pytest import raises
 
 from blueskykml import configuration, fires
 

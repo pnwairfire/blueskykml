@@ -38,8 +38,8 @@ setup(
     install_requires=[
         # Note: numpy and gdal must now be installed manually beforehand
         "afdatetime>=2.0.0,<3.0.0",
-        "Pillow==8.1.0",
-        "matplotlib==3.3.4"
+        "Pillow==10.0.1",
+        "matplotlib==3.5.1"
     ],
     dependency_links=[
         "https://pypi.airfire.org/simple/afdatetime/",

@@ -1,7 +1,7 @@
 import datetime
 from unittest import mock
 
-#from py.test import raises
+#from pytest import raises
 
 from blueskykml import firedescriptions
 
