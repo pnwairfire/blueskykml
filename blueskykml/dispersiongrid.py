@@ -93,7 +93,7 @@ class BSDispersionGrid:
         # Extract the data
         timeid = 0
         layerid = 0
-        self.data = np.zeros((self.num_times, self.sizeZ, self.sizeY, self.sizeX), dtype=np.float)
+        self.data = np.zeros((self.num_times, self.sizeZ, self.sizeY, self.sizeX), dtype=float)
         for i in range(self.ds.RasterCount):
             rb = self.ds.GetRasterBand(i+1)
             data = rb.ReadAsArray(0, 0, self.sizeX, self.sizeY)
@@ -170,9 +170,9 @@ class BSDispersionGrid:
             "for aggregate calculations must be between -24 and 24.")
 
         self.compute_days_spanned(utc_offset)
-        self.max_data = np.zeros((self.num_days, self.sizeZ, self.sizeY, self.sizeX), dtype=np.float)
-        self.min_data = np.zeros((self.num_days, self.sizeZ, self.sizeY, self.sizeX), dtype=np.float)
-        self.avg_data = np.zeros((self.num_days, self.sizeZ, self.sizeY, self.sizeX), dtype=np.float)
+        self.max_data = np.zeros((self.num_days, self.sizeZ, self.sizeY, self.sizeX), dtype=float)
+        self.min_data = np.zeros((self.num_days, self.sizeZ, self.sizeY, self.sizeX), dtype=float)
+        self.avg_data = np.zeros((self.num_days, self.sizeZ, self.sizeY, self.sizeX), dtype=float)
 
         shour = 0
         ehour = min(24 - self.local_start.hour, self.num_times)
