@@ -1,7 +1,6 @@
 
 from datetime import datetime, timedelta
 import os
-import gdal
 import logging
 import math
 import numpy as np
@@ -11,8 +10,9 @@ import subprocess
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-from .memoize import memoizeme
+from osgeo import gdal
 
+from .memoize import memoizeme
 from . import dispersion_file_utils as dfu
 from .constants import (
     TimeSeriesTypes, CONFIG_COLOR_LABELS,
