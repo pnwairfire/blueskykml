@@ -38,7 +38,7 @@ setup(
     install_requires=[
         # Note: numpy and gdal must now be installed manually beforehand
         "afdatetime>=2.0.0,<3.0.0",
-        "Pillow==10.0.1",
+        "Pillow==10.2.0",
         "matplotlib==3.5.1"
     ],
     dependency_links=[
