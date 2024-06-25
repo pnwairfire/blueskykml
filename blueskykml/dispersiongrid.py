@@ -102,8 +102,9 @@ class BSDispersionGrid:
                 logging.debug("Converting PM2.5 to visual range")
                 for d in data:
                     for k in range(len(d)):
-                        # Visual Range (miles) = 541/PM2.5, but set to 541
-                        # if PM2.5 < 1.0
+                        # Visual Range (miles) = 541/PM2.5, but set to 541 if PM2.5 < 1.0
+                        # See https://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1004&context=jfspresearch
+                        # and https://www.fs.usda.gov/research/treesearch/62314
                         d[k] = 541 / max(1, d[k])
 
             self.data[timeid,layerid,:,:] = data
