@@ -29,15 +29,15 @@ setup(
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.12",
         "Operating System :: POSIX",
         "Operating System :: MacOS"
     ],
     url='https://github.com/pnwairfire/blueskykml/',
     description='Package for creating kmls from BlueSky smoke dispersion output.',
     install_requires=[
-        # Note: numpy and gdal must now be installed manually beforehand
         "afdatetime>=3.0.0,<4.0.0",
+        "numpy==2.1.1",
         "GDAL==3.8.4",
         "pillow==10.4.0",
         "matplotlib==3.9.2"

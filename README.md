@@ -16,7 +16,7 @@ have been made but are not guaranteed.
 ## External Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to manually
-install numpy, netcdf, and gdal, which blueskykml depends on. These
+install netcdf, and gdal, which blueskykml depends on. These
 instructions assume you already have python and pip installed, as well as
 C and C++ compilers, etc.
 
@@ -30,14 +30,6 @@ On a mac, using [Homebrew](http://brew.sh/):
 Note that the '--with-netcdf' option is required to build gdal with the
 netCDF driver. See http://trac.osgeo.org/gdal/wiki/NetCDF for more information.
 
-Additionally, you'll need the gdal python bindings.  These used to be
-baked into setup.py, but the version available for install depends
-on your platform.
-
-    pip install numpy
-    gdal-config --version
-    pip install gdal==`gdal-config --version`
-
 ### Ubuntu
 
 #### Ubuntu 12.04, 14.04, 16.04
@@ -47,7 +39,6 @@ on your platform.
     sudo pip3 install distribute
     sudo apt-get install -y libnetcdf-dev
     sudo apt-get install -y libgdal-dev
-    sudo apt-get install -y python3-numpy python3-gdal
     sudo apt-get install -y libxml2-dev libxslt1-dev
     sudo apt-get install -y mapserver-bin python3-mapscript
 
@@ -57,17 +48,7 @@ on your platform.
         python3 python3-dev python3-pip \
         libnetcdf-dev libproj-dev \
         libgdal-dev \
-        python3-numpy python3-gdal \
         libxml2-dev libxslt1-dev
-
-### pyenv on ubuntu
-
-If using pyenv, you'll need to install numpy and gdal with pip:
-
-    pip install numpy
-    export CPLUS_INCLUDE_PATH=/usr/include/gdal
-    export CPLUS_INCLUDE_PATH=/usr/include/gdal
-    pip install gdal==`gdal-config --version`
 
 
 ## Development
