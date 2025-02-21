@@ -20,8 +20,8 @@ def create_dir_if_does_not_exist(outdir):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-def images_dir_name(config, parameter):
-    return (config.get('DispersionGridOutput', "OUTPUT_DIR").rstrip('/')
+def images_dir_name(config, parameter, output_dir_key="OUTPUT_DIR"):
+    return (config.get('DispersionGridOutput', output_dir_key).rstrip('/')
         + '-' + parameter.lower())
 
 def create_dispersion_images_dir(config, parameter):
@@ -34,12 +34,20 @@ def create_polygon_kmls_dir(config, parameter):
 
 def create_image_set_dir(config, parameter, *dirs):
     """Creates the directory to contain the specified image set, if necessary"""
-    images_output_dir = images_dir_name(config, parameter)
     dirs = [str(d) for d in dirs]
+
+    images_output_dir = images_dir_name(config, parameter)
     outdir = os.path.join(images_output_dir, *dirs)
     if not os.path.exists(outdir):
         os.makedirs(outdir)
-    return outdir
+
+    geotiff_images_output_dir = images_dir_name(
+        config, parameter, output_dir_key="GEOTIFF_OUTPUT_DIR")
+    geotiff_outdir = os.path.join(geotiff_images_output_dir, *dirs)
+    if not os.path.exists(geotiff_outdir):
+        os.makedirs(geotiff_outdir)
+
+    return outdir, geotiff_outdir
 
 def image_pathname(image_set_dir, parameter, height_label, time_series_type,
         color_map_section, ts, utc_offset=None):
@@ -137,7 +145,7 @@ def collect_all_colormap_dispersion_images(config, parameter, images, height_lab
         color_set = initialize_sections_dict(images, *_keys)
 
         # create output dir
-        color_set['root_dir'] = create_image_set_dir(config, parameter, *_keys)
+        color_set['root_dir'], _ = create_image_set_dir(config, parameter, *_keys)
 
         # collect images
         for image in os.listdir(color_set['root_dir']):
@@ -192,7 +200,7 @@ def collect_color_map_dispersion_images_section_for_kml(config, parameter,
 
         # create output dir
         keys[1] = TIME_SET_DIR_NAMES[keys[1]]
-        outdir = create_image_set_dir(config, parameter, *keys)
+        outdir, _ = create_image_set_dir(config, parameter, *keys)
 
         # collect images
         images_section['root_dir'] = outdir

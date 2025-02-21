@@ -330,7 +330,7 @@ class BSDispersionPlot:
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
 
-    def make_contour_plot(self, raster_data, fileroot, filled=True, lines=False):
+    def make_contour_plot(self, raster_data, fileroot, geotiff_fileroot, filled=True, lines=False):
         """Create a contour plot."""
 
         """ TODO: contour() and contourf() assume the data are defined on grid edges.
@@ -362,6 +362,20 @@ class BSDispersionPlot:
         plt.savefig(fileroot+'.'+self.export_format, dpi=self.dpi, transparent=True)
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
+
+        driver = gdal.GetDriverByName("GTiff")
+        dst_ds = driver.Create(geotiff_fileroot + '.tif', len(self.xvals),
+            len(self.yvals), 1, gdal.GDT_Float32)
+        lon_res = (self.lonmax - self.lonmin) / len(self.xvals)
+        lat_res = (self.latmax - self.latmin) / len(self.yvals)
+        geotransform = (self.lonmin, lon_res, 0, self.latmin, 0, - lat_res)
+        dst_ds.SetGeoTransform(geotransform)
+        srs = gdal.osr.SpatialReference()
+        srs.ImportFromEPSG(4326)
+        dst_ds.SetProjection(srs.ExportToWkt())
+        dst_ds.GetRasterBand(1).WriteArray(raster_data)
+        dst_ds.FlushCache()
+
 
     def make_colorbar(self, fileroot):
         mpl.rc('mathtext', default='regular')
@@ -478,12 +492,17 @@ def create_hourly_dispersion_images(config, parameter, grid, section, layer):
     plot = create_color_plot(config, parameter, grid, section)
     height_label = dfu.create_height_label(grid.heights[layer])
 
-    outdir = dfu.create_image_set_dir(config, parameter, height_label,
+    outdir, geotiff_outdir = dfu.create_image_set_dir(config, parameter, height_label,
         TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.HOURLY], section)
 
     for i in range(grid.num_times):
         # Shift filename date stamps
-        fileroot = dfu.image_pathname(outdir, parameter, height_label,
+        fileroot = dfu.image_pathname(
+            outdir, parameter, height_label,
+            dfu.TimeSeriesTypes.HOURLY, section,
+            grid.datetimes[i]-timedelta(hours=1))
+        geotiff_fileroot = dfu.image_pathname(
+            geotiff_outdir, parameter, height_label,
             dfu.TimeSeriesTypes.HOURLY, section,
             grid.datetimes[i]-timedelta(hours=1))
 
@@ -491,7 +510,7 @@ def create_hourly_dispersion_images(config, parameter, grid, section, layer):
             "plot %d of %d " % (height_label, section, i+1, grid.num_times))
 
         # Create a filled contour plot
-        plot.make_contour_plot(grid.data[i,layer,:,:], fileroot)
+        plot.make_contour_plot(grid.data[i,layer,:,:], fileroot, geotiff_fileroot)
 
     # Create a color bar to use in overlays
     fileroot = dfu.legend_pathname(outdir, parameter, height_label,
@@ -511,13 +530,18 @@ def create_three_hour_dispersion_images(config, parameter, grid, section, layer)
     plot = create_color_plot(config, parameter, grid, section)
     height_label = dfu.create_height_label(grid.heights[layer])
 
-    outdir = dfu.create_image_set_dir(config, parameter, height_label,
+    outdir, geotiff_outdir = dfu.create_image_set_dir(config, parameter, height_label,
         TIME_SET_DIR_NAMES[dfu.TimeSeriesTypes.THREE_HOUR], section)
 
     for i in range(1, grid.num_times - 1):
         # Shift filename date stamps; shift an extra hour because we are on third
         # hour of three hour series and we want timestamp to reflect middle hour
-        fileroot = dfu.image_pathname(outdir, parameter, height_label,
+        fileroot = dfu.image_pathname(
+            outdir, parameter, height_label,
+            dfu.TimeSeriesTypes.THREE_HOUR, section,
+            grid.datetimes[i]-timedelta(hours=1))
+        geotiff_fileroot = dfu.image_pathname(
+            geotiff_outdir, parameter, height_label,
             dfu.TimeSeriesTypes.THREE_HOUR, section,
             grid.datetimes[i]-timedelta(hours=1))
 
@@ -525,7 +549,8 @@ def create_three_hour_dispersion_images(config, parameter, grid, section, layer)
             "plot %d of %d " % (height_label, section, i+1, grid.num_times))
 
         # Create a filled contour plot
-        plot.make_contour_plot(np.average(grid.data[i-1:i+2,layer,:,:], 0), fileroot)
+        plot.make_contour_plot(np.average(grid.data[i-1:i+2,layer,:,:], 0),
+            fileroot, geotiff_fileroot)
 
 
     # Create a color bar to use in overlays
@@ -545,7 +570,7 @@ def create_daily_dispersion_images(config, parameter, grid, section, layer,
         utc_offset, time_series_type):
     plot = create_color_plot(config, parameter, grid, section)
     height_label = dfu.create_height_label(grid.heights[layer])
-    outdir = dfu.create_image_set_dir(config, parameter, height_label,
+    outdir, geotiff_outdir = dfu.create_image_set_dir(config, parameter, height_label,
         TIME_SET_DIR_NAMES[time_series_type],
         dfu.get_utc_label(utc_offset), section)
 
@@ -555,9 +580,13 @@ def create_daily_dispersion_images(config, parameter, grid, section, layer,
         logging.debug("Creating height %s %s daily %s concentration "
             "plot %d of %d " % (height_label, dfu.get_utc_label(utc_offset),
                 dfu.TIME_SET_DIR_NAMES[time_series_type], i + 1, grid.num_days))
-        fileroot = dfu.image_pathname(outdir, parameter, height_label,
+        fileroot = dfu.image_pathname(
+            outdir, parameter, height_label,
             time_series_type, section, grid.dates[i], utc_offset=utc_offset)
-        plot.make_contour_plot(data[i,layer,:,:], fileroot)
+        geotiff_fileroot = dfu.image_pathname(
+            geotiff_outdir, parameter, height_label,
+            time_series_type, section, grid.dates[i], utc_offset=utc_offset)
+        plot.make_contour_plot(data[i,layer,:,:], fileroot, geotiff_fileroot)
 
     plot.make_colorbar(dfu.legend_pathname(outdir, parameter, height_label,
         time_series_type, section, utc_offset=utc_offset))
