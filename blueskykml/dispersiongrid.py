@@ -374,6 +374,48 @@ class BSDispersionPlot:
         plt.close()
 
         self.create_geotiff(raster_data, geotiff_fileroot)
+        self.create_geotiff_rgba(raster_data, geotiff_fileroot)
+
+    def create_geotiff_rgba(self, raster_data, geotiff_fileroot):
+        # Create an empty RGBA array
+        rgba = np.zeros((4, len(self.yvals), len(self.xvals)), dtype=np.uint8)
+
+        # Assign colors based on thresholds
+        for i in range(len(self.levels)-1):
+            low = self.levels[i]
+            high = self.levels[i+1]
+            mask = (raster_data >= low) & (raster_data < high)
+            (r,g,b) = self.colors[i]
+            rgba[0, mask] = r  # Red
+            rgba[1, mask] = g  # Green
+            rgba[2, mask] = b  # Blue
+            rgba[3, mask] = 255  # Fully opaque
+
+        # Explicitly set zero values to be fully transparent
+        rgba[3, raster_data == 0] = 0  # Alpha = 0 for transparent pixels
+
+        # Create GeoTIFF
+        driver = gdal.GetDriverByName("GTiff")
+        dataset = driver.Create(geotiff_fileroot + '-rgba.tif',
+            len(self.xvals), len(self.yvals), 4, gdal.GDT_Byte)
+        lon_res = (self.lonmax - self.lonmin) / len(self.xvals)
+        lat_res = (self.latmax - self.latmin) / len(self.yvals)
+        geotransform = (self.lonmin, lon_res, 0, self.latmax, 0, - lat_res)
+        dataset.SetGeoTransform(geotransform)
+        srs = gdal.osr.SpatialReference()
+        srs.ImportFromEPSG(4326)
+        dataset.SetProjection(srs.ExportToWkt())
+
+        # Write each band
+        for i in range(4):
+            band = dataset.GetRasterBand(i + 1)
+            band.WriteArray(rgba[i])
+
+        # Set the fourth band as the alpha channel
+        dataset.GetRasterBand(4).SetMetadataItem("ALPHA", "YES", "IMAGE_STRUCTURE")
+
+        dataset.FlushCache()
+        dataset = None  # Close file
 
     def create_geotiff(self, raster_data, geotiff_fileroot):
         # Convert smoke levels into categories based on self.levels.
