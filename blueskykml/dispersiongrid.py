@@ -343,12 +343,19 @@ class BSDispersionPlot:
     def make_contour_plot(self, raster_data, fileroot, geotiff_fileroot, filled=True, lines=False):
         """Create a contour plot."""
 
+        # Always generate png
         self.create_png(raster_data, fileroot, filled=filled, lines=lines)
 
-        if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_GEOTIFFS'):
-            self.create_geotiff(raster_data, geotiff_fileroot)
-        if self.config.getboolean('DispersionGridOutput', 'CREATE_RGBA_GEOTIFFS'):
-            self.create_geotiff_rgba(raster_data, geotiff_fileroot)
+        # Only generate GeoTIFFs if configured to
+        # Note that geotiff_fileroot should be defined if either
+        #  CREATE_SINGLE_BAND_GEOTIFFS or CREATE_RGBA_GEOTIFFS are true.
+        #  The only exception is if GEOTIFF_OUTPUT_DIR is specifically set to
+        #  an empty string in the configuration. So, check that it's defined.
+        if geotiff_fileroot:
+            if self.config.getboolean('DispersionGridOutput', 'CREATE_RGBA_GEOTIFFS'):
+                self.create_geotiff_rgba(raster_data, geotiff_fileroot)
+            if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_GEOTIFFS'):
+                self.create_geotiff(raster_data, geotiff_fileroot)
 
     def create_png(self, raster_data, fileroot, filled=True, lines=False):
         """ TODO: contour() and contourf() assume the data are defined on grid edges.
@@ -589,7 +596,7 @@ def create_hourly_dispersion_images(config, parameter, grid, section, layer):
             outdir, parameter, height_label,
             dfu.TimeSeriesTypes.HOURLY, section,
             grid.datetimes[i]-timedelta(hours=1))
-        geotiff_fileroot = dfu.image_pathname(
+        geotiff_fileroot = geotiff_outdir and dfu.image_pathname(
             geotiff_outdir, parameter, height_label,
             dfu.TimeSeriesTypes.HOURLY, section,
             grid.datetimes[i]-timedelta(hours=1))
@@ -628,7 +635,7 @@ def create_three_hour_dispersion_images(config, parameter, grid, section, layer)
             outdir, parameter, height_label,
             dfu.TimeSeriesTypes.THREE_HOUR, section,
             grid.datetimes[i]-timedelta(hours=1))
-        geotiff_fileroot = dfu.image_pathname(
+        geotiff_fileroot = geotiff_outdir and dfu.image_pathname(
             geotiff_outdir, parameter, height_label,
             dfu.TimeSeriesTypes.THREE_HOUR, section,
             grid.datetimes[i]-timedelta(hours=1))
@@ -671,7 +678,7 @@ def create_daily_dispersion_images(config, parameter, grid, section, layer,
         fileroot = dfu.image_pathname(
             outdir, parameter, height_label,
             time_series_type, section, grid.dates[i], utc_offset=utc_offset)
-        geotiff_fileroot = dfu.image_pathname(
+        geotiff_fileroot = geotiff_outdir and dfu.image_pathname(
             geotiff_outdir, parameter, height_label,
             time_series_type, section, grid.dates[i], utc_offset=utc_offset)
         plot.make_contour_plot(data[i,layer,:,:], fileroot, geotiff_fileroot)

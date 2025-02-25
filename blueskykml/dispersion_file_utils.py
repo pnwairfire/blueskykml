@@ -41,11 +41,15 @@ def create_image_set_dir(config, parameter, *dirs):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    geotiff_images_output_dir = images_dir_name(
-        config, parameter, output_dir_key="GEOTIFF_OUTPUT_DIR")
-    geotiff_outdir = os.path.join(geotiff_images_output_dir, *dirs)
-    if not os.path.exists(geotiff_outdir):
-        os.makedirs(geotiff_outdir)
+    if (config.getboolean('DispersionGridOutput', 'CREATE_RGBA_GEOTIFFS')
+            or config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_GEOTIFFS')):
+        geotiff_images_output_dir = images_dir_name(
+            config, parameter, output_dir_key="GEOTIFF_OUTPUT_DIR")
+        geotiff_outdir = os.path.join(geotiff_images_output_dir, *dirs)
+        if not os.path.exists(geotiff_outdir):
+            os.makedirs(geotiff_outdir)
+    else:
+        geotiff_outdir = None
 
     return outdir, geotiff_outdir
 
