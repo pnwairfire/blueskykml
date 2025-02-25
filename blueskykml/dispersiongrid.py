@@ -373,8 +373,10 @@ class BSDispersionPlot:
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
 
-        self.create_geotiff(raster_data, geotiff_fileroot)
-        self.create_geotiff_rgba(raster_data, geotiff_fileroot)
+        if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_GEOTIFFS'):
+            self.create_geotiff(raster_data, geotiff_fileroot)
+        if self.config.getboolean('DispersionGridOutput', 'CREATE_RGBA_GEOTIFFS'):
+            self.create_geotiff_rgba(raster_data, geotiff_fileroot)
 
     def create_geotiff_rgba(self, raster_data, geotiff_fileroot):
         # Create an empty RGBA array
