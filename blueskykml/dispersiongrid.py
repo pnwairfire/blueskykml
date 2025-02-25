@@ -200,6 +200,8 @@ class BSDispersionPlot:
     def colormap_from_RGB(self, section, r, g, b):
         """ Create a colormap from lists of non-normalized RGB values (0-255)"""
 
+        self.colors = list(zip(r,g,b))
+
         # Validate the RGB vectors
         assert len(r) == len(g) == len(b), "[ColorMap] RGB vectors must be the same size."
         assert max(r) <= 255 and min(r) >= 0, "ColorMap.RED vector element outside the range [0,255]"
@@ -233,8 +235,16 @@ class BSDispersionPlot:
 
         self.cb_colormap = mpl.colors.ListedColormap(colors)
 
+    def hex_to_rgb(self, hex_color):
+        hex_color = hex_color.lstrip("#")  # Remove '#' if present
+        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
     def colormap_from_hex(self, section, hex_colors):
         """Create colormap from list of hex colors."""
+
+        # convert hex to rgb, for geotiff images
+        # matplotlib.colors.mcolors returns values between 0 and 1
+        self.colors = [self.hex_to_rgb(h) for h in hex_colors]
 
         # Convert colors from hex to matplotlib-style normalized [0,1] values
         colors = list()
@@ -363,18 +373,105 @@ class BSDispersionPlot:
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
 
+        self.create_geotiff(raster_data, geotiff_fileroot)
+
+
+    def create_geotiff(self, raster_data, geotiff_fileroot):
+        # Convert smoke levels into categories based on self.levels
+        classified_data = np.zeros_like(raster_data, dtype=np.uint8)
+        for i in range(len(self.levels)-1):
+            low = self.levels[i]
+            high = self.levels[i+1]
+            # I'm not sure if the category has to be 1-indexed as opposed.
+            # to zero-indexed, the example I found had it 1-indexed, but
+            # we're using 1-indexing.
+            classified_data[(raster_data >= low) & (raster_data < high)] = i
+
+        # Create GeoTIFF
         driver = gdal.GetDriverByName("GTiff")
-        dst_ds = driver.Create(geotiff_fileroot + '.tif', len(self.xvals),
+        dataset = driver.Create(geotiff_fileroot + '.tif', len(self.xvals),
+            len(self.yvals), 1, gdal.GDT_Byte)
+        lon_res = (self.lonmax - self.lonmin) / len(self.xvals)
+        lat_res = (self.latmax - self.latmin) / len(self.yvals)
+        geotransform = (self.lonmin, lon_res, 0, self.latmax, 0, - lat_res)
+        dataset.SetGeoTransform(geotransform)
+        srs = gdal.osr.SpatialReference()
+        srs.ImportFromEPSG(4326)
+        dataset.SetProjection(srs.ExportToWkt())
+
+        # Write classified data
+        band = dataset.GetRasterBand(1)
+        band.WriteArray(classified_data)
+
+        # Create and assign color table
+        color_table = gdal.ColorTable()
+        for i, (r, g, b) in enumerate(self.colors):
+            alpha = 255 if i > 0 else 0
+            color_table.SetColorEntry(i, (r, g, b, alpha))  # RGBA
+
+        import pdb;pdb.set_trace()
+
+        band.SetRasterColorTable(color_table)
+        band.SetRasterColorInterpretation(gdal.GCI_PaletteIndex)
+
+        # Close and save
+        band.FlushCache()
+        dataset = None
+
+
+    def create_geotiff_color_ramp(self, raster_data, geotiff_fileroot):
+
+        # TODO: use colors in tif
+        driver = gdal.GetDriverByName("GTiff")
+        dataset = driver.Create(geotiff_fileroot + '-colorramp.tif', len(self.xvals),
             len(self.yvals), 1, gdal.GDT_Float32)
         lon_res = (self.lonmax - self.lonmin) / len(self.xvals)
         lat_res = (self.latmax - self.latmin) / len(self.yvals)
-        geotransform = (self.lonmin, lon_res, 0, self.latmin, 0, - lat_res)
-        dst_ds.SetGeoTransform(geotransform)
+        geotransform = (self.lonmin, lon_res, 0, self.latmax, 0, - lat_res)
+        dataset.SetGeoTransform(geotransform)
         srs = gdal.osr.SpatialReference()
         srs.ImportFromEPSG(4326)
-        dst_ds.SetProjection(srs.ExportToWkt())
-        dst_ds.GetRasterBand(1).WriteArray(raster_data)
-        dst_ds.FlushCache()
+        dataset.SetProjection(srs.ExportToWkt())
+
+        # cast data to integers to reduce the number of colors in color mapping
+        data = raster_data.astype(int)
+
+        # TODO: are the following three lines necessary???
+        unique_vals = np.unique(data)
+        lut = {int(val): i for i, val in enumerate(unique_vals)}
+        data = np.vectorize(lut.get)(data)
+
+        band = dataset.GetRasterBand(1)
+        band.WriteArray(data)
+
+
+        color_table = gdal.ColorTable()
+        for i, color in enumerate(self.colors):
+            alpha = 255 if i > 0 else 0
+            rgba = color+(alpha,)
+            color_table.CreateColorRamp(int(self.levels[i]), rgba,
+                int(self.levels[i+1]), rgba)
+
+        import pdb;pdb.set_trace()
+
+        band.SetRasterColorTable(color_table)
+        band.SetRasterColorInterpretation(gdal.GCI_PaletteIndex)
+
+        ####### Color Table
+        # color_map = {}
+        # for i, color in enumerate(self.colors):
+        #     color_map[int(self.levels[i])] = color
+
+        # # create a color table
+        # color_table = gdal.colortable()
+        # for val, (r, g, b) in color_map.items():
+        #     color_table.setcolorentry(lut.get(val, 0), (r, g, b, 1))
+
+        # band.setrastercolortable(color_table)
+        # band.setrastercolorinterpretation(gdal.gci_paletteindex)
+        #######
+
+        dataset.FlushCache()
 
 
     def make_colorbar(self, fileroot):
