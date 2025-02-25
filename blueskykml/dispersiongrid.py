@@ -343,6 +343,14 @@ class BSDispersionPlot:
     def make_contour_plot(self, raster_data, fileroot, geotiff_fileroot, filled=True, lines=False):
         """Create a contour plot."""
 
+        self.create_png(raster_data, fileroot, filled=filled, lines=lines)
+
+        if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_GEOTIFFS'):
+            self.create_geotiff(raster_data, geotiff_fileroot)
+        if self.config.getboolean('DispersionGridOutput', 'CREATE_RGBA_GEOTIFFS'):
+            self.create_geotiff_rgba(raster_data, geotiff_fileroot)
+
+    def create_png(self, raster_data, fileroot, filled=True, lines=False):
         """ TODO: contour() and contourf() assume the data are defined on grid edges.
         i.e. They line up the bottom-left corner of each square with the coordinates given.
         If the data are defined at grid centers, a half-grid displacement is necessary.
@@ -373,10 +381,6 @@ class BSDispersionPlot:
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
 
-        if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_GEOTIFFS'):
-            self.create_geotiff(raster_data, geotiff_fileroot)
-        if self.config.getboolean('DispersionGridOutput', 'CREATE_RGBA_GEOTIFFS'):
-            self.create_geotiff_rgba(raster_data, geotiff_fileroot)
 
     def create_geotiff_rgba(self, raster_data, geotiff_fileroot):
         # Create an empty RGBA array
