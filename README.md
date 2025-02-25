@@ -195,6 +195,9 @@ Example uses:
  - `HOURLY_COLORS[_<parameter>]` --
  - `THREE_HOUR_COLORS[_<parameter>]` --
  - `DAILY_COLORS[_<parameter>]` --
+ - `GEOTIFF_OUTPUT_DIR` --
+ - `CREATE_RGBA_GEOTIFFS` --
+ - `CREATE_SINGLE_BAND_GEOTIFFS` --
 
 #### RedColorBar
  - `DEFINE_RGB` --
