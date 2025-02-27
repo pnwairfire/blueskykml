@@ -388,6 +388,18 @@ class BSDispersionPlot:
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
 
+    def create_geotiff_dataset(self, filename, num_bands):
+        driver = gdal.GetDriverByName("GTiff")
+        dataset = driver.Create(filename,
+            len(self.xvals), len(self.yvals), num_bands, gdal.GDT_Byte)
+        lon_res = (self.lonmax - self.lonmin) / len(self.xvals)
+        lat_res = (self.latmax - self.latmin) / len(self.yvals)
+        geotransform = (self.lonmin, lon_res, 0, self.latmax, 0, - lat_res)
+        dataset.SetGeoTransform(geotransform)
+        srs = gdal.osr.SpatialReference()
+        srs.ImportFromEPSG(4326)
+        dataset.SetProjection(srs.ExportToWkt())
+        return dataset
 
     def create_geotiff_rgba(self, raster_data, geotiff_fileroot):
         # Create an empty RGBA array
@@ -408,16 +420,7 @@ class BSDispersionPlot:
         rgba[3, raster_data == 0] = 0  # Alpha = 0 for transparent pixels
 
         # Create GeoTIFF
-        driver = gdal.GetDriverByName("GTiff")
-        dataset = driver.Create(geotiff_fileroot + '-rgba.tif',
-            len(self.xvals), len(self.yvals), 4, gdal.GDT_Byte)
-        lon_res = (self.lonmax - self.lonmin) / len(self.xvals)
-        lat_res = (self.latmax - self.latmin) / len(self.yvals)
-        geotransform = (self.lonmin, lon_res, 0, self.latmax, 0, - lat_res)
-        dataset.SetGeoTransform(geotransform)
-        srs = gdal.osr.SpatialReference()
-        srs.ImportFromEPSG(4326)
-        dataset.SetProjection(srs.ExportToWkt())
+        dataset = self.create_geotiff_dataset(geotiff_fileroot + '-rgba.tif', 4)
 
         # Write each band
         for i in range(4):
@@ -443,16 +446,7 @@ class BSDispersionPlot:
             classified_data[(raster_data >= low) & (raster_data < high)] = i
 
         # Create GeoTIFF
-        driver = gdal.GetDriverByName("GTiff")
-        dataset = driver.Create(geotiff_fileroot + '.tif', len(self.xvals),
-            len(self.yvals), 1, gdal.GDT_Byte)
-        lon_res = (self.lonmax - self.lonmin) / len(self.xvals)
-        lat_res = (self.latmax - self.latmin) / len(self.yvals)
-        geotransform = (self.lonmin, lon_res, 0, self.latmax, 0, - lat_res)
-        dataset.SetGeoTransform(geotransform)
-        srs = gdal.osr.SpatialReference()
-        srs.ImportFromEPSG(4326)
-        dataset.SetProjection(srs.ExportToWkt())
+        dataset = self.create_geotiff_dataset(geotiff_fileroot + '.tif', 1)
 
         # Write classified data
         band = dataset.GetRasterBand(1)
