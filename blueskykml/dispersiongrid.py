@@ -347,13 +347,16 @@ class BSDispersionPlot:
         self.create_png(raster_data, fileroot, filled=filled, lines=lines)
 
         # Only generate GeoTIFFs if configured to
-        # Note that geotiff_fileroot should be defined if either
-        #  CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS or CREATE_RGBA_GEOTIFFS are true.
+        # Note that geotiff_fileroot should be defined if
+        #  CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS, CREATE_SINGLE_BAND_RAW_PM25_GEOTIFFS,
+        #  and/or CREATE_RGBA_GEOTIFFS are/is true.
         #  The only exception is if GEOTIFF_OUTPUT_DIR is specifically set to
         #  an empty string in the configuration. So, check that it's defined.
         if geotiff_fileroot:
             if self.config.getboolean('DispersionGridOutput', 'CREATE_RGBA_GEOTIFFS'):
                 self.create_geotiff_rgba(raster_data, geotiff_fileroot)
+            if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_RAW_PM25_GEOTIFFS'):
+                self.create_geotiff_single_band_raw_pm25(raster_data, geotiff_fileroot)
             if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS'):
                 self.create_geotiff_single_band_smoke_level (raster_data, geotiff_fileroot)
 
@@ -432,6 +435,32 @@ class BSDispersionPlot:
 
         dataset.FlushCache()
         dataset = None  # Close file
+
+    def create_geotiff_single_band_raw_pm25(self, raster_data, geotiff_fileroot):
+        # Create GeoTIFF
+        dataset = self.create_geotiff_dataset(geotiff_fileroot + '-raw-pm25.tif', 1)
+
+        # Write classified data
+        band = dataset.GetRasterBand(1)
+        #  I don't think casting to uint8 is necessary, but it doesn't hurt
+        band.WriteArray(raster_data.astype(np.uint8))
+
+        # Create and assign colors to each data range by using color ramps,
+        # but with the same color at each end of each data range
+        color_table = gdal.ColorTable()
+        for i, (r, g, b) in enumerate(self.colors):
+            alpha = 255 if i > 0 else 0
+            rgba = (r, g, b, alpha)
+            color_table.CreateColorRamp(int(self.levels[i]), rgba,
+                int(self.levels[i+1]), rgba)
+
+        # Write color table
+        band.SetRasterColorTable(color_table)
+        band.SetRasterColorInterpretation(gdal.GCI_PaletteIndex)
+
+        # Close and save
+        band.FlushCache()
+        dataset = None
 
     def create_geotiff_single_band_smoke_level(self, raster_data, geotiff_fileroot):
         # Convert smoke levels into categories based on self.levels.
