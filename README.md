@@ -197,7 +197,7 @@ Example uses:
  - `DAILY_COLORS[_<parameter>]` --
  - `GEOTIFF_OUTPUT_DIR` --
  - `CREATE_RGBA_GEOTIFFS` --
- - `CREATE_SINGLE_BAND_GEOTIFFS` --
+ - `CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS` --
 
 #### RedColorBar
  - `DEFINE_RGB` --

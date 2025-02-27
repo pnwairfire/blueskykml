@@ -42,7 +42,7 @@ def create_image_set_dir(config, parameter, *dirs):
         os.makedirs(outdir)
 
     if (config.getboolean('DispersionGridOutput', 'CREATE_RGBA_GEOTIFFS')
-            or config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_GEOTIFFS')):
+            or config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS')):
         geotiff_images_output_dir = images_dir_name(
             config, parameter, output_dir_key="GEOTIFF_OUTPUT_DIR")
         geotiff_outdir = os.path.join(geotiff_images_output_dir, *dirs)

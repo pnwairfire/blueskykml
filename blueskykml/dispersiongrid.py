@@ -348,14 +348,14 @@ class BSDispersionPlot:
 
         # Only generate GeoTIFFs if configured to
         # Note that geotiff_fileroot should be defined if either
-        #  CREATE_SINGLE_BAND_GEOTIFFS or CREATE_RGBA_GEOTIFFS are true.
+        #  CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS or CREATE_RGBA_GEOTIFFS are true.
         #  The only exception is if GEOTIFF_OUTPUT_DIR is specifically set to
         #  an empty string in the configuration. So, check that it's defined.
         if geotiff_fileroot:
             if self.config.getboolean('DispersionGridOutput', 'CREATE_RGBA_GEOTIFFS'):
                 self.create_geotiff_rgba(raster_data, geotiff_fileroot)
-            if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_GEOTIFFS'):
-                self.create_geotiff(raster_data, geotiff_fileroot)
+            if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS'):
+                self.create_geotiff_single_band_smoke_level (raster_data, geotiff_fileroot)
 
     def create_png(self, raster_data, fileroot, filled=True, lines=False):
         """ TODO: contour() and contourf() assume the data are defined on grid edges.
@@ -433,7 +433,7 @@ class BSDispersionPlot:
         dataset.FlushCache()
         dataset = None  # Close file
 
-    def create_geotiff(self, raster_data, geotiff_fileroot):
+    def create_geotiff_single_band_smoke_level(self, raster_data, geotiff_fileroot):
         # Convert smoke levels into categories based on self.levels.
         # (Note that the self.levels array is one element larger than the
         # self.colors array, since it define ranges
