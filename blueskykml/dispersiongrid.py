@@ -346,19 +346,12 @@ class BSDispersionPlot:
         # Always generate png
         self.create_png(raster_data, fileroot, filled=filled, lines=lines)
 
-        # Only generate GeoTIFFs if configured to
-        # Note that geotiff_fileroot should be defined if
-        #  CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS, CREATE_SINGLE_BAND_RAW_PM25_GEOTIFFS,
-        #  and/or CREATE_RGBA_GEOTIFFS are/is true.
-        #  The only exception is if GEOTIFF_OUTPUT_DIR is specifically set to
-        #  an empty string in the configuration. So, check that it's defined.
-        if geotiff_fileroot:
-            if self.config.getboolean('DispersionGridOutput', 'CREATE_RGBA_GEOTIFFS'):
-                self.create_geotiff_rgba(raster_data, geotiff_fileroot)
-            if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_RAW_PM25_GEOTIFFS'):
-                self.create_geotiff_single_band_raw_pm25(raster_data, geotiff_fileroot)
-            if self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS'):
-                self.create_geotiff_single_band_smoke_level (raster_data, geotiff_fileroot)
+        # Will only create GeoTIFFs if configured to do so
+        self.create_geotiffs(raster_data, geotiff_fileroot)
+
+    ##
+    ## PNGs
+    ##
 
     def create_png(self, raster_data, fileroot, filled=True, lines=False):
         """ TODO: contour() and contourf() assume the data are defined on grid edges.
@@ -391,22 +384,111 @@ class BSDispersionPlot:
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
 
-    def create_geotiff_dataset(self, filename, num_bands):
+    ##
+    ## GeoTIFFs
+    ##
+
+    def create_geotiffs(self, raster_data, geotiff_fileroot):
+        # Only generate GeoTIFFs if configured to
+        # Note that geotiff_fileroot should be defined if
+        #  CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS, CREATE_SINGLE_BAND_RAW_PM25_GEOTIFFS,
+        #  and/or CREATE_RGBA_GEOTIFFS are/is true.
+        #  The only exception is if GEOTIFF_OUTPUT_DIR is specifically set to
+        #  an empty string in the configuration. So, check that it's defined.
+        if geotiff_fileroot:
+            create_rgba = self.config.getboolean('DispersionGridOutput',
+                'CREATE_RGBA_GEOTIFFS')
+            create_single_raw = self.config.getboolean('DispersionGridOutput',
+                'CREATE_SINGLE_BAND_RAW_PM25_GEOTIFFS')
+            create_single_smoke_level = self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS')
+            if create_rgba or create_single_raw or create_single_smoke_level:
+                self.set_geotiff_constants()
+                resampled_data = self.resample_data_for_geotiffs(raster_data)
+                if create_rgba:
+                    self.create_geotiff_rgba(resampled_data, geotiff_fileroot)
+                if create_single_raw:
+                    self.create_geotiff_single_band_raw_pm25(resampled_data, geotiff_fileroot)
+                if create_single_smoke_level:
+                    self.create_geotiff_single_band_smoke_level (resampled_data, geotiff_fileroot)
+
+    def set_geotiff_constants(self):
+        """This sets various parameters that only need to be set once.
+        """
+
+        # only set once
+        if not hasattr(self, 'geotransform'):
+            logging.debug(f'Setting geotransform, projection, and original DPI')
+
+            # The PNG images, when generated with matplotlib.pyplot.savefig,
+            # have their resolution changed via resampling.  The raster data
+            # are initially loaded into a matplotlib.pyplot.figure object with
+            # default DPI=100 (matplotlib.pyplot.figure's default). They are
+            # then written with dpi = self.dpi.  So, we need to resample
+            # the raster data so that the GeoTIFF images have the same resolution
+            # and pixel width x height
+            self.resampling_scale_factor = self.dpi / 100
+
+            # geotransforms
+            lon_res = (self.lonmax - self.lonmin) / len(self.xvals)
+            lat_res = (self.latmax - self.latmin) / len(self.yvals)
+            self.original_geotransform = (self.lonmin, lon_res, 0, self.latmax, 0, - lat_res)
+            self.target_geotransform = (self.lonmin, lon_res / self.resampling_scale_factor,
+                0, self.latmax, 0, - lat_res / self.resampling_scale_factor)
+
+            # projection
+            srs = gdal.osr.SpatialReference()
+            srs.ImportFromEPSG(4326)
+            self.projection = srs.ExportToWkt()
+
+    def resample_data_for_geotiffs(self, raster_data):
+
+        # Upscale or downscale the raster data based on self.dpi, so that the
+        # resolution  of the geotiff images matches that of the png images
+
+        logging.debug(f'resample_data_for_geotiffs')
+
+        new_x_size = int(raster_data.shape[1] * self.resampling_scale_factor)
+        new_y_size = int(raster_data.shape[0] * self.resampling_scale_factor)
+
+        # Create an in-memory dataset
+        driver = gdal.GetDriverByName("MEM")
+        src_ds = driver.Create("", raster_data.shape[1], raster_data.shape[0], 1, gdal.GDT_Float32)
+        src_ds.SetGeoTransform(self.original_geotransform)
+        src_ds.SetProjection(self.projection)
+        src_ds.GetRasterBand(1).WriteArray(raster_data)
+
+        # Perform resampling
+        resampled_ds = gdal.Warp("", src_ds, width=new_x_size, height=new_y_size,
+                                  resampleAlg=gdal.GRA_Bilinear, format="MEM")
+
+        # Get resampled data
+        resampled_array = resampled_ds.GetRasterBand(1).ReadAsArray()
+
+        # Note that resampled_ds.GetGeoTransform() gives a geotransform that's
+        # equal to what we already saved to self.target_geotransform, so
+        # we don't need to return it along with resampled_array
+
+        return resampled_array
+
+    def create_geotiff_dataset(self, raster_data, filename, num_bands):
         driver = gdal.GetDriverByName("GTiff")
         dataset = driver.Create(filename,
-            len(self.xvals), len(self.yvals), num_bands, gdal.GDT_Byte)
-        lon_res = (self.lonmax - self.lonmin) / len(self.xvals)
-        lat_res = (self.latmax - self.latmin) / len(self.yvals)
-        geotransform = (self.lonmin, lon_res, 0, self.latmax, 0, - lat_res)
-        dataset.SetGeoTransform(geotransform)
-        srs = gdal.osr.SpatialReference()
-        srs.ImportFromEPSG(4326)
-        dataset.SetProjection(srs.ExportToWkt())
+            raster_data.shape[1], raster_data.shape[0], num_bands, gdal.GDT_Byte)
+        dataset.SetGeoTransform(self.target_geotransform)
+        dataset.SetProjection(self.projection)
         return dataset
 
     def create_geotiff_rgba(self, raster_data, geotiff_fileroot):
+
+        # TODO: It seems as though a lot of the pixels in the geotiff images
+        #    are being assigned a category lower than the corresponding
+        #    pixel(s) in the png image.  I think it could be due to
+        #     a. rounding the float values down (in the cast to int)
+        #     b. assigning pixels with values matching the breakpoints
+        #        to the lower category
+
         # Create an empty RGBA array
-        rgba = np.zeros((4, len(self.yvals), len(self.xvals)), dtype=np.uint8)
+        rgba = np.zeros((4, raster_data.shape[0], raster_data.shape[1]), dtype=np.uint8)
 
         # Assign colors based on thresholds
         for i in range(len(self.levels)-1):
@@ -423,7 +505,7 @@ class BSDispersionPlot:
         rgba[3, raster_data == 0] = 0  # Alpha = 0 for transparent pixels
 
         # Create GeoTIFF
-        dataset = self.create_geotiff_dataset(geotiff_fileroot + '-rgba.tif', 4)
+        dataset = self.create_geotiff_dataset(raster_data, geotiff_fileroot + '-rgba.tif', 4)
 
         # Write each band
         for i in range(4):
@@ -438,7 +520,7 @@ class BSDispersionPlot:
 
     def create_geotiff_single_band_raw_pm25(self, raster_data, geotiff_fileroot):
         # Create GeoTIFF
-        dataset = self.create_geotiff_dataset(geotiff_fileroot + '-raw-pm25.tif', 1)
+        dataset = self.create_geotiff_dataset(raster_data, geotiff_fileroot + '-raw-pm25.tif', 1)
 
         # Write classified data
         band = dataset.GetRasterBand(1)
@@ -475,7 +557,7 @@ class BSDispersionPlot:
             classified_data[(raster_data >= low) & (raster_data < high)] = i
 
         # Create GeoTIFF
-        dataset = self.create_geotiff_dataset(geotiff_fileroot + '.tif', 1)
+        dataset = self.create_geotiff_dataset(raster_data, geotiff_fileroot + '.tif', 1)
 
         # Write classified data
         band = dataset.GetRasterBand(1)
@@ -494,6 +576,10 @@ class BSDispersionPlot:
         # Close and save
         band.FlushCache()
         dataset = None
+
+    ##
+    ## Colorbar
+    ##
 
     def make_colorbar(self, fileroot):
         mpl.rc('mathtext', default='regular')
