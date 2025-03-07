@@ -380,6 +380,11 @@ class BSDispersionPlot:
                              colors='black',
                              norm=self.norm)
 
+        # self.target_pixel_width will be used when resampling the GeoTIFF
+        # imput raster data so that the GeoTIFF images have the same (or
+        # similar) image resolution and dimensions as the PNGs
+        self.target_pixel_width = fig.get_figwidth() * self.dpi
+
         plt.savefig(fileroot+'.'+self.export_format, dpi=self.dpi, transparent=True)
         # explicitly close plot - o/w pyplot keeps it open until end of program
         plt.close()
@@ -402,7 +407,7 @@ class BSDispersionPlot:
                 'CREATE_SINGLE_BAND_RAW_PM25_GEOTIFFS')
             create_single_smoke_level = self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS')
             if create_rgba or create_single_raw or create_single_smoke_level:
-                self.set_geotiff_constants()
+                self.set_geotiff_constants(raster_data)
                 resampled_data = self.resample_data_for_geotiffs(raster_data)
                 if create_rgba:
                     self.create_geotiff_rgba(resampled_data, geotiff_fileroot)
@@ -411,13 +416,13 @@ class BSDispersionPlot:
                 if create_single_smoke_level:
                     self.create_geotiff_single_band_smoke_level (resampled_data, geotiff_fileroot)
 
-    def set_geotiff_constants(self):
+    def set_geotiff_constants(self, raster_data):
         """This sets various parameters that only need to be set once.
         """
 
         # only set once
         if not hasattr(self, 'geotransform'):
-            logging.debug(f'Setting geotransform, projection, and original DPI')
+            logging.debug(f'Setting GeoTIFF constants')
 
             # The PNG images, when generated with matplotlib.pyplot.savefig,
             # have their resolution changed via resampling.  The raster data
@@ -426,7 +431,10 @@ class BSDispersionPlot:
             # then written with dpi = self.dpi.  So, we need to resample
             # the raster data so that the GeoTIFF images have the same resolution
             # and pixel width x height
-            self.resampling_scale_factor = self.dpi / 100
+            if hasattr(self, 'target_pixel_width'):
+                self.resampling_scale_factor = self.target_pixel_width / raster_data.shape[1]
+            else:
+                self.resampling_scale_factor = self.dpi / 100
 
             # geotransforms
             lon_res = (self.lonmax - self.lonmin) / len(self.xvals)
@@ -439,6 +447,9 @@ class BSDispersionPlot:
             srs = gdal.osr.SpatialReference()
             srs.ImportFromEPSG(4326)
             self.projection = srs.ExportToWkt()
+
+        else:
+            logging.debug(f'GeoTIFF constants ALREADY SET')
 
     def resample_data_for_geotiffs(self, raster_data):
 
