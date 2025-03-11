@@ -482,6 +482,7 @@ class BSDispersionPlot:
 
         # Get resampled data
         resampled_array = resampled_ds.GetRasterBand(1).ReadAsArray()
+        resampled_array = np.round(resampled_array)
 
         # Note that resampled_ds.GetGeoTransform() gives a geotransform that's
         # equal to what we already saved to self.target_geotransform, so
