@@ -189,15 +189,15 @@ class BSDispersionGrid:
 
 class BSDispersionPlot:
 
-    def __init__(self, config, parameter, dpi=75):
+    def __init__(self, config, parameter, section, dpi=75):
         self.config = config
         self.is_visual_range = re.sub("[ _-]*", "", parameter.lower()) == 'visualrange'
         self.parameter_label = PARAMETER_PLOT_LABELS.get(parameter) or parameter
-
+        self.section = section
         self.dpi = dpi
         self.export_format = 'png'
 
-    def colormap_from_RGB(self, section, r, g, b):
+    def colormap_from_RGB(self, r, g, b):
         """ Create a colormap from lists of non-normalized RGB values (0-255)"""
 
         self.colors = list(zip(r,g,b))
@@ -223,11 +223,11 @@ class BSDispersionPlot:
         # colors are normalized to [0,1] RGB values
         bg_color = (
             float(self.get_background_color(
-                section, 'BACKGROUND_COLOR_RED')) / 255,
+                'BACKGROUND_COLOR_RED')) / 255,
             float(self.get_background_color(
-                section, 'BACKGROUND_COLOR_GREEN')) / 255,
+                'BACKGROUND_COLOR_GREEN')) / 255,
             float(self.get_background_color(
-                section, 'BACKGROUND_COLOR_BLUE')) / 255
+                'BACKGROUND_COLOR_BLUE')) / 255
         )
 
         colors = list(zip(r,g,b))
@@ -239,7 +239,7 @@ class BSDispersionPlot:
         hex_color = hex_color.lstrip("#")  # Remove '#' if present
         return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
-    def colormap_from_hex(self, section, hex_colors):
+    def colormap_from_hex(self, hex_colors):
         """Create colormap from list of hex colors."""
 
         # convert hex to rgb, for geotiff images
@@ -259,7 +259,7 @@ class BSDispersionPlot:
         self.colormap.set_over( color=mpl.colors.hex2color(hex_colors[-1]) )
 
         bg_color = mpl.colors.hex2color(
-            self.get_background_color(section, 'BACKGROUND_COLOR_HEX'))
+            self.get_background_color('BACKGROUND_COLOR_HEX'))
 
         # Work on a copy of `colors` (i.e. `list(colors)`), in order to not
         # corrupt the main copy of `colors`, whiv id udrf in `self.colormap`
@@ -267,12 +267,12 @@ class BSDispersionPlot:
 
         self.cb_colormap = mpl.colors.ListedColormap(colors)
 
-    def get_background_color(self, section, key):
+    def get_background_color(self, key):
         # Looks under section for the specified key. If not defined there,
         # get the default value defined under 'DispersionImages', inserting
         # 'VISUAL_RANGE_' in key if necessary
-        if self.config.has_option(section, key):
-            return self.config.get(section, key)
+        if self.config.has_option(self.section, key):
+            return self.config.get(self.section, key)
         else:
             if self.is_visual_range:
                 key =  key.replace('BACKGROUND_COLOR_',
@@ -673,7 +673,7 @@ def create_color_plot(config, parameter, grid, section):
     # Note that grid.data has dimensions of: [time,lay,row,col]
 
     # Create a dispersion plot instance
-    plot = BSDispersionPlot(config, parameter, dpi=150)
+    plot = BSDispersionPlot(config, parameter, section, dpi=150)
 
     # Data levels for binning and contouring
     if parameter and ('PERCENT' in parameter or 'PCNTSIMS' in parameter):
@@ -686,11 +686,11 @@ def create_color_plot(config, parameter, grid, section):
         r = [int(s) for s in config.get(section, "RED").split()]
         g = [int(s) for s in config.get(section, "GREEN").split()]
         b = [int(s) for s in config.get(section, "BLUE").split()]
-        plot.colormap_from_RGB(section, r, g, b)
+        plot.colormap_from_RGB(r, g, b)
 
     elif config.getboolean(section, "DEFINE_HEX"):
         hex_colors = config.get(section, "HEX_COLORS").split()
-        plot.colormap_from_hex(section, hex_colors)
+        plot.colormap_from_hex(hex_colors)
 
     else:
         raise Exception("Configuration ERROR... ColorMap.DEFINE_RGB or ColorMap.HEX_COLORS must be true.")
