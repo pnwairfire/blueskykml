@@ -449,6 +449,12 @@ class BSDispersionPlot:
             srs.ImportFromEPSG(4326)
             self.projection = srs.ExportToWkt()
 
+            # opacity
+            ioc = (self.config.getfloat(self.section, "IMAGE_OPACITY_FACTOR") if
+                self.config.has_option(self.section, "IMAGE_OPACITY_FACTOR") else
+                self.config.getfloat('DispersionImages', "IMAGE_OPACITY_FACTOR"))
+            self.image_opacity = int(ioc * 255)
+
         else:
             logging.debug(f'GeoTIFF constants ALREADY SET')
 
@@ -512,7 +518,7 @@ class BSDispersionPlot:
             rgba[0, mask] = r  # Red
             rgba[1, mask] = g  # Green
             rgba[2, mask] = b  # Blue
-            rgba[3, mask] = 255  # Fully opaque
+            rgba[3, mask] = self.image_opacity
 
         # Explicitly set zero values to be fully transparent
         rgba[3, raster_data == 0] = 0  # Alpha = 0 for transparent pixels
@@ -544,7 +550,7 @@ class BSDispersionPlot:
         # but with the same color at each end of each data range
         color_table = gdal.ColorTable()
         for i, (r, g, b) in enumerate(self.colors):
-            alpha = 255 if i > 0 else 0
+            alpha = self.image_opacity if i > 0 else 0
             rgba = (r, g, b, alpha)
             color_table.CreateColorRamp(int(self.levels[i]), rgba,
                 int(self.levels[i+1]), rgba)
@@ -579,7 +585,7 @@ class BSDispersionPlot:
         # Create and assign color table
         color_table = gdal.ColorTable()
         for i, (r, g, b) in enumerate(self.colors):
-            alpha = 255 if i > 0 else 0
+            alpha = self.image_opacity if i > 0 else 0
             color_table.SetColorEntry(i, (r, g, b, alpha))  # RGBA
 
         # Write color table
