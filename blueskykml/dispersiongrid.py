@@ -405,7 +405,8 @@ class BSDispersionPlot:
                 'CREATE_RGBA_GEOTIFFS')
             create_single_raw = self.config.getboolean('DispersionGridOutput',
                 'CREATE_SINGLE_BAND_RAW_PM25_GEOTIFFS')
-            create_single_smoke_level = self.config.getboolean('DispersionGridOutput', 'CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS')
+            create_single_smoke_level = self.config.getboolean('DispersionGridOutput',
+                'CREATE_SINGLE_BAND_SMOKE_LEVEL_GEOTIFFS')
             if create_rgba or create_single_raw or create_single_smoke_level:
                 self.set_geotiff_constants(raster_data)
                 resampled_data = self.resample_data_for_geotiffs(raster_data)
@@ -463,7 +464,8 @@ class BSDispersionPlot:
 
         # Create an in-memory dataset
         driver = gdal.GetDriverByName("MEM")
-        src_ds = driver.Create("", raster_data.shape[1], raster_data.shape[0], 1, gdal.GDT_Float32)
+        src_ds = driver.Create("", raster_data.shape[1],
+            raster_data.shape[0], 1, gdal.GDT_Float32)
         src_ds.SetGeoTransform(self.original_geotransform)
         src_ds.SetProjection(self.projection)
         src_ds.GetRasterBand(1).WriteArray(raster_data)
@@ -483,8 +485,8 @@ class BSDispersionPlot:
 
     def create_geotiff_dataset(self, raster_data, filename, num_bands):
         driver = gdal.GetDriverByName("GTiff")
-        dataset = driver.Create(filename,
-            raster_data.shape[1], raster_data.shape[0], num_bands, gdal.GDT_Byte)
+        dataset = driver.Create(filename, raster_data.shape[1],
+            raster_data.shape[0], num_bands, gdal.GDT_Byte)
         dataset.SetGeoTransform(self.target_geotransform)
         dataset.SetProjection(self.projection)
         return dataset
