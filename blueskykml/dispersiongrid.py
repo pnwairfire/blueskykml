@@ -493,7 +493,7 @@ class BSDispersionPlot:
     def create_geotiff_dataset(self, raster_data, filename, num_bands):
         driver = gdal.GetDriverByName("GTiff")
         dataset = driver.Create(filename, raster_data.shape[1],
-            raster_data.shape[0], num_bands, gdal.GDT_Byte)
+            raster_data.shape[0], num_bands, gdal.GDT_UInt16)
         dataset.SetGeoTransform(self.target_geotransform)
         dataset.SetProjection(self.projection)
         return dataset
@@ -545,7 +545,7 @@ class BSDispersionPlot:
         # Write classified data
         band = dataset.GetRasterBand(1)
         #  I don't think casting to uint8 is necessary, but it doesn't hurt
-        band.WriteArray(raster_data.astype(np.uint8))
+        band.WriteArray(raster_data.astype(np.uint16))
 
         # Create and assign colors to each data range by using color ramps,
         # but with the same color at each end of each data range
@@ -553,8 +553,10 @@ class BSDispersionPlot:
         for i, (r, g, b) in enumerate(self.colors):
             alpha = self.image_opacity if i > 0 else 0
             rgba = (r, g, b, alpha)
-            color_table.CreateColorRamp(int(self.levels[i]), rgba,
-                int(self.levels[i+1]), rgba)
+
+            # Example: Create a color ramp from 0 to 255
+            for val in range(int(self.levels[i]), int(self.levels[i+1])):
+                color_table.SetColorEntry(val, rgba)  # Gradient from blue to red
 
         # Write color table
         band.SetRasterColorTable(color_table)
