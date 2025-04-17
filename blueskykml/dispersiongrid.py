@@ -492,11 +492,13 @@ class BSDispersionPlot:
 
     def create_geotiff_dataset(self, raster_data, filename, num_bands):
         driver = gdal.GetDriverByName("GTiff")
+        max_val = int(max([max(a) for a in raster_data]))
+        data_type = (gdal.GDT_UInt16 if max_val >= 255 else gdal.GDT_Byte)
         dataset = driver.Create(filename, raster_data.shape[1],
-            raster_data.shape[0], num_bands, gdal.GDT_UInt16)
+            raster_data.shape[0], num_bands, data_type)
         dataset.SetGeoTransform(self.target_geotransform)
         dataset.SetProjection(self.projection)
-        return dataset
+        return dataset, max_val
 
     def create_geotiff_rgba(self, raster_data, geotiff_fileroot):
 
@@ -525,7 +527,7 @@ class BSDispersionPlot:
         rgba[3, raster_data == 0] = 0  # Alpha = 0 for transparent pixels
 
         # Create GeoTIFF
-        dataset = self.create_geotiff_dataset(raster_data, geotiff_fileroot + '-rgba.tif', 4)
+        dataset, max_val = self.create_geotiff_dataset(raster_data, geotiff_fileroot + '-rgba.tif', 4)
 
         # Write each band
         for i in range(4):
@@ -540,12 +542,13 @@ class BSDispersionPlot:
 
     def create_geotiff_single_band_raw_pm25(self, raster_data, geotiff_fileroot):
         # Create GeoTIFF
-        dataset = self.create_geotiff_dataset(raster_data, geotiff_fileroot + '-raw-pm25.tif', 1)
+        dataset, max_val = self.create_geotiff_dataset(raster_data, geotiff_fileroot + '-raw-pm25.tif', 1)
 
         # Write classified data
         band = dataset.GetRasterBand(1)
-        #  I don't think casting to uint8 is necessary, but it doesn't hurt
-        band.WriteArray(raster_data.astype(np.uint16))
+        # TODO: do we need to call `astype`?
+        data_type = (np.uint16 if max_val >= 255 else np.uint8)
+        band.WriteArray(raster_data.astype(data_type))
 
         # Create and assign colors to each data range by using color ramps,
         # but with the same color at each end of each data range
@@ -579,7 +582,7 @@ class BSDispersionPlot:
             classified_data[(raster_data >= low) & (raster_data < high)] = i
 
         # Create GeoTIFF
-        dataset = self.create_geotiff_dataset(raster_data, geotiff_fileroot + '.tif', 1)
+        dataset, max_val = self.create_geotiff_dataset(raster_data, geotiff_fileroot + '.tif', 1)
 
         # Write classified data
         band = dataset.GetRasterBand(1)
