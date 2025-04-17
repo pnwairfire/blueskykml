@@ -557,9 +557,11 @@ class BSDispersionPlot:
             alpha = self.image_opacity if i > 0 else 0
             rgba = (r, g, b, alpha)
 
-            # Example: Create a color ramp from 0 to 255
-            for val in range(int(self.levels[i]), int(self.levels[i+1])):
-                color_table.SetColorEntry(val, rgba)  # Gradient from blue to red
+            if self.levels[i] <= max_val:
+                # Example: Create a color ramp from 0 to 255
+                for val in range(int(self.levels[i]), min(max_val+1, int(self.levels[i+1]))):
+                    logging.debug(f'CT:  {val}={rgba}')
+                    color_table.SetColorEntry(val, rgba)  # Gradient from blue to red
 
         # Write color table
         band.SetRasterColorTable(color_table)
